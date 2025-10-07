@@ -120,9 +120,9 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed top-0 left-0 h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl",
+          "fixed top-0 left-0 h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl flex flex-col",
           isCollapsed ? "w-16" : "w-72",
-          "lg:relative lg:translate-x-0",
+          "lg:translate-x-0",
           !isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
@@ -162,7 +162,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
           {navigationItems
             // .filter(item => {
             //   // Mostrar "Gerenciar Usuários" apenas para administradores
