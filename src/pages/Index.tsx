@@ -135,30 +135,9 @@ const Index = () => {
               </p>
             </div>
 
-            {/* Navigation Menu - Compact Vertical Layout */}
-            <div className="max-w-4xl mx-auto space-y-2">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-all text-left group"
-                  >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <Icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
-                      <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                    </div>
-                    <div className="flex-shrink-0 text-right">
-                      <div className="text-lg font-bold text-foreground">{item.stats.count}</div>
-                      <div className="text-xs text-muted-foreground">{item.stats.label}</div>
-                    </div>
-                  </button>
-                );
-              })}
+            {/* Navigation Cards Grid - 4 por linha */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {navigationItems.map((item, index) => <ModernNavigationCard key={item.id} title={item.title} description={item.description} icon={item.icon} color={item.color} stats={item.stats} onClick={() => setActiveSection(item.id)} />)}
             </div>
 
             {/* Quick Stats Overview */}
