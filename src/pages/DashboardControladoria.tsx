@@ -301,7 +301,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
+              <div className="text-2xl font-bold text-red-600">{estatisticas.pendentes}</div>
             </CardContent>
           </Card>
           <Card>
@@ -309,7 +309,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
+              <div className="text-2xl font-bold text-blue-600">{estatisticas.concluidas}</div>
             </CardContent>
           </Card>
           <Card>
@@ -317,7 +317,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{estatisticas.canceladas}</div>
+              <div className="text-2xl font-bold text-yellow-600">{estatisticas.canceladas}</div>
             </CardContent>
           </Card>
         </div>
@@ -333,9 +333,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'Pendentes', value: estatisticas.pendentes, color: '#eab308' },
-                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' },
-                    { name: 'Canceladas', value: estatisticas.canceladas, color: '#ef4444' }
+                    { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
+                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
+                    { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
                   ].filter(item => item.value > 0)}
                   cx="50%"
                   cy="50%"
@@ -346,9 +346,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   dataKey="value"
                 >
                   {[
-                    { name: 'Pendentes', value: estatisticas.pendentes, color: '#eab308' },
-                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' },
-                    { name: 'Canceladas', value: estatisticas.canceladas, color: '#ef4444' }
+                    { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
+                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
+                    { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
                   ].filter(item => item.value > 0).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
