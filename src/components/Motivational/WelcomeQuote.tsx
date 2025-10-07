@@ -107,7 +107,7 @@ export const WelcomeQuote = () => {
           {/* Mensagem de Boas-Vindas */}
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 tracking-wide uppercase">
-              Bem-vindo ao Sistema CRA
+              Bem-Vindo(a) ao Sistema do Calazans Rossi
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
               Excelência · Ética · Alta Performance
