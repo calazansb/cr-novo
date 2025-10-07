@@ -13,6 +13,7 @@ export type NovasolicitacaoControladoria = {
   descricao_detalhada: string;
   user_id: string;
   anexos?: string[];
+  prazo_retorno?: string;
 };
 
 export const useSolicitacoes = () => {

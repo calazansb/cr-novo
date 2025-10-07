@@ -58,6 +58,7 @@ export type Database = {
           numero_processo: string | null
           objeto_solicitacao: string
           observacoes: string | null
+          prazo_retorno: string | null
           status: string | null
           user_id: string | null
         }
@@ -74,6 +75,7 @@ export type Database = {
           numero_processo?: string | null
           objeto_solicitacao: string
           observacoes?: string | null
+          prazo_retorno?: string | null
           status?: string | null
           user_id?: string | null
         }
@@ -90,6 +92,7 @@ export type Database = {
           numero_processo?: string | null
           objeto_solicitacao?: string
           observacoes?: string | null
+          prazo_retorno?: string | null
           status?: string | null
           user_id?: string | null
         }

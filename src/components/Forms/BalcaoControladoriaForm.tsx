@@ -309,7 +309,8 @@ ${formData.solicitacao}
         objeto_solicitacao: validatedData.tribunalOrgao,
         descricao_detalhada: validatedData.solicitacao,
         user_id: user?.id || '',
-        anexos: anexosUrls.length > 0 ? anexosUrls : []
+        anexos: anexosUrls.length > 0 ? anexosUrls : [],
+        prazo_retorno: validatedData.prazoRetorno
       };
       
       const codigoSalvo = await criarSolicitacao(solicitacaoData);

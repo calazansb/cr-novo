@@ -16,7 +16,9 @@ import {
   TrendingUp,
   Clock,
   Users,
-  CheckCircle2
+  CheckCircle2,
+  Eye,
+  Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -286,24 +288,53 @@ export const CustomizableDashboard = () => {
       case 'recent-requests':
         return (
           <ScrollArea className="h-64">
-            <div className="space-y-2">
+            <div className="space-y-3">
               {recentRequests.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   Nenhuma solicitação encontrada
                 </p>
               ) : (
                 recentRequests.map((req) => (
-                  <div key={req.id} className="p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">{req.codigo_unico}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-1">
-                          {req.cliente}
-                        </p>
+                  <div key={req.id} className="p-3 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 space-y-1">
+                        <p className="font-semibold text-sm">{req.codigo_unico}</p>
+                        <div className="text-xs text-muted-foreground space-y-0.5">
+                          <p><span className="font-medium">Processo:</span> {req.numero_processo || 'N/A'}</p>
+                          <p><span className="font-medium">Cliente:</span> {req.cliente}</p>
+                          <p><span className="font-medium">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
+                          <p className="line-clamp-1"><span className="font-medium">Solicitação:</span> {req.objeto_solicitacao}</p>
+                        </div>
                       </div>
-                      <Badge variant={req.status === 'pendente' ? 'secondary' : 'default'}>
+                      <Badge variant={req.status === 'pendente' ? 'secondary' : 'default'} className="shrink-0">
                         {req.status}
                       </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => {
+                          // Navigate to view details
+                          window.dispatchEvent(new CustomEvent('view-request', { detail: req.id }));
+                        }}
+                      >
+                        <Eye className="mr-1 h-3 w-3" />
+                        Ver
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          // Navigate to edit
+                          window.dispatchEvent(new CustomEvent('edit-request', { detail: req.id }));
+                        }}
+                      >
+                        <Edit className="mr-1 h-3 w-3" />
+                        Editar
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -315,15 +346,30 @@ export const CustomizableDashboard = () => {
       case 'quick-actions':
         return (
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start" size="sm">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              size="sm"
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'balcao' }))}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Nova Solicitação
             </Button>
-            <Button variant="outline" className="w-full justify-start" size="sm">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              size="sm"
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'dashboard-controladoria' }))}
+            >
               <FileText className="mr-2 h-4 w-4" />
               Relatórios
             </Button>
-            <Button variant="outline" className="w-full justify-start" size="sm">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start" 
+              size="sm"
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'admin-usuarios' }))}
+            >
               <Users className="mr-2 h-4 w-4" />
               Equipe
             </Button>

@@ -13,6 +13,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useToast } from '@/hooks/use-toast';
 import { formatCodigo } from '@/lib/utils';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 // Tipo para compatibilidade
 type SolicitacaoControladoria = Database['public']['Tables']['solicitacoes_controladoria']['Row'];
@@ -270,38 +271,79 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           
         </Card>}
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* Estatísticas e Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Estatísticas */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{estatisticas.total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{estatisticas.em_andamento}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráfico de Status */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
+          <CardHeader>
+            <CardTitle>Distribuição por Status</CardTitle>
+            <CardDescription>Percentual de solicitações por situação</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{estatisticas.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{estatisticas.em_andamento}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Pendentes', value: estatisticas.pendentes, color: '#eab308' },
+                    { name: 'Em Andamento', value: estatisticas.em_andamento, color: '#3b82f6' },
+                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' }
+                  ].filter(item => item.value > 0)}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {[
+                    { name: 'Pendentes', value: estatisticas.pendentes, color: '#eab308' },
+                    { name: 'Em Andamento', value: estatisticas.em_andamento, color: '#3b82f6' },
+                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' }
+                  ].filter(item => item.value > 0).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>

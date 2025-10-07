@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import ModernSidebar from "@/components/Layout/ModernSidebar";
 import ModernHeader from "@/components/Layout/ModernHeader";
 import ModernNavigationCard from "@/components/Layout/ModernNavigationCard";
@@ -30,6 +31,19 @@ const Index = () => {
   const { user } = useAuth();
 
   console.log('Index component rendering, user:', user);
+
+  // Event listeners for dashboard actions
+  React.useEffect(() => {
+    const handleNavigate = (e: CustomEvent) => {
+      setActiveSection(e.detail as ActiveSection);
+    };
+    
+    window.addEventListener('navigate-to' as any, handleNavigate);
+    
+    return () => {
+      window.removeEventListener('navigate-to' as any, handleNavigate);
+    };
+  }, []);
 
   const navigationItems = [
     {
