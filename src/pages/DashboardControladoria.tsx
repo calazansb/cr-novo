@@ -662,15 +662,17 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 }`}
               >
                 {/* Coluna 1: Código + Processo + Descrição Completa */}
-                <div className="pr-4 border-r">
-                  <div className="font-semibold text-sm mb-1 break-words text-black">{formatCodigo(solicitacao.codigo_unico)}</div>
+                <div className="pr-4 border-r space-y-1.5">
+                  <div className="font-semibold text-sm break-words text-black">{formatCodigo(solicitacao.codigo_unico)}</div>
                   {solicitacao.numero_processo && (
-                    <div className="text-xs text-black font-medium mb-1 break-words">
-                      Processo: {solicitacao.numero_processo}
+                    <div className="text-xs text-black break-words">
+                      <span className="font-bold">Processo:</span> {solicitacao.numero_processo}
                     </div>
                   )}
                   <div className="text-xs text-black">
-                    <div className="font-medium mb-0.5 break-words">Objeto: {solicitacao.objeto_solicitacao}</div>
+                    <div className="break-words mb-1">
+                      <span className="font-bold">Objeto:</span> {solicitacao.objeto_solicitacao}
+                    </div>
                     <div className="break-words whitespace-normal">{solicitacao.descricao_detalhada}</div>
                   </div>
                 </div>
