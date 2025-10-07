@@ -60,6 +60,8 @@ export type Database = {
           observacoes: string | null
           prazo_retorno: string | null
           status: string | null
+          ultima_modificacao_em: string | null
+          ultima_modificacao_por: string | null
           user_id: string | null
         }
         Insert: {
@@ -77,6 +79,8 @@ export type Database = {
           observacoes?: string | null
           prazo_retorno?: string | null
           status?: string | null
+          ultima_modificacao_em?: string | null
+          ultima_modificacao_por?: string | null
           user_id?: string | null
         }
         Update: {
@@ -94,6 +98,8 @@ export type Database = {
           observacoes?: string | null
           prazo_retorno?: string | null
           status?: string | null
+          ultima_modificacao_em?: string | null
+          ultima_modificacao_por?: string | null
           user_id?: string | null
         }
         Relationships: []
