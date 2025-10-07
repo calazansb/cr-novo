@@ -418,9 +418,9 @@ export const CustomizableDashboard = () => {
                     <div key={req.id} className="p-4 border-2 rounded-lg hover:shadow-md transition-all bg-card shadow-md relative">
                       <div className="flex items-start gap-3">
                         {/* Coluna esquerda: Informações principais */}
-                        <div className="flex-1 space-y-3 pr-32">
+                        <div className="flex-1 space-y-1.5 pr-32">
                           <p className="font-bold text-lg">{req.codigo_unico}</p>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-base">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-base">
                             <p><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{req.numero_processo || 'N/A'}</span></p>
                             <p><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{req.cliente}</span></p>
                             <p><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></p>
@@ -439,7 +439,7 @@ export const CustomizableDashboard = () => {
                           {/* Badge de status */}
                           <Badge 
                             variant={req.status === 'pendente' ? 'destructive' : req.status === 'concluida' ? 'default' : 'secondary'} 
-                            className={`text-xs px-2 py-0.5 font-semibold ${
+                            className={`text-sm px-2.5 py-0.5 h-6 font-semibold ${
                               req.status === 'concluida' 
                                 ? 'bg-green-600 hover:bg-green-700 text-white' 
                                 : req.status === 'pendente' 
@@ -455,7 +455,7 @@ export const CustomizableDashboard = () => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="h-6 px-2 text-xs"
+                              className="h-7 px-3 text-sm"
                               onClick={() => setSolicitacaoVisualizando(req)}
                             >
                               Ver
@@ -463,7 +463,7 @@ export const CustomizableDashboard = () => {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              className="h-6 px-2 text-xs"
+                              className="h-7 px-3 text-sm"
                               onClick={() => {
                                 setSolicitacaoEditando(req);
                                 setNovoStatus(req.status);

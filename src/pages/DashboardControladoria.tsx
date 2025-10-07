@@ -560,9 +560,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               <CardHeader className="pb-3 pt-4">
                 <div className="flex items-start gap-3">
                   {/* Coluna esquerda: Informações principais */}
-                  <div className="flex-1 space-y-3 pr-32">
+                  <div className="flex-1 space-y-1.5 pr-32">
                     <CardTitle className="text-lg font-bold">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
-                    <div className="space-y-2 text-base">
+                    <div className="space-y-1 text-base">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="min-w-0"><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{solicitacao.numero_processo || 'N/A'}</span></div>
                         <div className="min-w-0"><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
@@ -584,7 +584,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
                     {/* Badge de status */}
                     <Badge 
-                      className={`text-xs px-2 py-0.5 font-semibold ${
+                      className={`text-sm px-2.5 py-0.5 h-6 font-semibold ${
                         solicitacao.status === 'concluida' 
                           ? 'bg-green-600 hover:bg-green-700 text-white' 
                           : solicitacao.status === 'pendente' 
@@ -599,7 +599,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     <div className="flex gap-1 flex-wrap justify-end">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs">
+                          <Button variant="outline" size="sm" className="h-7 px-3 text-sm">
                             Ver
                           </Button>
                         </DialogTrigger>
@@ -695,7 +695,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </Dialog>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => {
+                          <Button variant="outline" size="sm" className="h-7 px-3 text-sm" onClick={() => {
                       setSolicitacaoEditando(solicitacao);
                       setNovoStatus(solicitacao.status);
                       setObservacoes(solicitacao.observacoes || '');
