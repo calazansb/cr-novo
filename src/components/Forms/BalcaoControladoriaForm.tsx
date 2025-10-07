@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/form-field";
 import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCodigo } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
@@ -42,6 +43,12 @@ const BalcaoControladoriaForm = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [usuarios, setUsuarios] = useState<{ id: string; nome: string }[]>([]);
+  const [clientes, setClientes] = useState<string[]>([
+    "Cliente A",
+    "Cliente B", 
+    "Cliente C"
+  ]);
 
   // Auto-save draft
   useEffect(() => {
@@ -50,6 +57,22 @@ const BalcaoControladoriaForm = () => {
     }, 1000);
     return () => clearTimeout(timeoutId);
   }, [formData]);
+
+  // Buscar usuários registrados
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nome')
+        .order('nome');
+      
+      if (data && !error) {
+        setUsuarios(data);
+      }
+    };
+    
+    fetchUsuarios();
+  }, []);
 
   // Load draft on mount
   useEffect(() => {
@@ -367,17 +390,30 @@ ${validatedData.solicitacao}`;
         </CardHeader>
         <CardContent className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              type="input"
-              id="nomeSolicitante"
-              label="Nome do Solicitante"
-              value={formData.nomeSolicitante}
-              onChange={(value) => handleInputChange('nomeSolicitante', value)}
-              placeholder="Digite o nome do solicitante"
-              required
-              error={errors.nomeSolicitante}
-              success={validatedFields.has('nomeSolicitante')}
-            />
+            {/* Nome do Solicitante - Select */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Nome do Solicitante <span className="text-destructive">*</span>
+              </label>
+              <Select 
+                value={formData.nomeSolicitante} 
+                onValueChange={(value) => handleInputChange('nomeSolicitante', value)}
+              >
+                <SelectTrigger className={errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}>
+                  <SelectValue placeholder="Selecione o solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  {usuarios.map((usuario) => (
+                    <SelectItem key={usuario.id} value={usuario.nome}>
+                      {usuario.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.nomeSolicitante && (
+                <p className="text-xs text-destructive">{errors.nomeSolicitante}</p>
+              )}
+            </div>
 
             <FormField
               type="input"
@@ -391,17 +427,30 @@ ${validatedData.solicitacao}`;
               success={validatedFields.has('numeroProcesso')}
             />
 
-            <FormField
-              type="input"
-              id="cliente"
-              label="Cliente"
-              value={formData.cliente}
-              onChange={(value) => handleInputChange('cliente', value)}
-              placeholder="Nome do cliente"
-              required
-              error={errors.cliente}
-              success={validatedFields.has('cliente')}
-            />
+            {/* Cliente - Select */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Cliente <span className="text-destructive">*</span>
+              </label>
+              <Select 
+                value={formData.cliente} 
+                onValueChange={(value) => handleInputChange('cliente', value)}
+              >
+                <SelectTrigger className={errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map((cliente) => (
+                    <SelectItem key={cliente} value={cliente}>
+                      {cliente}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.cliente && (
+                <p className="text-xs text-destructive">{errors.cliente}</p>
+              )}
+            </div>
 
             <FormField
               type="input"
