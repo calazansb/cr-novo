@@ -34,7 +34,10 @@ export const useSolicitacoes = () => {
       console.log('📡 Fazendo consulta ao Supabase...');
       const { data, error } = await supabase
         .from('solicitacoes_controladoria')
-        .select('*')
+        .select(`
+          *,
+          modificador:ultima_modificacao_por(nome)
+        `)
         .order('data_criacao', { ascending: false });
 
       console.log('📊 Resultado da consulta:', { data, error });

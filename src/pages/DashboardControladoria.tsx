@@ -465,6 +465,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     {(solicitacao as any).ultima_modificacao_em && (
                       <p className="text-xs text-muted-foreground italic">
                         Última modificação: {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR')}
+                        {(solicitacao as any).modificador?.nome && ` por ${(solicitacao as any).modificador.nome}`}
                       </p>
                     )}
                   </div>
