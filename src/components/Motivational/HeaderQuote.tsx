@@ -11,18 +11,39 @@ export const HeaderQuote = () => {
   const [quote, setQuote] = useState<Frase | null>(null);
 
   useEffect(() => {
-    // Tentar carregar a frase atual do localStorage
-    const stored = localStorage.getItem('current_quote');
-    if (stored) {
-      setQuote(JSON.parse(stored));
-    } else {
-      // Se não houver frase armazenada, selecionar uma aleatória
-      const frases: Frase[] = frasesData;
-      const randomIndex = Math.floor(Math.random() * frases.length);
-      const selectedQuote = frases[randomIndex];
-      setQuote(selectedQuote);
-      localStorage.setItem('current_quote', JSON.stringify(selectedQuote));
-    }
+    // Atualizar a frase quando o localStorage mudar
+    const updateQuote = () => {
+      const stored = localStorage.getItem('current_quote');
+      if (stored) {
+        setQuote(JSON.parse(stored));
+      } else {
+        // Se não houver frase armazenada, selecionar uma aleatória
+        const frases: Frase[] = frasesData;
+        const randomIndex = Math.floor(Math.random() * frases.length);
+        const selectedQuote = frases[randomIndex];
+        setQuote(selectedQuote);
+        localStorage.setItem('current_quote', JSON.stringify(selectedQuote));
+      }
+    };
+
+    updateQuote();
+
+    // Listener para mudanças no localStorage (atualiza quando WelcomeQuote mudar a frase)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'current_quote') {
+        updateQuote();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Também verificar periodicamente (a cada 30 segundos) se a frase mudou
+    const interval = setInterval(updateQuote, 30000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   if (!quote) return null;

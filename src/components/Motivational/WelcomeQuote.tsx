@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Lightbulb } from 'lucide-react';
+import { useAuth } from '@/components/Auth/AuthProvider';
 import frasesData from '@/data/frases-motivacionais.json';
 
 interface Frase {
@@ -8,45 +9,75 @@ interface Frase {
   autor: string;
 }
 
+const TWELVE_HOURS = 12 * 60 * 60 * 1000; // 12 horas em milissegundos
+
 export const WelcomeQuote = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentQuote, setCurrentQuote] = useState<Frase | null>(null);
+  const { user } = useAuth();
+
+  const getRandomQuote = (excludeId?: number): { quote: Frase; id: number } => {
+    const frases: Frase[] = frasesData;
+    let randomIndex: number;
+    
+    // Selecionar uma frase aleatória diferente da última
+    do {
+      randomIndex = Math.floor(Math.random() * frases.length);
+    } while (excludeId !== undefined && randomIndex === excludeId && frases.length > 1);
+
+    return { quote: frases[randomIndex], id: randomIndex };
+  };
+
+  const shouldUpdateQuote = (): boolean => {
+    const lastUpdate = localStorage.getItem('quote_last_update');
+    if (!lastUpdate) return true;
+
+    const timeSinceUpdate = Date.now() - parseInt(lastUpdate);
+    return timeSinceUpdate >= TWELVE_HOURS;
+  };
+
+  const updateQuote = () => {
+    const lastQuoteId = localStorage.getItem('last_quote_id');
+    const excludeId = lastQuoteId ? parseInt(lastQuoteId) : undefined;
+    
+    const { quote, id } = getRandomQuote(excludeId);
+    
+    setCurrentQuote(quote);
+    localStorage.setItem('current_quote', JSON.stringify(quote));
+    localStorage.setItem('last_quote_id', id.toString());
+    localStorage.setItem('quote_last_update', Date.now().toString());
+    
+    return quote;
+  };
 
   useEffect(() => {
-    // Verificar se já mostrou a frase hoje
-    const lastShown = localStorage.getItem('last_quote_shown');
-    const today = new Date().toDateString();
+    if (user) {
+      // Verificar se passou 12 horas ou se é um novo login
+      const lastLoginTime = localStorage.getItem('last_login_time');
+      const currentLoginTime = Date.now().toString();
+      const isNewLogin = lastLoginTime !== currentLoginTime;
 
-    if (lastShown !== today) {
-      // Obter a última frase exibida para evitar repetição
-      const lastQuoteId = localStorage.getItem('last_quote_id');
-      const frases: Frase[] = frasesData;
-      
-      // Selecionar uma frase aleatória diferente da última
-      let randomIndex: number;
-      do {
-        randomIndex = Math.floor(Math.random() * frases.length);
-      } while (lastQuoteId !== null && randomIndex === parseInt(lastQuoteId) && frases.length > 1);
-
-      const selectedQuote = frases[randomIndex];
-      setCurrentQuote(selectedQuote);
-      setIsOpen(true);
-
-      // Armazenar informações para evitar repetição
-      localStorage.setItem('last_quote_shown', today);
-      localStorage.setItem('last_quote_id', randomIndex.toString());
-      localStorage.setItem('current_quote', JSON.stringify(selectedQuote));
-
-      // Fechar automaticamente após 6 segundos
-      setTimeout(() => setIsOpen(false), 6000);
-    } else {
-      // Carregar frase atual se já foi exibida hoje
-      const stored = localStorage.getItem('current_quote');
-      if (stored) {
-        setCurrentQuote(JSON.parse(stored));
+      if (shouldUpdateQuote() || isNewLogin) {
+        const newQuote = updateQuote();
+        setCurrentQuote(newQuote);
+        setIsOpen(true);
+        
+        // Atualizar timestamp do login
+        localStorage.setItem('last_login_time', currentLoginTime);
+        
+        // Fechar automaticamente após 6 segundos
+        setTimeout(() => setIsOpen(false), 6000);
+      } else {
+        // Carregar frase atual
+        const stored = localStorage.getItem('current_quote');
+        if (stored) {
+          setCurrentQuote(JSON.parse(stored));
+        } else {
+          updateQuote();
+        }
       }
     }
-  }, []);
+  }, [user]);
 
   if (!currentQuote) return null;
 
