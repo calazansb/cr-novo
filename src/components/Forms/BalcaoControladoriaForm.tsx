@@ -386,18 +386,18 @@ const BalcaoControladoriaForm = () => {
             </div>
           )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nome do Solicitante - Select */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground h-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
                 Nome do Solicitante <span className="text-destructive">*</span>
               </label>
               <Select 
                 value={formData.nomeSolicitante} 
                 onValueChange={(value) => handleInputChange('nomeSolicitante', value)}
               >
-                <SelectTrigger className={`h-9 ${errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}`}>
+                <SelectTrigger className={`${errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}`}>
                   <SelectValue placeholder="Selecione o solicitante" />
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
@@ -408,11 +408,9 @@ const BalcaoControladoriaForm = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="h-4">
-                {errors.nomeSolicitante && (
-                  <p className="text-xs text-destructive">{errors.nomeSolicitante}</p>
-                )}
-              </div>
+              {errors.nomeSolicitante && (
+                <p className="text-xs text-destructive mt-1">{errors.nomeSolicitante}</p>
+              )}
             </div>
 
             <FormField
@@ -428,15 +426,15 @@ const BalcaoControladoriaForm = () => {
             />
 
             {/* Cliente - Select com opção Outros */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground h-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
                 Cliente <span className="text-destructive">*</span>
               </label>
               <Select 
                 value={formData.cliente} 
                 onValueChange={(value) => handleInputChange('cliente', value)}
               >
-                <SelectTrigger className={`h-9 ${errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}`}>
+                <SelectTrigger className={`${errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}`}>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
