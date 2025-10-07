@@ -469,7 +469,8 @@ export const CustomizableDashboard = () => {
                 className="text-xs border rounded px-2 py-1 bg-background"
                 value={filtroData}
                 onChange={(e) => setFiltroData(e.target.value)}
-                placeholder="Data"
+                placeholder="Data da Criação"
+                title="Data da Criação"
               />
               
               <input
@@ -477,7 +478,8 @@ export const CustomizableDashboard = () => {
                 className="text-xs border rounded px-2 py-1 bg-background"
                 value={filtroPrazo}
                 onChange={(e) => setFiltroPrazo(e.target.value)}
-                placeholder="Prazo"
+                placeholder="Data do Prazo"
+                title="Data do Prazo"
               />
             </div>
             

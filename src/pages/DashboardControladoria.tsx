@@ -507,9 +507,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </Select>
                 </div>
 
-                {/* Filtro por Data */}
+                {/* Filtro por Data da Criação */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium">Data</label>
+                  <label className="text-xs font-medium">Data da Criação</label>
                   <Input
                     type="date"
                     className="h-9"
@@ -518,9 +518,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   />
                 </div>
 
-                {/* Filtro por Prazo */}
+                {/* Filtro por Data do Prazo */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium">Prazo</label>
+                  <label className="text-xs font-medium">Data do Prazo</label>
                   <Input
                     type="date"
                     className="h-9"
@@ -639,8 +639,82 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
 
 
       {/* Título da seção de todas as solicitações */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Todas as Solicitações</h2>
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-3">Todas as Solicitações</h2>
+        
+        {/* Filtros - Mesmo layout do Meu Dashboard */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
+          <select 
+            className="text-xs border rounded px-2 py-1 bg-background"
+            value={tempFiltroStatus}
+            onChange={(e) => setTempFiltroStatus(e.target.value)}
+          >
+            <option value="todos">Todos Status</option>
+            <option value="pendente">Pendente</option>
+            <option value="concluida">Concluída</option>
+            <option value="cancelada">Cancelada</option>
+          </select>
+          
+          <select 
+            className="text-xs border rounded px-2 py-1 bg-background"
+            value={tempFiltroNome}
+            onChange={(e) => setTempFiltroNome(e.target.value)}
+          >
+            <option value="todos">Todos Solicitantes</option>
+            {advogados.map(adv => (
+              <option key={adv.id} value={adv.id}>{adv.nome}</option>
+            ))}
+          </select>
+          
+          <select 
+            className="text-xs border rounded px-2 py-1 bg-background"
+            value={tempFiltroCliente}
+            onChange={(e) => setTempFiltroCliente(e.target.value)}
+          >
+            <option value="todos">Todos Clientes</option>
+            {clientes.map(cli => (
+              <option key={cli.id} value={cli.id}>{cli.nome}</option>
+            ))}
+          </select>
+          
+          <input
+            type="date"
+            className="text-xs border rounded px-2 py-1 bg-background"
+            value={tempFiltroData}
+            onChange={(e) => setTempFiltroData(e.target.value)}
+            placeholder="Data da Criação"
+            title="Data da Criação"
+          />
+          
+          <input
+            type="date"
+            className="text-xs border rounded px-2 py-1 bg-background"
+            value={tempFiltroPrazo}
+            onChange={(e) => setTempFiltroPrazo(e.target.value)}
+            placeholder="Data do Prazo"
+            title="Data do Prazo"
+          />
+        </div>
+        
+        {/* Botões de Aplicar e Limpar */}
+        <div className="flex gap-2 mb-3">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={aplicarFiltros}
+          >
+            Aplicar Filtros
+          </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={limparFiltros}
+          >
+            Limpar Filtros
+          </Button>
+        </div>
+        
         <div className="text-sm text-muted-foreground">
           Exibindo {solicitacoesFiltradas.length} de {solicitacoes.length} solicitações
         </div>
