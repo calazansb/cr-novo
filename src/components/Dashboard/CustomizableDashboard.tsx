@@ -415,20 +415,20 @@ export const CustomizableDashboard = () => {
                   </p>
                 ) : (
                   requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-4 border-2 rounded-lg hover:shadow-md transition-all bg-card shadow-md relative">
+                    <div key={req.id} className="p-3 border-2 rounded-lg hover:shadow-md transition-all bg-card shadow-md relative">
                       <div className="flex items-start gap-3">
                         {/* Coluna esquerda: Informações principais */}
-                        <div className="flex-1 space-y-1.5 pr-32">
+                        <div className="flex-1 space-y-0.5 pr-32">
                           <p className="font-bold text-lg">{req.codigo_unico}</p>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-base">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-base">
                             <p><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{req.numero_processo || 'N/A'}</span></p>
                             <p><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{req.cliente}</span></p>
                             <p><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></p>
                             <p><span className="font-bold text-foreground">Solicitante:</span> <span className="text-foreground">{req.nome_solicitante}</span></p>
                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-1 font-medium">{req.objeto_solicitacao}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-1 font-medium pt-0.5">{req.objeto_solicitacao}</p>
                           {req.ultima_modificacao_em && (
-                            <p className="text-xs text-muted-foreground italic">
+                            <p className="text-xs text-muted-foreground italic pt-0.5">
                               Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}

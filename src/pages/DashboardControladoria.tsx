@@ -557,24 +557,24 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       {/* Lista de Solicitações */}
       {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="space-y-4">
           {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-lg transition-all shadow-md border-2 relative">
-              <CardHeader className="pb-3 pt-4">
+              <CardHeader className="pb-2 pt-3">
                 <div className="flex items-start gap-3">
                   {/* Coluna esquerda: Informações principais */}
-                  <div className="flex-1 space-y-1.5 pr-32">
+                  <div className="flex-1 space-y-0.5 pr-32">
                     <CardTitle className="text-lg font-bold">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
-                    <div className="space-y-1 text-base">
-                      <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-0.5 text-base">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                         <div className="min-w-0"><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{solicitacao.numero_processo || 'N/A'}</span></div>
                         <div className="min-w-0"><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                         <div className="min-w-0"><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{solicitacao.cliente}</span></div>
                         <div className="min-w-0"><span className="font-bold text-foreground">Solicitante:</span> <span className="text-foreground">{solicitacao.nome_solicitante}</span></div>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1 font-medium">{solicitacao.objeto_solicitacao}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-1 font-medium pt-0.5">{solicitacao.objeto_solicitacao}</p>
                     {(solicitacao as any).ultima_modificacao_em && (
-                      <p className="text-xs text-muted-foreground italic">
+                      <p className="text-xs text-muted-foreground italic pt-0.5">
                         <span className="font-semibold">Modificado:</span> {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                       </p>
                     )}
