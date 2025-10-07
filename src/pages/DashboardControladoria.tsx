@@ -55,6 +55,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [tabelaExiste, setTabelaExiste] = useState<boolean | null>(null);
   const [arquivosResposta, setArquivosResposta] = useState<File[]>([]);
   const [uploadingResposta, setUploadingResposta] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Novos estados para filtros avançados
   const [filtroNome, setFiltroNome] = useState('');
@@ -92,10 +93,24 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       return false;
     }
   };
+  
+  // Verificar se usuário é admin
+  const verificarAdmin = async () => {
+    try {
+      const { data, error } = await supabase.rpc('is_admin');
+      if (!error && data === true) {
+        setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar admin:', error);
+    }
+  };
+  
   // Verificar tabela ao montar o componente
   React.useEffect(() => {
     if (supabase) {
       verificarTabela();
+      verificarAdmin();
     }
   }, []);
   // Aplicar todos os filtros
@@ -638,29 +653,31 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                         </div>
                       </DialogContent>
                     </Dialog>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tem certeza que deseja excluir a solicitação <strong>{solicitacao.codigo_unico}</strong>?
-                            <br />
-                            Esta ação não pode ser desfeita.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deletarSolicitacao(solicitacao.id)} className="bg-red-600 hover:bg-red-700">
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    {isAdmin && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir a solicitação <strong>{solicitacao.codigo_unico}</strong>?
+                              <br />
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deletarSolicitacao(solicitacao.id)} className="bg-red-600 hover:bg-red-700">
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 </div>
               </CardHeader>
