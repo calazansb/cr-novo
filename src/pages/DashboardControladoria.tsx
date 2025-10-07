@@ -184,34 +184,20 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       }
     }
     
-    // Filtro por data de início (data_criacao)
-    if (filtroDataInicio) {
+    // Filtro por data (data_criacao)
+    if (filtroData) {
       const dataCriacao = new Date(s.data_criacao);
-      const dataInicio = new Date(filtroDataInicio);
-      if (dataCriacao < dataInicio) return false;
+      const dataFiltro = new Date(filtroData);
+      // Compara apenas a data (ignora hora)
+      if (dataCriacao.toDateString() !== dataFiltro.toDateString()) return false;
     }
     
-    // Filtro por data de fim (data_criacao)
-    if (filtroDataFim) {
-      const dataCriacao = new Date(s.data_criacao);
-      const dataFim = new Date(filtroDataFim);
-      dataFim.setHours(23, 59, 59, 999);
-      if (dataCriacao > dataFim) return false;
-    }
-    
-    // Filtro por prazo de início (prazo_retorno)
-    if (filtroPrazoInicio && s.prazo_retorno) {
+    // Filtro por prazo (prazo_retorno)
+    if (filtroPrazo && s.prazo_retorno) {
       const prazoRetorno = new Date(s.prazo_retorno);
-      const prazoInicio = new Date(filtroPrazoInicio);
-      if (prazoRetorno < prazoInicio) return false;
-    }
-    
-    // Filtro por prazo de fim (prazo_retorno)
-    if (filtroPrazoFim && s.prazo_retorno) {
-      const prazoRetorno = new Date(s.prazo_retorno);
-      const prazoFim = new Date(filtroPrazoFim);
-      prazoFim.setHours(23, 59, 59, 999);
-      if (prazoRetorno > prazoFim) return false;
+      const prazoFiltro = new Date(filtroPrazo);
+      // Compara apenas a data (ignora hora)
+      if (prazoRetorno.toDateString() !== prazoFiltro.toDateString()) return false;
     }
     
     return true;
@@ -222,10 +208,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     setFiltroStatus(tempFiltroStatus);
     setFiltroNome(tempFiltroNome);
     setFiltroCliente(tempFiltroCliente);
-    setFiltroDataInicio(tempFiltroDataInicio);
-    setFiltroDataFim(tempFiltroDataFim);
-    setFiltroPrazoInicio(tempFiltroPrazoInicio);
-    setFiltroPrazoFim(tempFiltroPrazoFim);
+    setFiltroData(tempFiltroData);
+    setFiltroPrazo(tempFiltroPrazo);
   };
   
   // Função para limpar filtros
@@ -233,17 +217,13 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     setFiltroStatus('todos');
     setFiltroNome('');
     setFiltroCliente('');
-    setFiltroDataInicio('');
-    setFiltroDataFim('');
-    setFiltroPrazoInicio('');
-    setFiltroPrazoFim('');
+    setFiltroData('');
+    setFiltroPrazo('');
     setTempFiltroStatus('todos');
     setTempFiltroNome('');
     setTempFiltroCliente('');
-    setTempFiltroDataInicio('');
-    setTempFiltroDataFim('');
-    setTempFiltroPrazoInicio('');
-    setTempFiltroPrazoFim('');
+    setTempFiltroData('');
+    setTempFiltroPrazo('');
   };
   const estatisticas = {
     total: solicitacoes.length,
@@ -527,47 +507,25 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </Select>
                 </div>
 
-                {/* Filtro por Data Início */}
+                {/* Filtro por Data */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium">Data Início</label>
+                  <label className="text-xs font-medium">Data</label>
                   <Input
                     type="date"
                     className="h-9"
-                    value={tempFiltroDataInicio}
-                    onChange={(e) => setTempFiltroDataInicio(e.target.value)}
+                    value={tempFiltroData}
+                    onChange={(e) => setTempFiltroData(e.target.value)}
                   />
                 </div>
 
-                {/* Filtro por Data Fim */}
+                {/* Filtro por Prazo */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium">Data Fim</label>
+                  <label className="text-xs font-medium">Prazo</label>
                   <Input
                     type="date"
                     className="h-9"
-                    value={tempFiltroDataFim}
-                    onChange={(e) => setTempFiltroDataFim(e.target.value)}
-                  />
-                </div>
-
-                {/* Filtro por Prazo Início */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium">Prazo Início</label>
-                  <Input
-                    type="date"
-                    className="h-9"
-                    value={tempFiltroPrazoInicio}
-                    onChange={(e) => setTempFiltroPrazoInicio(e.target.value)}
-                  />
-                </div>
-
-                {/* Filtro por Prazo Fim */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-medium">Prazo Fim</label>
-                  <Input
-                    type="date"
-                    className="h-9"
-                    value={tempFiltroPrazoFim}
-                    onChange={(e) => setTempFiltroPrazoFim(e.target.value)}
+                    value={tempFiltroPrazo}
+                    onChange={(e) => setTempFiltroPrazo(e.target.value)}
                   />
                 </div>
 
