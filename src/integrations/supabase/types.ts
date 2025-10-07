@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      clientes: {
+        Row: {
+          cpf_cnpj: string | null
+          created_at: string
+          email: string | null
+          endereco: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          cpf_cnpj?: string | null
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cpf_cnpj?: string | null
+          created_at?: string
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -151,7 +187,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "advogado"
+      app_role: "admin" | "advogado" | "cliente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -279,7 +315,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "advogado"],
+      app_role: ["admin", "advogado", "cliente"],
     },
   },
 } as const

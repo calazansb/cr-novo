@@ -4,18 +4,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Edit, Shield, Mail, Calendar, Key, Trash2, UserPlus, Upload } from 'lucide-react';
+import { Users, Edit, Shield, Mail, Key, Trash2, UserPlus, Search, Building2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface UserRole {
   id: string;
   user_id: string;
-  role: 'admin' | 'advogado';
+  role: 'admin' | 'advogado' | 'cliente';
 }
 
 interface Profile {
@@ -28,23 +28,41 @@ interface Profile {
   roles?: UserRole[];
 }
 
+interface Cliente {
+  id: string;
+  nome: string;
+  email: string | null;
+  telefone: string | null;
+  cpf_cnpj: string | null;
+  endereco: string | null;
+  observacoes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+type ItemLista = (Profile & { tipo: 'usuario' }) | (Cliente & { tipo: 'cliente' });
+
 const UserManagement = () => {
-  const [users, setUsers] = useState<Profile[]>([]);
+  const [items, setItems] = useState<ItemLista[]>([]);
+  const [filteredItems, setFilteredItems] = useState<ItemLista[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [isEditUserDialogOpen, setIsEditUserDialogOpen] = useState(false);
+  const [isEditClienteDialogOpen, setIsEditClienteDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const [importText, setImportText] = useState('');
-  const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null);
+  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [isCreateClienteDialogOpen, setIsCreateClienteDialogOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [selectedUserForPassword, setSelectedUserForPassword] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [newUser, setNewUser] = useState({ nome: '', email: '', password: '', role: 'advogado' as 'admin' | 'advogado' });
+  const [newCliente, setNewCliente] = useState({ nome: '', email: '', telefone: '', cpf_cnpj: '', endereco: '', observacoes: '' });
+  const [filtroTipo, setFiltroTipo] = useState<string>('todos');
+  const [filtroBusca, setFiltroBusca] = useState<string>('');
   const { toast } = useToast();
 
-  const fetchUsers = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       
@@ -53,10 +71,10 @@ const UserManagement = () => {
       setIsAdmin(adminCheck === true);
       
       if (!adminCheck) {
-        throw new Error('Acesso negado: Apenas administradores podem gerenciar usuários');
+        throw new Error('Acesso negado: Apenas administradores podem gerenciar usuários e clientes');
       }
 
-      // Buscar profiles com roles
+      // Buscar profiles (usuários) com roles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -71,18 +89,36 @@ const UserManagement = () => {
 
       if (rolesError) throw rolesError;
 
-      // Combinar dados
-      const usersWithRoles = (profilesData || []).map(profile => ({
+      // Buscar clientes
+      const { data: clientesData, error: clientesError } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (clientesError) throw clientesError;
+
+      // Combinar dados de usuários
+      const usersWithRoles: ItemLista[] = (profilesData || []).map(profile => ({
         ...profile,
-        roles: (rolesData || []).filter(role => role.user_id === profile.id)
+        roles: (rolesData || []).filter(role => role.user_id === profile.id),
+        tipo: 'usuario' as const
       }));
 
-      setUsers(usersWithRoles as Profile[]);
+      // Combinar dados de clientes
+      const clientesWithType: ItemLista[] = (clientesData || []).map(cliente => ({
+        ...cliente,
+        tipo: 'cliente' as const
+      }));
+
+      // Juntar tudo
+      const allItems = [...usersWithRoles, ...clientesWithType];
+      setItems(allItems);
+      setFilteredItems(allItems);
     } catch (error) {
-      console.error('Erro ao buscar usuários:', error);
+      console.error('Erro ao buscar dados:', error);
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Não foi possível carregar os usuários.",
+        description: error instanceof Error ? error.message : "Não foi possível carregar os dados.",
         variant: "destructive",
       });
     } finally {
@@ -91,12 +127,63 @@ const UserManagement = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
+
+  // Aplicar filtros
+  useEffect(() => {
+    let resultado = [...items];
+
+    // Filtro por tipo
+    if (filtroTipo !== 'todos') {
+      if (filtroTipo === 'cliente') {
+        resultado = resultado.filter(item => item.tipo === 'cliente');
+      } else {
+        resultado = resultado.filter(item => {
+          if (item.tipo === 'usuario') {
+            const userRole = getUserRole(item as Profile);
+            return userRole === filtroTipo;
+          }
+          return false;
+        });
+      }
+    }
+
+    // Filtro por busca (nome ou email)
+    if (filtroBusca.trim()) {
+      const busca = filtroBusca.toLowerCase();
+      resultado = resultado.filter(item => 
+        item.nome.toLowerCase().includes(busca) ||
+        (item.email && item.email.toLowerCase().includes(busca))
+      );
+    }
+
+    setFilteredItems(resultado);
+  }, [filtroTipo, filtroBusca, items]);
+
+  const getUserRole = (user: Profile): 'admin' | 'advogado' | 'cliente' => {
+    return user.roles?.[0]?.role || 'advogado';
+  };
+
+  const getRoleBadge = (item: ItemLista) => {
+    if (item.tipo === 'cliente') {
+      return <Badge variant="outline" className="flex items-center gap-1"><Building2 className="w-3 h-3" />Cliente</Badge>;
+    }
+    const role = getUserRole(item as Profile);
+    if (role === 'admin') {
+      return <Badge variant="destructive" className="flex items-center gap-1"><Shield className="w-3 h-3" />Administrador</Badge>;
+    }
+    return <Badge variant="secondary" className="flex items-center gap-1"><Users className="w-3 h-3" />Advogado</Badge>;
+  };
 
   const handleEditUser = (user: Profile) => {
     setEditingUser({ ...user });
-    setIsEditDialogOpen(true);
+    setIsEditUserDialogOpen(true);
+  };
+
+  const handleEditCliente = (cliente: Cliente) => {
+    setEditingCliente({ ...cliente });
+    setIsEditClienteDialogOpen(true);
   };
 
   const handleSaveUser = async () => {
@@ -109,10 +196,7 @@ const UserManagement = () => {
         .update({ nome: editingUser.nome })
         .eq('id', editingUser.id);
 
-      if (profileError) {
-        console.error('Erro ao atualizar profile:', profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
       // Atualizar role
       const currentRole = editingUser.roles?.[0]?.role || 'advogado';
@@ -120,25 +204,17 @@ const UserManagement = () => {
 
       if (newRole !== currentRole) {
         // Deletar role antiga
-        const { error: delError } = await supabase
+        await supabase
           .from('user_roles')
           .delete()
           .eq('user_id', editingUser.id);
-
-        if (delError) {
-          console.error('Erro ao deletar role antiga:', delError);
-          throw delError;
-        }
 
         // Inserir nova role
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({ user_id: editingUser.id, role: newRole });
 
-        if (roleError) {
-          console.error('Erro ao inserir nova role:', roleError);
-          throw roleError;
-        }
+        if (roleError) throw roleError;
       }
 
       toast({
@@ -146,14 +222,50 @@ const UserManagement = () => {
         description: "Usuário atualizado com sucesso.",
       });
 
-      setIsEditDialogOpen(false);
+      setIsEditUserDialogOpen(false);
       setEditingUser(null);
-      fetchUsers();
+      fetchData();
     } catch (error) {
-      console.error('Erro ao atualizar usuário (geral):', error);
+      console.error('Erro ao atualizar usuário:', error);
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Não foi possível atualizar o usuário.",
+        description: "Não foi possível atualizar o usuário.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveCliente = async () => {
+    if (!editingCliente) return;
+
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .update({
+          nome: editingCliente.nome,
+          email: editingCliente.email,
+          telefone: editingCliente.telefone,
+          cpf_cnpj: editingCliente.cpf_cnpj,
+          endereco: editingCliente.endereco,
+          observacoes: editingCliente.observacoes
+        })
+        .eq('id', editingCliente.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Cliente atualizado com sucesso.",
+      });
+
+      setIsEditClienteDialogOpen(false);
+      setEditingCliente(null);
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o cliente.",
         variant: "destructive",
       });
     }
@@ -161,27 +273,49 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (user: Profile) => {
     try {
-      // Primeiro deletar da tabela profiles
       const { error } = await supabase
         .from('profiles')
         .delete()
         .eq('id', user.id);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Sucesso",
         description: "Usuário removido com sucesso.",
       });
 
-      fetchUsers();
+      fetchData();
     } catch (error) {
       console.error('Erro ao deletar usuário:', error);
       toast({
         title: "Erro",
         description: "Não foi possível remover o usuário.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteCliente = async (cliente: Cliente) => {
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', cliente.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Cliente removido com sucesso.",
+      });
+
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o cliente.",
         variant: "destructive",
       });
     }
@@ -198,11 +332,10 @@ const UserManagement = () => {
     }
 
     try {
-      // Usar edge function para resetar senha com privilégios de admin
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        throw new Error('Não autenticado')
+        throw new Error('Não autenticado');
       }
 
       const response = await fetch('https://yqeufugteljrmvlvfpcd.supabase.co/functions/v1/admin-reset-password', {
@@ -215,12 +348,12 @@ const UserManagement = () => {
           userId: selectedUserForPassword.user_id,
           newPassword: newPassword
         })
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Erro ao alterar senha')
+        throw new Error(result.error || 'Erro ao alterar senha');
       }
 
       toast({
@@ -298,9 +431,9 @@ const UserManagement = () => {
         description: "Usuário criado com sucesso.",
       });
 
-      setIsCreateDialogOpen(false);
+      setIsCreateUserDialogOpen(false);
       setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
-      fetchUsers();
+      fetchData();
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       toast({
@@ -311,151 +444,46 @@ const UserManagement = () => {
     }
   };
 
-  const handleImportUsers = async () => {
-    if (!importText.trim()) {
+  const handleCreateCliente = async () => {
+    if (!newCliente.nome) {
       toast({
         title: "Erro",
-        description: "Cole a lista de usuários para importar.",
+        description: "Nome do cliente é obrigatório.",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      // Parse a lista - formato: Nome \t Email ou Nome * \t Email
-      const lines = importText.split('\n').filter(line => line.trim());
-      const usersToImport: Array<{ nome: string; email: string }> = [];
-
-      for (const line of lines) {
-        const parts = line.split('\t').map(p => p.trim());
-        if (parts.length >= 2) {
-          const nome = parts[0].replace(/\*+$/g, '').trim(); // Remove todos os asteriscos do final
-          const email = parts[1].trim();
-          
-          if (nome && email && email.includes('@')) {
-            usersToImport.push({ nome, email });
-          }
-        }
-      }
-
-      if (usersToImport.length === 0) {
-        toast({
-          title: "Erro",
-          description: "Nenhum usuário válido encontrado. Verifique o formato da lista.",
-          variant: "destructive",
+      const { error } = await supabase
+        .from('clientes')
+        .insert({
+          nome: newCliente.nome,
+          email: newCliente.email || null,
+          telefone: newCliente.telefone || null,
+          cpf_cnpj: newCliente.cpf_cnpj || null,
+          endereco: newCliente.endereco || null,
+          observacoes: newCliente.observacoes || null
         });
-        return;
-      }
 
-      // Confirmar importação
-      const confirmed = confirm(`Deseja importar ${usersToImport.length} usuários?\n\nSenha padrão: CalazansRossi2024\n\nTodos os usuários serão criados com perfil 'Advogado'.`);
-      if (!confirmed) return;
-
-      let successCount = 0;
-      let errorCount = 0;
-      const defaultPassword = 'CalazansRossi2024';
-
-      setImportProgress({ current: 0, total: usersToImport.length });
-
-      for (let i = 0; i < usersToImport.length; i++) {
-        const user = usersToImport[i];
-        
-        try {
-          // Criar usuário via auth
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: user.email,
-            password: defaultPassword,
-            options: {
-              data: {
-                nome: user.nome
-              }
-            }
-          });
-
-          if (authError) {
-            console.error(`Erro ao criar ${user.email}:`, authError);
-            errorCount++;
-            continue;
-          }
-
-          if (!authData.user) {
-            errorCount++;
-            continue;
-          }
-
-          // Criar profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: authData.user.id,
-              user_id: authData.user.id,
-              nome: user.nome,
-              email: user.email
-            });
-
-          if (profileError) {
-            console.error(`Erro ao criar profile ${user.email}:`, profileError);
-            errorCount++;
-            continue;
-          }
-
-          // Criar role
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: authData.user.id,
-              role: 'advogado'
-            });
-
-          if (roleError) {
-            console.error(`Erro ao criar role ${user.email}:`, roleError);
-            errorCount++;
-            continue;
-          }
-
-          successCount++;
-          setImportProgress({ current: i + 1, total: usersToImport.length });
-
-          // Delay para evitar rate limiting
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (error) {
-          console.error(`Erro ao processar ${user.email}:`, error);
-          errorCount++;
-        }
-      }
-
-      setImportProgress(null);
+      if (error) throw error;
 
       toast({
-        title: "Importação Concluída",
-        description: `${successCount} usuários criados com sucesso${errorCount > 0 ? `, ${errorCount} com erro` : ''}.`,
-        variant: errorCount > 0 ? "destructive" : "default",
+        title: "Sucesso",
+        description: "Cliente criado com sucesso.",
       });
 
-      setIsImportDialogOpen(false);
-      setImportText('');
-      fetchUsers();
+      setIsCreateClienteDialogOpen(false);
+      setNewCliente({ nome: '', email: '', telefone: '', cpf_cnpj: '', endereco: '', observacoes: '' });
+      fetchData();
     } catch (error) {
-      console.error('Erro ao importar usuários:', error);
-      setImportProgress(null);
+      console.error('Erro ao criar cliente:', error);
       toast({
         title: "Erro",
-        description: "Erro ao processar importação.",
+        description: "Não foi possível criar o cliente.",
         variant: "destructive",
       });
     }
-  };
-
-  const getUserRole = (user: Profile): 'admin' | 'advogado' => {
-    return user.roles?.[0]?.role || 'advogado';
-  };
-
-  const getRoleBadgeVariant = (role: string) => {
-    return role === 'admin' ? 'destructive' : 'secondary';
-  };
-
-  const getRoleIcon = (role: string) => {
-    return role === 'admin' ? Shield : Users;
   };
 
   if (loading) {
@@ -474,7 +502,6 @@ const UserManagement = () => {
         <div className="text-center space-y-4">
           <h2 className="text-2xl font-semibold text-foreground">Acesso Negado</h2>
           <p className="text-muted-foreground">Você não tem permissão para acessar esta área.</p>
-          <p className="text-sm text-muted-foreground">Apenas administradores podem gerenciar usuários.</p>
         </div>
       </div>
     );
@@ -482,91 +509,16 @@ const UserManagement = () => {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Gerenciamento de Usuários</h2>
-          <p className="text-muted-foreground">Gerencie usuários e suas permissões no sistema</p>
+          <h2 className="text-3xl font-bold text-foreground">Gerenciar Usuários e Clientes</h2>
+          <p className="text-muted-foreground">Gerencie usuários, permissões e clientes do sistema</p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            {users.length} usuários
-          </Badge>
-          <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
-                <Upload className="w-4 h-4 mr-2" />
-                Importar Usuários
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Importar Usuários em Massa</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <Alert>
-                  <AlertDescription>
-                    <p className="font-semibold mb-2">Instruções:</p>
-                    <ul className="list-disc list-inside space-y-1 text-sm">
-                      <li>Cole a lista de usuários com formato: <code>Nome [TAB] Email</code></li>
-                      <li>Todos os usuários serão criados com senha padrão: <strong>CalazansRossi2024</strong></li>
-                      <li>Perfil padrão: <strong>Advogado</strong></li>
-                      <li>Você pode editar o perfil individualmente depois</li>
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="import-text">Lista de Usuários</Label>
-                  <textarea
-                    id="import-text"
-                    className="w-full h-64 p-3 border rounded-md font-mono text-sm"
-                    placeholder="Marlus Riani*&#9;marlus@calazansrossi.com.br&#10;Aline Martins*&#9;aline@calazansrossi.com.br&#10;..."
-                    value={importText}
-                    onChange={(e) => setImportText(e.target.value)}
-                    disabled={!!importProgress}
-                  />
-                  {importProgress && (
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Importando... {importProgress.current} de {importProgress.total}
-                      </p>
-                      <div className="w-full bg-secondary rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all"
-                          style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex gap-2 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsImportDialogOpen(false);
-                      setImportText('');
-                    }}
-                    className="flex-1"
-                    disabled={!!importProgress}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleImportUsers}
-                    className="flex-1"
-                    disabled={!!importProgress}
-                  >
-                    {importProgress ? 'Importando...' : 'Importar'}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
                 <UserPlus className="w-4 h-4 mr-2" />
                 Novo Usuário
               </Button>
@@ -627,7 +579,7 @@ const UserManagement = () => {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setIsCreateDialogOpen(false);
+                      setIsCreateUserDialogOpen(false);
                       setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
                     }}
                     className="flex-1"
@@ -644,188 +596,396 @@ const UserManagement = () => {
               </div>
             </DialogContent>
           </Dialog>
+
+          <Dialog open={isCreateClienteDialogOpen} onOpenChange={setIsCreateClienteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Building2 className="w-4 h-4 mr-2" />
+                Novo Cliente
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Cliente</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-nome">Nome *</Label>
+                  <Input
+                    id="cliente-nome"
+                    value={newCliente.nome}
+                    onChange={(e) => setNewCliente({ ...newCliente, nome: e.target.value })}
+                    placeholder="Nome do cliente"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-email">Email</Label>
+                  <Input
+                    id="cliente-email"
+                    type="email"
+                    value={newCliente.email}
+                    onChange={(e) => setNewCliente({ ...newCliente, email: e.target.value })}
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-telefone">Telefone</Label>
+                  <Input
+                    id="cliente-telefone"
+                    value={newCliente.telefone}
+                    onChange={(e) => setNewCliente({ ...newCliente, telefone: e.target.value })}
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-cpf">CPF/CNPJ</Label>
+                  <Input
+                    id="cliente-cpf"
+                    value={newCliente.cpf_cnpj}
+                    onChange={(e) => setNewCliente({ ...newCliente, cpf_cnpj: e.target.value })}
+                    placeholder="000.000.000-00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-endereco">Endereço</Label>
+                  <Input
+                    id="cliente-endereco"
+                    value={newCliente.endereco}
+                    onChange={(e) => setNewCliente({ ...newCliente, endereco: e.target.value })}
+                    placeholder="Endereço completo"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cliente-obs">Observações</Label>
+                  <Input
+                    id="cliente-obs"
+                    value={newCliente.observacoes}
+                    onChange={(e) => setNewCliente({ ...newCliente, observacoes: e.target.value })}
+                    placeholder="Observações adicionais"
+                  />
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreateClienteDialogOpen(false);
+                      setNewCliente({ nome: '', email: '', telefone: '', cpf_cnpj: '', endereco: '', observacoes: '' });
+                    }}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleCreateCliente}
+                    className="flex-1"
+                  >
+                    Criar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      {users.length === 0 ? (
-        <Alert>
-          <Users className="h-4 w-4" />
-          <AlertDescription>
-            Nenhum usuário encontrado no sistema.
-          </AlertDescription>
-        </Alert>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {users.map((user) => {
-            const userRole = getUserRole(user);
-            const RoleIcon = getRoleIcon(userRole);
-            return (
-              <Card key={user.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <CardTitle className="text-lg font-semibold">
-                        {user.nome}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
-                        <Mail className="w-4 h-4 shrink-0" />
-                        <span className="truncate">{user.email}</span>
-                      </div>
-                    </div>
-                    <Badge variant={getRoleBadgeVariant(userRole)} className="flex items-center gap-1 shrink-0">
-                      <RoleIcon className="w-3 h-3" />
-                      {userRole === 'admin' ? 'Admin' : 'Advogado'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      Criado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Dialog open={isEditDialogOpen && editingUser?.id === user.id} onOpenChange={(open) => {
-                        setIsEditDialogOpen(open);
-                        if (!open) setEditingUser(null);
-                      }}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Editar
-                          </Button>
-                        </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                          <DialogTitle>Editar Usuário</DialogTitle>
-                        </DialogHeader>
-                        {editingUser && (
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="nome">Nome</Label>
-                              <Input
-                                id="nome"
-                                value={editingUser.nome}
-                                onChange={(e) => setEditingUser({
-                                  ...editingUser,
-                                  nome: e.target.value
-                                })}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="email">Email</Label>
-                              <Input
-                                id="email"
-                                value={editingUser.email}
-                                disabled
-                                className="bg-muted"
-                              />
-                              <p className="text-xs text-muted-foreground">
-                                O email não pode ser alterado
-                              </p>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="perfil">Perfil</Label>
-                              <Select
-                                value={(editingUser as any).newRole || getUserRole(editingUser)}
-                                onValueChange={(value: 'admin' | 'advogado') => 
-                                  setEditingUser({
-                                    ...editingUser,
-                                    newRole: value
-                                  } as any)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="advogado">Advogado</SelectItem>
-                                  <SelectItem value="admin">Administrador</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            <div className="flex gap-2 pt-4">
+      {/* Filtros */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="filtro-tipo">Filtrar por Tipo</Label>
+              <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+                <SelectTrigger id="filtro-tipo">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="advogado">Advogado</SelectItem>
+                  <SelectItem value="cliente">Cliente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="filtro-busca">Buscar por Nome ou Email</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  id="filtro-busca"
+                  className="pl-10"
+                  placeholder="Digite para buscar..."
+                  value={filtroBusca}
+                  onChange={(e) => setFiltroBusca(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lista */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Data de Criação</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredItems.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Nenhum resultado encontrado
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{item.nome}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="w-4 h-4" />
+                          {item.email || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getRoleBadge(item)}</TableCell>
+                      <TableCell>{new Date(item.created_at).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {item.tipo === 'usuario' ? (
+                            <>
                               <Button
-                                variant="outline"
-                                onClick={() => {
-                                  setIsEditDialogOpen(false);
-                                  setEditingUser(null);
-                                }}
-                                className="flex-1"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditUser(item as Profile)}
                               >
-                                Cancelar
+                                <Edit className="w-4 h-4" />
                               </Button>
                               <Button
-                                onClick={handleSaveUser}
-                                className="flex-1"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openPasswordDialog(item as Profile)}
                               >
-                                Salvar
+                                <Key className="w-4 h-4" />
                               </Button>
-                            </div>
-                          </div>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                    
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                      onClick={() => openPasswordDialog(user)}
-                    >
-                      <Key className="w-4 h-4 mr-2" />
-                      Alterar Senha
-                    </Button>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="destructive" 
-                          size="sm" 
-                          className="w-full"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Excluir
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Isso irá excluir permanentemente o usuário
-                            <strong> {user.nome} </strong> e remover todos os seus dados do sistema.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDeleteUser(user)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-      
-      {/* Dialog para alterar senha */}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir o usuário <strong>{item.nome}</strong>? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteUser(item as Profile)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditCliente(item as Cliente)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir o cliente <strong>{item.nome}</strong>? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteCliente(item as Cliente)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialog Editar Usuário */}
+      <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+          </DialogHeader>
+          {editingUser && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-nome">Nome</Label>
+                <Input
+                  id="edit-nome"
+                  value={editingUser.nome}
+                  onChange={(e) => setEditingUser({ ...editingUser, nome: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  value={editingUser.email}
+                  disabled
+                  className="bg-muted"
+                />
+                <p className="text-xs text-muted-foreground">O email não pode ser alterado</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-perfil">Perfil</Label>
+                <Select
+                  value={(editingUser as any).newRole || getUserRole(editingUser)}
+                  onValueChange={(value: 'admin' | 'advogado') => 
+                    setEditingUser({ ...editingUser, newRole: value } as any)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="advogado">Advogado</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditUserDialogOpen(false);
+                    setEditingUser(null);
+                  }}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveUser} className="flex-1">
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Editar Cliente */}
+      <Dialog open={isEditClienteDialogOpen} onOpenChange={setIsEditClienteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+          </DialogHeader>
+          {editingCliente && (
+            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-2">
+                <Label htmlFor="edit-cliente-nome">Nome *</Label>
+                <Input
+                  id="edit-cliente-nome"
+                  value={editingCliente.nome}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, nome: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cliente-email">Email</Label>
+                <Input
+                  id="edit-cliente-email"
+                  type="email"
+                  value={editingCliente.email || ''}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cliente-telefone">Telefone</Label>
+                <Input
+                  id="edit-cliente-telefone"
+                  value={editingCliente.telefone || ''}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, telefone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cliente-cpf">CPF/CNPJ</Label>
+                <Input
+                  id="edit-cliente-cpf"
+                  value={editingCliente.cpf_cnpj || ''}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, cpf_cnpj: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cliente-endereco">Endereço</Label>
+                <Input
+                  id="edit-cliente-endereco"
+                  value={editingCliente.endereco || ''}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, endereco: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cliente-obs">Observações</Label>
+                <Input
+                  id="edit-cliente-obs"
+                  value={editingCliente.observacoes || ''}
+                  onChange={(e) => setEditingCliente({ ...editingCliente, observacoes: e.target.value })}
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditClienteDialogOpen(false);
+                    setEditingCliente(null);
+                  }}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button onClick={handleSaveCliente} className="flex-1">
+                  Salvar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Alterar Senha */}
       <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -846,7 +1006,6 @@ const UserManagement = () => {
                 minLength={6}
               />
             </div>
-            
             <div className="flex gap-2 pt-4">
               <Button
                 variant="outline"
@@ -859,10 +1018,7 @@ const UserManagement = () => {
               >
                 Cancelar
               </Button>
-              <Button
-                onClick={handleChangePassword}
-                className="flex-1"
-              >
+              <Button onClick={handleChangePassword} className="flex-1">
                 Alterar Senha
               </Button>
             </div>
