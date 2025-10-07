@@ -161,9 +161,11 @@ ${formData.solicitacao}
 
   const gerarCodigoLocal = () => {
     const d = new Date();
-    const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
     const seq = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    return `CTRL-${ymd}-${seq}`;
+    return `CTRL-${day}-${month}-${year}-${seq}`;
   };
 
   const uploadArquivos = async (codigoUnico: string): Promise<string[]> => {

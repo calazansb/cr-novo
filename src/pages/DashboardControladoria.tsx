@@ -297,7 +297,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     <CardDescription className="space-y-0.5">
                       <div><strong>Solicitante:</strong> {solicitacao.nome_solicitante}</div>
                       <div><strong>Cliente:</strong> {solicitacao.cliente}</div>
-                      <div><strong>Data:</strong> {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}</div>
+                      <div><strong>Prazo para Retorno:</strong> {solicitacao.objeto_solicitacao}</div>
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
