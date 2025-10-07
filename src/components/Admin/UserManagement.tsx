@@ -651,17 +651,17 @@ const UserManagement = () => {
             return (
               <Card key={user.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1 flex-1 min-w-0">
                       <CardTitle className="text-lg font-semibold">
                         {user.nome}
                       </CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Mail className="w-4 h-4" />
-                        {user.email}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
+                        <Mail className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{user.email}</span>
                       </div>
                     </div>
-                    <Badge variant={getRoleBadgeVariant(userRole)} className="flex items-center gap-1">
+                    <Badge variant={getRoleBadgeVariant(userRole)} className="flex items-center gap-1 shrink-0">
                       <RoleIcon className="w-3 h-3" />
                       {userRole === 'admin' ? 'Admin' : 'Advogado'}
                     </Badge>
