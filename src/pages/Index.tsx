@@ -17,12 +17,13 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 // import TreinamentosPage from "@/components/Treinamentos/TreinamentosPage";
 import UserManagement from "@/components/Admin/UserManagement";
+import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Building, BarChart3, Scale, ClipboardList, Lightbulb, AlertTriangle, Settings, Database, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DatabaseSetupNotice from "@/components/DatabaseSetupNotice";
 
-type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
+type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios' | 'bulk-users';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
@@ -214,6 +215,20 @@ const Index = () => {
 
             {/* Database Setup Notice */}
             <DatabaseSetupNotice />
+
+            {/* Admin Quick Actions */}
+            <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border/50">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Ações Administrativas</h3>
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => setActiveSection('bulk-users')}
+                  className="flex items-center gap-2"
+                >
+                  Criar Usuários em Massa
+                </Button>
+              </div>
+            </div>
           </div>
         );
         
@@ -230,6 +245,19 @@ const Index = () => {
         return <AudienciasForm />;
       case 'admin-usuarios':
         return <UserManagement />;
+      case 'bulk-users':
+        return (
+          <div className="space-y-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => setActiveSection('home')}
+              className="mb-4"
+            >
+              ← Voltar
+            </Button>
+            <BulkUserCreator />
+          </div>
+        );
       case 'sugestoes':
         return <SuestoesForm />;
       case 'erros':

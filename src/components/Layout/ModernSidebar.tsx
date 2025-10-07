@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
+type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios' | 'bulk-users';
 
 interface ModernSidebarProps {
   activeSection: ActiveSection;
