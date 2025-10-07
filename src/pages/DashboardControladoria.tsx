@@ -559,7 +559,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-lg transition-all shadow-md border-2">
               <CardHeader className="pb-3 pt-4">
                 <div className="flex justify-between items-start gap-3">
-                  <div className="flex-1 space-y-2.5 min-w-0">
+                  <div className="flex-1 space-y-3 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="text-lg font-bold">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
                       <Badge 
@@ -574,14 +574,14 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                         {statusLabels[solicitacao.status]}
                       </Badge>
                     </div>
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-2 text-base">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="min-w-0"><span className="font-bold text-foreground">Processo:</span> <span className="text-muted-foreground">{solicitacao.numero_processo || 'N/A'}</span></div>
-                        <div className="min-w-0"><span className="font-bold text-foreground">Prazo:</span> <span className="text-muted-foreground">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
+                        <div className="min-w-0"><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{solicitacao.numero_processo || 'N/A'}</span></div>
+                        <div className="min-w-0"><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="min-w-0"><span className="font-bold text-foreground">Cliente:</span> <span className="text-muted-foreground">{solicitacao.cliente}</span></div>
-                        <div className="min-w-0"><span className="font-bold text-foreground">Solicitante:</span> <span className="text-muted-foreground">{solicitacao.nome_solicitante}</span></div>
+                        <div className="min-w-0"><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{solicitacao.cliente}</span></div>
+                        <div className="min-w-0"><span className="font-bold text-foreground">Solicitante:</span> <span className="text-foreground">{solicitacao.nome_solicitante}</span></div>
                       </div>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-1 font-medium">{solicitacao.objeto_solicitacao}</p>
@@ -591,35 +591,22 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-blue-600 border-blue-400 px-2 py-1 font-medium">
-                          <Paperclip className="h-3 w-3" />
-                          {solicitacao.anexos.length}
-                        </Badge>
-                      )}
-                      {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-green-600 border-green-400 px-2 py-1 font-medium">
-                          <Upload className="h-3 w-3" />
-                          {(solicitacao as any).anexos_resposta.length}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-9 px-3 text-sm font-medium">
-                            <Eye className="h-4 w-4 mr-1.5" />
-                            Ver
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
-                            <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
+                </div>
+                <div className="space-y-2 mt-3">
+                  <div className="flex gap-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex-1 h-9 px-3 text-sm font-medium">
+                          <Eye className="h-4 w-4 mr-1.5" />
+                          Ver
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
+                          <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
                           <div>
                             <label className="font-semibold">Solicitante:</label>
                             <p>{solicitacao.nome_solicitante}</p>
@@ -790,7 +777,18 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                         </AlertDialogContent>
                       </AlertDialog>
                     )}
-                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-center mt-2">
+                    {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                      <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 text-blue-600 border-blue-400 font-medium">
+                        📎 {solicitacao.anexos.length}
+                      </Badge>
+                    )}
+                    {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
+                      <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 text-green-600 border-green-400 font-medium">
+                        📤 {(solicitacao as any).anexos_resposta.length}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </CardHeader>
