@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Background & Foreground - Base da aplicação */
-    --background: 0 0% 100%;
+    --background: 220 14% 97%;
     --foreground: 215 28% 17%;
 
     /* Card & Popover - Componentes elevados */
