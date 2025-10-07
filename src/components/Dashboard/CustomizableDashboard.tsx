@@ -5,8 +5,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
+import {
   LayoutDashboard, 
   Plus, 
   GripVertical, 
@@ -116,8 +117,11 @@ export const CustomizableDashboard = () => {
   // Filtros
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroNome, setFiltroNome] = useState('todos');
+  const [filtroCliente, setFiltroCliente] = useState('todos');
   const [filtroDataInicio, setFiltroDataInicio] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
+  const [filtroPrazoInicio, setFiltroPrazoInicio] = useState('');
+  const [filtroPrazoFim, setFiltroPrazoFim] = useState('');
   
   // Dialogs de Ver e Editar
   const [solicitacaoVisualizando, setSolicitacaoVisualizando] = useState<any | null>(null);
@@ -180,8 +184,9 @@ export const CustomizableDashboard = () => {
     }
   };
   
-  // Lista de solicitantes únicos
+  // Lista de solicitantes e clientes únicos
   const solicitantesUnicos = Array.from(new Set(recentRequests.map(s => s.nome_solicitante))).sort();
+  const clientesUnicos = Array.from(new Set(recentRequests.map(s => s.cliente))).sort();
   
   // Aplicar filtros
   const requestsFiltradas = recentRequests.filter(req => {
@@ -713,18 +718,107 @@ export const CustomizableDashboard = () => {
 
       {/* Solicitações Recentes - Largura Total */}
       <Card>
-        <CardHeader className="pb-2 pt-3">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Solicitações Recentes
-          </CardTitle>
+        <CardHeader className="pb-2 pt-3 space-y-0">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Solicitações Recentes
+            </CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setFiltroStatus('todos');
+                setFiltroNome('todos');
+                setFiltroCliente('todos');
+                setFiltroDataInicio('');
+                setFiltroDataFim('');
+                setFiltroPrazoInicio('');
+                setFiltroPrazoFim('');
+              }}
+            >
+              Limpar Filtros
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="pb-3">
-          {requestsFiltradas.length === 0 ? (
-            <div className="px-6 py-12 text-center text-muted-foreground">
-              Nenhuma solicitação encontrada
+          <div className="space-y-3">
+            {/* Filtros em Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos Status</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="concluida">Concluída</SelectItem>
+                  <SelectItem value="cancelada">Cancelada</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={filtroNome} onValueChange={setFiltroNome}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos Solicitantes</SelectItem>
+                  {solicitantesUnicos.map(nome => (
+                    <SelectItem key={nome} value={nome}>{nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={filtroCliente} onValueChange={setFiltroCliente}>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos Clientes</SelectItem>
+                  {clientesUnicos.map(cliente => (
+                    <SelectItem key={cliente} value={cliente}>{cliente}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Input
+                type="date"
+                className="h-9 text-xs"
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                placeholder="Data início"
+              />
+              
+              <Input
+                type="date"
+                className="h-9 text-xs"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+                placeholder="Data fim"
+              />
+              
+              <Input
+                type="date"
+                className="h-9 text-xs"
+                value={filtroPrazoInicio}
+                onChange={(e) => setFiltroPrazoInicio(e.target.value)}
+                placeholder="Prazo início"
+              />
+              
+              <Input
+                type="date"
+                className="h-9 text-xs"
+                value={filtroPrazoFim}
+                onChange={(e) => setFiltroPrazoFim(e.target.value)}
+                placeholder="Prazo fim"
+              />
             </div>
-          ) : (
+            
+            {requestsFiltradas.length === 0 ? (
+              <div className="px-6 py-12 text-center text-muted-foreground">
+                Nenhuma solicitação encontrada
+              </div>
+            ) : (
             <div className="border rounded-lg overflow-hidden bg-background">
               {/* Header da Tabela - idêntico ao DashboardControladoria */}
               <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
@@ -835,10 +929,11 @@ export const CustomizableDashboard = () => {
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 

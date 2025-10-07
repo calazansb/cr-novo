@@ -61,13 +61,21 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   
   // Novos estados para filtros avançados
   const [filtroNome, setFiltroNome] = useState('');
+  const [filtroCliente, setFiltroCliente] = useState('');
   const [filtroDataInicio, setFiltroDataInicio] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
+  const [filtroPrazoInicio, setFiltroPrazoInicio] = useState('');
+  const [filtroPrazoFim, setFiltroPrazoFim] = useState('');
 
-  // Lista de solicitantes únicos extraída das solicitações
+  // Lista de solicitantes e clientes únicos extraída das solicitações
   const solicitantesUnicos = useMemo(() => {
     const nomes = new Set(solicitacoes.map(s => s.nome_solicitante));
     return Array.from(nomes).sort();
+  }, [solicitacoes]);
+
+  const clientesUnicos = useMemo(() => {
+    const clientes = new Set(solicitacoes.map(s => s.cliente));
+    return Array.from(clientes).sort();
   }, [solicitacoes]);
 
   // Verificar se tabela existe
@@ -136,19 +144,37 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     // Filtro por nome do solicitante (exato match)
     if (filtroNome && filtroNome !== 'todos' && s.nome_solicitante !== filtroNome) return false;
     
-    // Filtro por data de início
+    // Filtro por cliente (exato match)
+    if (filtroCliente && filtroCliente !== 'todos' && s.cliente !== filtroCliente) return false;
+    
+    // Filtro por data de início (data_criacao)
     if (filtroDataInicio) {
       const dataCriacao = new Date(s.data_criacao);
       const dataInicio = new Date(filtroDataInicio);
       if (dataCriacao < dataInicio) return false;
     }
     
-    // Filtro por data de fim
+    // Filtro por data de fim (data_criacao)
     if (filtroDataFim) {
       const dataCriacao = new Date(s.data_criacao);
       const dataFim = new Date(filtroDataFim);
       dataFim.setHours(23, 59, 59, 999); // Incluir todo o dia
       if (dataCriacao > dataFim) return false;
+    }
+    
+    // Filtro por prazo de início (prazo_retorno)
+    if (filtroPrazoInicio && s.prazo_retorno) {
+      const prazoRetorno = new Date(s.prazo_retorno);
+      const prazoInicio = new Date(filtroPrazoInicio);
+      if (prazoRetorno < prazoInicio) return false;
+    }
+    
+    // Filtro por prazo de fim (prazo_retorno)
+    if (filtroPrazoFim && s.prazo_retorno) {
+      const prazoRetorno = new Date(s.prazo_retorno);
+      const prazoFim = new Date(filtroPrazoFim);
+      prazoFim.setHours(23, 59, 59, 999);
+      if (prazoRetorno > prazoFim) return false;
     }
     
     return true;
@@ -403,19 +429,33 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </Select>
                 </div>
 
-                {/* Filtro por Nome (Dropdown) */}
+                {/* Filtro por Solicitante */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium">Solicitante</label>
-                  <Select value={filtroNome} onValueChange={setFiltroNome}>
+                  <Select value={filtroNome || 'todos'} onValueChange={setFiltroNome}>
                     <SelectTrigger className="h-9">
-                      <SelectValue placeholder="Selecione" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="todos">Todos</SelectItem>
-                      {solicitantesUnicos.map((nome) => (
-                        <SelectItem key={nome} value={nome}>
-                          {nome}
-                        </SelectItem>
+                      <SelectItem value="todos">Todos Solicitantes</SelectItem>
+                      {solicitantesUnicos.map(nome => (
+                        <SelectItem key={nome} value={nome}>{nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Filtro por Cliente */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Cliente</label>
+                  <Select value={filtroCliente || 'todos'} onValueChange={setFiltroCliente}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos Clientes</SelectItem>
+                      {clientesUnicos.map(cliente => (
+                        <SelectItem key={cliente} value={cliente}>{cliente}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -443,6 +483,28 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   />
                 </div>
 
+                {/* Filtro por Prazo Início */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Prazo Início</label>
+                  <Input
+                    type="date"
+                    className="h-9"
+                    value={filtroPrazoInicio}
+                    onChange={(e) => setFiltroPrazoInicio(e.target.value)}
+                  />
+                </div>
+
+                {/* Filtro por Prazo Fim */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Prazo Fim</label>
+                  <Input
+                    type="date"
+                    className="h-9"
+                    value={filtroPrazoFim}
+                    onChange={(e) => setFiltroPrazoFim(e.target.value)}
+                  />
+                </div>
+
                 {/* Botão Limpar Filtros */}
                 <Button
                   variant="outline"
@@ -451,8 +513,11 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   onClick={() => {
                     setFiltroStatus('todos');
                     setFiltroNome('todos');
+                    setFiltroCliente('todos');
                     setFiltroDataInicio('');
                     setFiltroDataFim('');
+                    setFiltroPrazoInicio('');
+                    setFiltroPrazoFim('');
                   }}
                 >
                   Limpar Filtros
