@@ -87,7 +87,7 @@ const ModernHeader = ({
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme} 
-            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+            className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
@@ -96,7 +96,7 @@ const ModernHeader = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+            className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
           >
             <Settings className="w-5 h-5" />
           </Button>
@@ -104,8 +104,8 @@ const ModernHeader = ({
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-3 py-2 h-auto transition-all">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-blue-100 dark:ring-blue-800">
+              <Button variant="ghost" className="flex items-center space-x-3 hover:bg-blue-50 dark:hover:bg-blue-500/10 px-3 py-2 h-auto transition-all">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-blue-100 dark:ring-blue-400/30">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="hidden sm:flex flex-col items-start">
