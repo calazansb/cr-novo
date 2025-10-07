@@ -340,6 +340,18 @@ ${validatedData.resumoDecisao}
             </div>
 
             <FormField
+              type="input"
+              id="adverso"
+              label="Adverso"
+              value={formData.adverso}
+              onChange={(value) => handleInputChange('adverso', value)}
+              placeholder="Nome da parte adversa"
+              required
+              error={errors.adverso}
+              success={validatedFields.has('adverso')}
+            />
+
+            <FormField
               type="select"
               id="tipoDecisao"
               label="Decisão (Sentença / Acórdão)"
@@ -370,18 +382,6 @@ ${validatedData.resumoDecisao}
               required
               error={errors.advogadoInterno}
               success={validatedFields.has('advogadoInterno')}
-            />
-
-            <FormField
-              type="input"
-              id="adverso"
-              label="Adverso"
-              value={formData.adverso}
-              onChange={(value) => handleInputChange('adverso', value)}
-              placeholder="Nome da parte adversa"
-              required
-              error={errors.adverso}
-              success={validatedFields.has('adverso')}
             />
           </div>
 
