@@ -555,54 +555,63 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       </div>
 
       {/* Lista de Solicitações */}
-      {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2 pt-3">
+      {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="space-y-4">
+          {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-lg transition-all shadow-md border-2">
+              <CardHeader className="pb-3 pt-4">
                 <div className="flex justify-between items-start gap-3">
-                  <div className="flex-1 space-y-1.5 min-w-0">
+                  <div className="flex-1 space-y-2.5 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-sm truncate">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
-                      <Badge className={`${statusColors[solicitacao.status]} flex-shrink-0 text-xs`}>
+                      <CardTitle className="text-lg font-bold">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
+                      <Badge 
+                        className={`flex-shrink-0 text-sm px-3 py-1 font-semibold ${
+                          solicitacao.status === 'concluida' 
+                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                            : solicitacao.status === 'pendente' 
+                            ? 'bg-red-600 hover:bg-red-700 text-white' 
+                            : 'bg-gray-600 hover:bg-gray-700 text-white'
+                        }`}
+                      >
                         {statusLabels[solicitacao.status]}
                       </Badge>
                     </div>
-                    <div className="space-y-0.5 text-sm">
-                      <div className="flex gap-4">
-                        <div className="flex-1 min-w-0"><span className="font-semibold">Processo:</span> <span className="truncate">{solicitacao.numero_processo || 'N/A'}</span></div>
-                        <div className="flex-1 min-w-0"><span className="font-semibold">Prazo:</span> <span>{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
+                    <div className="space-y-2 text-sm">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="min-w-0"><span className="font-bold text-foreground">Processo:</span> <span className="text-muted-foreground">{solicitacao.numero_processo || 'N/A'}</span></div>
+                        <div className="min-w-0"><span className="font-bold text-foreground">Prazo:</span> <span className="text-muted-foreground">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
                       </div>
-                      <div className="flex gap-4">
-                        <div className="flex-1 min-w-0"><span className="font-semibold">Cliente:</span> <span className="truncate">{solicitacao.cliente}</span></div>
-                        <div className="flex-1 min-w-0"><span className="font-semibold">Solicitante:</span> <span className="truncate">{solicitacao.nome_solicitante}</span></div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="min-w-0"><span className="font-bold text-foreground">Cliente:</span> <span className="text-muted-foreground">{solicitacao.cliente}</span></div>
+                        <div className="min-w-0"><span className="font-bold text-foreground">Solicitante:</span> <span className="text-muted-foreground">{solicitacao.nome_solicitante}</span></div>
                       </div>
                     </div>
-                    <p className="text-sm text-foreground line-clamp-1">{solicitacao.objeto_solicitacao}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-1 font-medium">{solicitacao.objeto_solicitacao}</p>
                     {(solicitacao as any).ultima_modificacao_em && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground italic">
                         <span className="font-semibold">Modificado:</span> {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-1.5 flex-shrink-0">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2">
                       {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-blue-600 border-blue-300 px-1.5 py-0">
+                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-blue-600 border-blue-400 px-2 py-1 font-medium">
                           <Paperclip className="h-3 w-3" />
                           {solicitacao.anexos.length}
                         </Badge>
                       )}
                       {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-green-600 border-green-300 px-1.5 py-0">
+                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-green-600 border-green-400 px-2 py-1 font-medium">
                           <Upload className="h-3 w-3" />
                           {(solicitacao as any).anexos_resposta.length}
                         </Badge>
                       )}
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                            <Eye className="h-3.5 w-3.5" />
+                          <Button variant="outline" size="sm" className="h-9 px-3 text-sm font-medium">
+                            <Eye className="h-4 w-4 mr-1.5" />
+                            Ver
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
@@ -697,13 +706,14 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     </Dialog>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => {
+                        <Button variant="outline" size="sm" className="h-9 px-3 text-sm font-medium" onClick={() => {
                     setSolicitacaoEditando(solicitacao);
                     setNovoStatus(solicitacao.status);
                     setObservacoes(solicitacao.observacoes || '');
                     setArquivosResposta([]);
                   }}>
-                          <Edit className="h-3.5 w-3.5" />
+                          <Edit className="h-4 w-4 mr-1.5" />
+                          Editar
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -757,8 +767,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     {isAdmin && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
-                            <Trash2 className="h-3.5 w-3.5" />
+                          <Button variant="outline" size="sm" className="h-9 px-3 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 className="h-4 w-4 mr-1.5" />
+                            Excluir
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

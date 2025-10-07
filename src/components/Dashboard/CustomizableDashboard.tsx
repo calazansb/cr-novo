@@ -408,40 +408,49 @@ export const CustomizableDashboard = () => {
             </div>
             
             <ScrollArea className="h-56">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {requestsFiltradas.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     Nenhuma solicitação encontrada
                   </p>
                 ) : (
                   requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-3 border-2 rounded-lg hover:bg-muted/50 transition-colors space-y-2 bg-background shadow-sm">
+                    <div key={req.id} className="p-4 border-2 rounded-lg hover:shadow-md transition-all space-y-2.5 bg-card shadow-md">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-2.5">
                           <div className="flex items-center justify-between">
-                            <p className="font-bold text-base">{req.codigo_unico}</p>
-                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-sm px-2 py-1">
+                            <p className="font-bold text-lg">{req.codigo_unico}</p>
+                            <Badge 
+                              variant={req.status === 'pendente' ? 'destructive' : req.status === 'concluida' ? 'default' : 'secondary'} 
+                              className={`text-sm px-3 py-1 font-semibold ${
+                                req.status === 'concluida' 
+                                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                  : req.status === 'pendente' 
+                                  ? 'bg-red-600 hover:bg-red-700 text-white' 
+                                  : ''
+                              }`}
+                            >
                               {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
-                            <p><span className="font-semibold text-foreground">Processo:</span> <span className="text-muted-foreground">{req.numero_processo || 'N/A'}</span></p>
-                            <p><span className="font-semibold text-foreground">Cliente:</span> <span className="text-muted-foreground">{req.cliente}</span></p>
-                            <p><span className="font-semibold text-foreground">Prazo:</span> <span className="text-muted-foreground">{req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></p>
-                            <div className="flex gap-1.5 items-center">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                            <p><span className="font-bold text-foreground">Processo:</span> <span className="text-muted-foreground">{req.numero_processo || 'N/A'}</span></p>
+                            <p><span className="font-bold text-foreground">Cliente:</span> <span className="text-muted-foreground">{req.cliente}</span></p>
+                            <p><span className="font-bold text-foreground">Prazo:</span> <span className="text-muted-foreground">{req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></p>
+                            <div className="flex gap-2 items-center">
                               {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5 text-blue-600 border-blue-300">
+                                <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 text-blue-600 border-blue-400 font-medium">
                                   📎 {req.anexos.length}
                                 </Badge>
                               )}
                               {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5 text-green-600 border-green-300">
+                                <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 text-green-600 border-green-400 font-medium">
                                   📤 {req.anexos_resposta.length}
                                 </Badge>
                               )}
                             </div>
                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-1 font-medium">{req.objeto_solicitacao}</p>
                           {req.ultima_modificacao_em && (
                             <p className="text-xs text-muted-foreground italic">
                               Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -449,27 +458,27 @@ export const CustomizableDashboard = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-2 pt-1 border-t">
+                      <div className="flex gap-2 pt-2 border-t-2">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="flex-1 h-8 text-sm"
+                          className="flex-1 h-9 text-sm font-medium"
                           onClick={() => setSolicitacaoVisualizando(req)}
                         >
-                          <Eye className="mr-1.5 h-3.5 w-3.5" />
+                          <Eye className="mr-2 h-4 w-4" />
                           Ver
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-8 text-sm"
+                          className="flex-1 h-9 text-sm font-medium"
                           onClick={() => {
                             setSolicitacaoEditando(req);
                             setNovoStatus(req.status);
                             setObservacoes(req.observacoes || '');
                           }}
                         >
-                          <Edit className="mr-1.5 h-3.5 w-3.5" />
+                          <Edit className="mr-2 h-4 w-4" />
                           Editar
                         </Button>
                       </div>
