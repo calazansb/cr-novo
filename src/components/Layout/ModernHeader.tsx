@@ -28,18 +28,25 @@ const ModernHeader = ({
     document.documentElement.classList.toggle('dark');
   };
   return <header className={cn("sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg", className)}>
-      <div className="container flex h-16 items-center justify-between px-6">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <div className="h-10 flex items-center px-[47px] py-[4px] mx-0">
-            <img src="/calazans-rossi-logo.png" alt="Calazans Rossi Advogados" className="h-8 w-auto" onError={e => {
-            console.error('Erro ao carregar logo');
-            e.currentTarget.style.display = 'none';
-          }} />
+      <div className="container flex h-20 items-center justify-between px-6">
+        {/* Logo - Aumentado 300% */}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center">
+            <img 
+              src="/calazans-rossi-logo.png" 
+              alt="Calazans Rossi Advogados" 
+              className="h-16 w-auto"
+              onError={e => {
+                console.error('Erro ao carregar logo');
+                e.currentTarget.style.display = 'none';
+              }} 
+            />
           </div>
-          <div className="hidden md:block">
-            <h1 className="font-display font-bold text-lg bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent px-[44px] py-px mx-[76px]">Sistema CRA</h1>
-            
+          <div className="hidden lg:block border-l border-slate-300 dark:border-slate-600 pl-4 h-12 flex items-center">
+            <h1 className="font-display font-bold text-xl bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
+              Sistema CRA
+            </h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Comunicação Jurídica</p>
           </div>
         </div>
 
@@ -54,9 +61,9 @@ const ModernHeader = ({
         </div>
 
         {/* Right Side Actions */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {/* Current Time */}
-          <div className="hidden sm:flex flex-col items-end">
+          <div className="hidden sm:flex flex-col items-end mr-2">
             <div className="text-sm font-medium text-foreground">
               {currentTime.toLocaleDateString('pt-BR', {
               weekday: 'short',
@@ -76,21 +83,30 @@ const ModernHeader = ({
           {/* <NotificationBell /> */}
 
           {/* Theme Toggle */}
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-primary/10 hover:text-primary transition-colors">
-            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleTheme} 
+            className="hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
 
           {/* Settings */}
-          <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary transition-colors">
-            <Settings className="w-4 h-4" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          >
+            <Settings className="w-5 h-5" />
           </Button>
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2 hover:bg-primary/10 px-3 transition-all">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                  <User className="w-4 h-4 text-white" />
+              <Button variant="ghost" className="flex items-center space-x-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-3 py-2 h-auto transition-all">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg ring-2 ring-blue-200 dark:ring-blue-800">
+                  <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="hidden sm:flex flex-col items-start">
                   <span className="text-sm font-semibold text-foreground">
