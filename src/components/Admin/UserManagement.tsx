@@ -120,14 +120,14 @@ const UserManagement = () => {
         const { error: delError } = await supabase
           .from('user_roles')
           .delete()
-          .eq('user_id', editingUser.user_id);
+          .eq('user_id', editingUser.id);
 
         if (delError) throw delError;
 
         // Inserir nova role
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert({ user_id: editingUser.user_id, role: newRole });
+          .insert({ user_id: editingUser.id, role: newRole });
 
         if (roleError) throw roleError;
       }
