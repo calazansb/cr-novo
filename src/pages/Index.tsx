@@ -122,26 +122,26 @@ const Index = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'home':
-        return <div className="space-y-8">
+        return <div className="space-y-6">
             {/* Welcome Header */}
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-bold text-primary">Sistema CRA</h1>
-              <p className="text-xl text-muted-foreground">
+            <div className="text-center space-y-3">
+              <h1 className="text-3xl font-bold text-primary">Sistema CRA</h1>
+              <p className="text-lg text-muted-foreground">
                 Plataforma Integrada de Comunicação Jurídica
               </p>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
                 Bem-vindo ao sistema profissional da Calazans Rossi Advogados. 
                 Acesse as ferramentas e serviços através do menu lateral ou dos cards abaixo.
               </p>
             </div>
 
-            {/* Navigation Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Navigation Cards Grid - 4 por linha */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {navigationItems.map((item, index) => <ModernNavigationCard key={item.id} title={item.title} description={item.description} icon={item.icon} color={item.color} stats={item.stats} onClick={() => setActiveSection(item.id)} />)}
             </div>
 
             {/* Quick Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
               {[{
               label: "Processos Ativos",
               value: "0",
@@ -164,23 +164,17 @@ const Index = () => {
               loading: false
             }].map((stat, index) => (
               <Card key={index} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200 dark:border-slate-700">
-                <CardContent className="p-4">
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  <div className="text-2xl font-bold mt-1">{stat.value}</div>
+                <CardContent className="p-3">
+                  <div className="text-xs text-muted-foreground">{stat.label}</div>
+                  <div className="text-xl font-bold mt-1">{stat.value}</div>
                   <div className="text-xs text-green-600 dark:text-green-400 mt-1">{stat.trend}</div>
                 </CardContent>
               </Card>
             ))}
             </div>
 
-            {/* System Status */}
-            
-
             {/* Database Setup Notice */}
             <DatabaseSetupNotice />
-
-            {/* Admin Quick Actions */}
-            
           </div>;
       case 'custom-dashboard':
         return <CustomizableDashboard />;

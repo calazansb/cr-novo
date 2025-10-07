@@ -218,35 +218,37 @@ ${new Date().toLocaleString('pt-BR')}`;
       description: "Arquivo TXT foi baixado com sucesso"
     });
   };
-  return <div className="space-y-6">
+  return <div className="space-y-4">
       <Card>
-        <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-          <Calculator className="h-5 w-5 text-primary mr-2" />
-          <div>
-            <CardTitle>Cálculo de Prazos Processuais</CardTitle>
-            <CardDescription>
-              Calcule prazos considerando apenas dias úteis (segunda a sexta-feira)
-            </CardDescription>
+        <CardHeader className="pb-3 pt-4">
+          <div className="flex items-center gap-2">
+            <Calculator className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle className="text-lg">Cálculo de Prazos Processuais</CardTitle>
+              <CardDescription className="text-xs">
+                Calcule prazos considerando apenas dias úteis (segunda a sexta-feira)
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2 mb-4">
-              <Clock className="h-5 w-5 text-muted-foreground" />
-              <h3 className="text-lg font-semibold">Dados para Cálculo</h3>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <h3 className="text-sm font-semibold">Dados para Cálculo</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-xs text-muted-foreground">
               Informe os dados necessários para o cálculo do prazo
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="dataInicial">Data Inicial</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="dataInicial" className="text-sm">Data Inicial</Label>
                 <Input id="dataInicial" type="date" value={dataInicial} onChange={e => setDataInicial(e.target.value)} placeholder="dd/mm/aaaa" />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="numeroDias">Número de Dias</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="numeroDias" className="text-sm">Número de Dias</Label>
                 <Select value={prazoSelecionado} onValueChange={setPrazoSelecionado}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Selecione o prazo" />
@@ -265,44 +267,44 @@ ${new Date().toLocaleString('pt-BR')}`;
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Tipo de Contagem</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoContagem === 'uteis' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoContagem('uteis')}>
-                <div className="flex items-center space-x-2">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Tipo de Contagem</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className={`p-3 border rounded-lg cursor-pointer transition-colors ${tipoContagem === 'uteis' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoContagem('uteis')}>
+                <div className="flex items-center gap-2">
                   <input type="radio" checked={tipoContagem === 'uteis'} onChange={() => setTipoContagem('uteis')} className="text-primary" />
-                  <Label className="cursor-pointer font-medium">Dias Úteis</Label>
+                  <Label className="cursor-pointer font-medium text-sm">Dias Úteis</Label>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Exclui sábados e domingos</p>
+                <p className="text-xs text-muted-foreground mt-1">Exclui sábados e domingos</p>
               </div>
 
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoContagem === 'corridos' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoContagem('corridos')}>
-                <div className="flex items-center space-x-2">
+              <div className={`p-3 border rounded-lg cursor-pointer transition-colors ${tipoContagem === 'corridos' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoContagem('corridos')}>
+                <div className="flex items-center gap-2">
                   <input type="radio" checked={tipoContagem === 'corridos'} onChange={() => setTipoContagem('corridos')} className="text-primary" />
-                  <Label className="cursor-pointer font-medium">Dias Corridos</Label>
+                  <Label className="cursor-pointer font-medium text-sm">Dias Corridos</Label>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Inclui todos os dias</p>
+                <p className="text-xs text-muted-foreground mt-1">Inclui todos os dias</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Tipo de Data Inicial</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoDataInicial === 'publicacao' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoDataInicial('publicacao')}>
-                <div className="flex items-center space-x-2">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">Tipo de Data Inicial</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className={`p-3 border rounded-lg cursor-pointer transition-colors ${tipoDataInicial === 'publicacao' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoDataInicial('publicacao')}>
+                <div className="flex items-center gap-2">
                   <input type="radio" checked={tipoDataInicial === 'publicacao'} onChange={() => setTipoDataInicial('publicacao')} className="text-primary" />
-                  <Label className="cursor-pointer font-medium">Data de Publicação</Label>
+                  <Label className="cursor-pointer font-medium text-sm">Data de Publicação</Label>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Data oficial da publicação</p>
+                <p className="text-xs text-muted-foreground mt-1">Data oficial da publicação</p>
               </div>
 
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoDataInicial === 'disponibilizacao' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoDataInicial('disponibilizacao')}>
-                <div className="flex items-center space-x-2">
+              <div className={`p-3 border rounded-lg cursor-pointer transition-colors ${tipoDataInicial === 'disponibilizacao' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoDataInicial('disponibilizacao')}>
+                <div className="flex items-center gap-2">
                   <input type="radio" checked={tipoDataInicial === 'disponibilizacao'} onChange={() => setTipoDataInicial('disponibilizacao')} className="text-primary" />
-                  <Label className="cursor-pointer font-medium">Data de Disponibilização</Label>
+                  <Label className="cursor-pointer font-medium text-sm">Data de Disponibilização</Label>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Data de disponibilização eletrônica</p>
+                <p className="text-xs text-muted-foreground mt-1">Data de disponibilização eletrônica</p>
               </div>
             </div>
           </div>
@@ -319,13 +321,13 @@ ${new Date().toLocaleString('pt-BR')}`;
         </CardContent>
       </Card>
 
-      <Alert className="border-2 border-red-600 bg-red-50 dark:bg-red-950/30 p-6">
+      <Alert className="border-2 border-red-600 bg-red-50 dark:bg-red-950/30 p-4">
         <AlertDescription className="text-red-900 dark:text-red-100">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="h-8 w-8 text-red-600 flex-shrink-0 mt-1" />
+            <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-xl font-bold mb-2">ATENÇÃO - IMPORTANTE</p>
-              <p className="text-base leading-relaxed">
+              <p className="text-base font-bold mb-1">ATENÇÃO - IMPORTANTE</p>
+              <p className="text-sm leading-relaxed">
                 Este cálculo é apenas uma estimativa automatizada. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual. O escritório não se responsabiliza por eventuais erros de cálculo.
               </p>
             </div>
@@ -334,87 +336,89 @@ ${new Date().toLocaleString('pt-BR')}`;
       </Alert>
 
       {resultado && <Card>
-          <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-            <Clock className="h-5 w-5 text-green-600 mr-2" />
-            <CardTitle>Resultado do Cálculo</CardTitle>
+          <CardHeader className="pb-3 pt-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-green-600" />
+              <CardTitle className="text-lg">Resultado do Cálculo</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <Calendar className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                <div className="text-lg font-bold text-blue-600">{resultado.dataPublicacao}</div>
-                <div className="text-sm text-muted-foreground">Data de Publicação</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <Calendar className="h-6 w-6 mx-auto mb-1 text-blue-600" />
+                <div className="text-base font-bold text-blue-600">{resultado.dataPublicacao}</div>
+                <div className="text-xs text-muted-foreground">Data de Publicação</div>
               </div>
 
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <Calendar className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                <div className="text-lg font-bold text-green-600">{resultado.dataInicio}</div>
-                <div className="text-sm text-muted-foreground">Início da Contagem</div>
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <Calendar className="h-6 w-6 mx-auto mb-1 text-green-600" />
+                <div className="text-base font-bold text-green-600">{resultado.dataInicio}</div>
+                <div className="text-xs text-muted-foreground">Início da Contagem</div>
               </div>
 
-              <div className="text-center p-4 bg-muted rounded-lg">
-                <Calendar className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <div className="text-2xl font-bold text-primary">{resultado.dataFinal}</div>
-                <div className="text-sm text-muted-foreground">Data de Vencimento</div>
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <Calendar className="h-6 w-6 mx-auto mb-1 text-primary" />
+                <div className="text-lg font-bold text-primary">{resultado.dataFinal}</div>
+                <div className="text-xs text-muted-foreground">Data de Vencimento</div>
               </div>
               
-              {tipoContagem === 'uteis' && resultado.diasUteis > 0 && <div className="text-center p-4 bg-muted rounded-lg">
-                  <FileText className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                  <div className="text-2xl font-bold text-orange-600">{resultado.diasUteis}</div>
-                  <div className="text-sm text-muted-foreground">Dias Úteis</div>
+              {tipoContagem === 'uteis' && resultado.diasUteis > 0 && <div className="text-center p-3 bg-muted rounded-lg">
+                  <FileText className="h-6 w-6 mx-auto mb-1 text-orange-600" />
+                  <div className="text-lg font-bold text-orange-600">{resultado.diasUteis}</div>
+                  <div className="text-xs text-muted-foreground">Dias Úteis</div>
                 </div>}
               
-              {tipoContagem === 'corridos' && <div className="text-center p-4 bg-muted rounded-lg">
-                  <Clock className="h-8 w-8 mx-auto mb-2 text-orange-600" />
-                  <div className="text-2xl font-bold text-orange-600">{resultado.diasCorridos}</div>
-                  <div className="text-sm text-muted-foreground">Dias Corridos</div>
+              {tipoContagem === 'corridos' && <div className="text-center p-3 bg-muted rounded-lg">
+                  <Clock className="h-6 w-6 mx-auto mb-1 text-orange-600" />
+                  <div className="text-lg font-bold text-orange-600">{resultado.diasCorridos}</div>
+                  <div className="text-xs text-muted-foreground">Dias Corridos</div>
                 </div>}
             </div>
 
             {/* Detalhamento da Contagem */}
-            <Card className="mb-4">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
+            <Card className="mb-3">
+              <CardHeader className="pb-2 pt-3">
+                <CardTitle className="text-sm flex items-center">
+                  <FileText className="h-4 w-4 mr-2" />
                   Detalhes do Cálculo:
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-sm p-4 bg-muted/50 rounded mb-4">
+                <div className="text-xs p-3 bg-muted/50 rounded mb-3">
                   {prazoSelecionado === 'outro' ? numeroDias : prazoSelecionado} dias {tipoContagem === 'uteis' ? 'úteis' : 'corridos'} a partir de {dataInicial} 
                   {tipoDataInicial === 'disponibilizacao' ? ' (data de disponibilização)' : ' (data de publicação)'}. 
                   Publicação considerada em {resultado.dataPublicacao}. 
                   Prazo iniciado em {resultado.dataInicio}.
                 </div>
 
-                <div className="flex gap-2 mb-4">
-                  <Button variant="outline" size="sm" onClick={copiarDetalhamento}>
-                    <FileText className="h-4 w-4 mr-2" />
+                <div className="flex gap-2 mb-3">
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={copiarDetalhamento}>
+                    <FileText className="h-3 w-3 mr-1" />
                     Copiar Detalhamento
                   </Button>
-                  <Button variant="outline" size="sm" onClick={baixarTXT}>
-                    <FileText className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="sm" className="h-8 text-xs" onClick={baixarTXT}>
+                    <FileText className="h-3 w-3 mr-1" />
                     Baixar TXT
                   </Button>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold mb-3">Detalhamento Dia a Dia:</h4>
+                  <h4 className="text-sm font-semibold mb-2">Detalhamento Dia a Dia:</h4>
                   
                   <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-muted px-4 py-2 font-semibold border-b grid grid-cols-4 gap-4 text-sm">
+                    <div className="bg-muted px-3 py-1.5 font-semibold border-b grid grid-cols-4 gap-3 text-xs">
                       <div>Data</div>
                       <div>Dia da Semana</div>
                       <div>Contou?</div>
                       <div>Dia nº</div>
                     </div>
                     
-                    <div className="max-h-64 overflow-y-auto">
-                      {resultado.detalhamento.map((item, index) => <div key={index} className="px-4 py-2 border-b grid grid-cols-4 gap-4 text-sm hover:bg-muted/50">
+                    <div className="max-h-52 overflow-y-auto">
+                      {resultado.detalhamento.map((item, index) => <div key={index} className="px-3 py-1.5 border-b grid grid-cols-4 gap-3 text-xs hover:bg-muted/50">
                           <div>{item.data}</div>
                           <div>{item.diaSemana}</div>
                           <div>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${item.contou ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs ${item.contou ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                               {item.contou ? '✓ Sim' : '✗ Não'}
                             </span>
                           </div>
@@ -422,7 +426,7 @@ ${new Date().toLocaleString('pt-BR')}`;
                         </div>)}
                     </div>
                     
-                    {resultado.detalhamento.some(item => !item.contou) && <div className="px-4 py-2 bg-muted/30 text-xs text-muted-foreground italic">
+                    {resultado.detalhamento.some(item => !item.contou) && <div className="px-3 py-1.5 bg-muted/30 text-xs text-muted-foreground italic">
                         Fim de semana - não conta
                       </div>}
                   </div>
@@ -430,22 +434,22 @@ ${new Date().toLocaleString('pt-BR')}`;
               </CardContent>
             </Card>
             
-            <Alert className="border-red-200 bg-red-50 dark:bg-red-950/30 p-4">
+            <Alert className="border-red-200 bg-red-50 dark:bg-red-950/30 p-3">
               <AlertDescription className="text-red-800 dark:text-red-100">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block mb-1">Atenção:</strong>
-                    <span className="text-sm">Este resultado é apenas uma estimativa automatizada. Sempre verifique o prazo manualmente considerando feriados locais e particularidades do processo.</span>
+                    <strong className="block mb-1 text-sm">Atenção:</strong>
+                    <span className="text-xs">Este resultado é apenas uma estimativa automatizada. Sempre verifique o prazo manualmente considerando feriados locais e particularidades do processo.</span>
                   </div>
                 </div>
               </AlertDescription>
             </Alert>
 
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-3 p-2.5 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-blue-100">Importante</Badge>
-                <span className="text-sm text-blue-800">
+                <Badge variant="outline" className="bg-blue-100 text-xs py-0">Importante</Badge>
+                <span className="text-xs text-blue-800">
                   Este cálculo {tipoContagem === 'uteis' ? 'considera apenas dias úteis (segunda a sexta-feira)' : 'considera todos os dias (corridos)'} e não inclui feriados nacionais.
                 </span>
               </div>
