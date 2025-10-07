@@ -408,40 +408,40 @@ export const CustomizableDashboard = () => {
             </div>
             
             <ScrollArea className="h-56">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {requestsFiltradas.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     Nenhuma solicitação encontrada
                   </p>
                 ) : (
                   requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
+                    <div key={req.id} className="p-3 border-2 rounded-lg hover:bg-muted/50 transition-colors space-y-2 bg-background shadow-sm">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 space-y-1">
+                        <div className="flex-1 space-y-2">
                           <div className="flex items-center justify-between">
-                            <p className="font-semibold text-sm">{req.codigo_unico}</p>
-                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
+                            <p className="font-bold text-base">{req.codigo_unico}</p>
+                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-sm px-2 py-1">
                               {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                            <p><span className="font-medium">Processo:</span> {req.numero_processo || 'N/A'}</p>
-                            <p><span className="font-medium">Cliente:</span> {req.cliente}</p>
-                            <p><span className="font-medium">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
-                            <div className="flex gap-1">
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm">
+                            <p><span className="font-semibold text-foreground">Processo:</span> <span className="text-muted-foreground">{req.numero_processo || 'N/A'}</span></p>
+                            <p><span className="font-semibold text-foreground">Cliente:</span> <span className="text-muted-foreground">{req.cliente}</span></p>
+                            <p><span className="font-semibold text-foreground">Prazo:</span> <span className="text-muted-foreground">{req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></p>
+                            <div className="flex gap-1.5 items-center">
                               {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
+                                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5 text-blue-600 border-blue-300">
                                   📎 {req.anexos.length}
                                 </Badge>
                               )}
                               {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
+                                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5 text-green-600 border-green-300">
                                   📤 {req.anexos_resposta.length}
                                 </Badge>
                               )}
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
                           {req.ultima_modificacao_em && (
                             <p className="text-xs text-muted-foreground italic">
                               Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
@@ -449,27 +449,27 @@ export const CustomizableDashboard = () => {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 pt-1 border-t">
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="flex-1 h-7 text-xs"
+                          className="flex-1 h-8 text-sm"
                           onClick={() => setSolicitacaoVisualizando(req)}
                         >
-                          <Eye className="mr-1 h-3 w-3" />
+                          <Eye className="mr-1.5 h-3.5 w-3.5" />
                           Ver
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="flex-1 h-7 text-xs"
+                          className="flex-1 h-8 text-sm"
                           onClick={() => {
                             setSolicitacaoEditando(req);
                             setNovoStatus(req.status);
                             setObservacoes(req.observacoes || '');
                           }}
                         >
-                          <Edit className="mr-1 h-3 w-3" />
+                          <Edit className="mr-1.5 h-3.5 w-3.5" />
                           Editar
                         </Button>
                       </div>
