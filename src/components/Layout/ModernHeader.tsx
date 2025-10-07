@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { ChangePasswordForm } from "@/components/Auth/ChangePasswordForm";
 import NotificationBell from "@/components/Notifications/NotificationBell";
+import { HeaderQuote } from "@/components/Motivational/HeaderQuote";
 import { cn } from "@/lib/utils";
 interface ModernHeaderProps {
   className?: string;
@@ -42,14 +43,9 @@ const ModernHeader = ({
           </div>
         </div>
 
-        {/* Search & Navigation Info */}
-        <div className="flex items-center space-x-6 flex-1 justify-center">
-          <div className="hidden md:flex items-center space-x-4">
-            <div className="relative group">
-              
-              
-            </div>
-          </div>
+        {/* Frase Motivacional no Centro */}
+        <div className="flex items-center space-x-6 flex-1 justify-center px-4">
+          <HeaderQuote />
         </div>
 
         {/* Right Side Actions */}

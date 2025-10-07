@@ -2,6 +2,7 @@ import { useState } from "react";
 import React from "react";
 import ModernSidebar from "@/components/Layout/ModernSidebar";
 import ModernHeader from "@/components/Layout/ModernHeader";
+import { WelcomeQuote } from "@/components/Motivational/WelcomeQuote";
 import DecisaoJudicialForm from "../components/Forms/DecisaoJudicialForm";
 import PendenciasForm from "../components/Forms/PendenciasForm";
 import SugestoesErrosForm from "../components/Forms/SugestoesErrosForm";
@@ -67,6 +68,9 @@ const Index = () => {
     }
   };
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Animação de Boas-Vindas */}
+      <WelcomeQuote />
+      
       <ModernSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
       <div className="lg:ml-72">
