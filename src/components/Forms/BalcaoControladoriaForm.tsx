@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 import { LoadingButton } from "@/components/ui/loading-button";
+import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
@@ -45,21 +46,23 @@ const BalcaoControladoriaForm = () => {
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [usuarios, setUsuarios] = useState<{ id: string; nome: string }[]>([]);
   const [clientes] = useState<string[]>([
-    "Unimed Curvelo",
-    "Casu - UFMG",
-    "Unimed Divinópolis",
-    "Unimed São José do Rio Preto",
-    "Unimed Vertente do Caparaó",
-    "Hapvida Assistência Médica LTDA",
-    "Unimed Vitória",
     "Affiance Life",
     "Bioimagem NDI",
+    "Casu - UFMG",
     "Cemig Saúde",
-    "Unimed Norte Fluminense",
     "Confiança LTDA",
+    "Hapvida Assistência Médica LTDA",
+    "Samp ES Assistência Médica",
+    "Unimed Curvelo",
+    "Unimed Divinópolis",
     "Unimed Itaúna",
-    "Samp ES Assistência Médica"
+    "Unimed Norte Fluminense",
+    "Unimed São José do Rio Preto",
+    "Unimed Vertente do Caparaó",
+    "Unimed Vitória"
   ]);
+  const [clienteOutro, setClienteOutro] = useState("");
+  const [showClienteOutro, setShowClienteOutro] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -78,7 +81,12 @@ const BalcaoControladoriaForm = () => {
         .order('nome');
       
       if (data && !error) {
-        setUsuarios(data);
+        // Remover asteriscos dos nomes
+        const usuariosLimpos = data.map(u => ({
+          ...u,
+          nome: u.nome?.replace(/\*+$/, '').trim() || ''
+        }));
+        setUsuarios(usuariosLimpos);
       }
     };
     
@@ -147,6 +155,16 @@ const BalcaoControladoriaForm = () => {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se o cliente for "Outros", mostrar campo de texto
+    if (field === 'cliente') {
+      if (value === 'Outros') {
+        setShowClienteOutro(true);
+      } else {
+        setShowClienteOutro(false);
+        setClienteOutro('');
+      }
+    }
     
     // Validate after a short delay
     setTimeout(() => validateField(field, value), 300);
@@ -259,7 +277,20 @@ ${formData.solicitacao}
     try {
       const validatedData = balcaoSchema.parse(formData);
 
-      // Tenta salvar no Supabase; se não houver, gera código local e prossegue  
+      // Usar o cliente digitado se for "Outros"
+      const clienteFinal = formData.cliente === 'Outros' ? clienteOutro : validatedData.cliente;
+
+      // Validar cliente personalizado
+      if (formData.cliente === 'Outros' && !clienteOutro.trim()) {
+        toast({
+          title: "Erro de validação",
+          description: "Por favor, digite o nome do cliente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Tenta salvar no Supabase; se não houver, gera código local e prossegue
       let codigoUnico = gerarCodigoLocal();
 
       // Upload dos arquivos primeiro
@@ -274,7 +305,7 @@ ${formData.solicitacao}
       const solicitacaoData: NovasolicitacaoControladoria = {
         nome_solicitante: validatedData.nomeSolicitante,
         numero_processo: validatedData.numeroProcesso || '',
-        cliente: validatedData.cliente,
+        cliente: clienteFinal,
         objeto_solicitacao: validatedData.tribunalOrgao,
         descricao_detalhada: validatedData.solicitacao,
         user_id: user?.id || '',
@@ -300,7 +331,7 @@ ${formData.solicitacao}
     
 *Solicitante:* ${validatedData.nomeSolicitante}
 *Número do Processo:* ${validatedData.numeroProcesso}
-*Cliente:* ${validatedData.cliente}
+*Cliente:* ${clienteFinal}
 *Tribunal/Órgão:* ${validatedData.tribunalOrgao}
 *Prazo para Retorno:* ${validatedData.prazoRetorno}
 
@@ -335,6 +366,8 @@ ${validatedData.solicitacao}`;
         solicitacao: ""
       });
       setSelectedFiles([]);
+      setClienteOutro('');
+      setShowClienteOutro(false);
       setErrors({});
       setValidatedFields(new Set());
       localStorage.removeItem('balcao-controladoria-draft');
@@ -438,7 +471,7 @@ ${validatedData.solicitacao}`;
               success={validatedFields.has('numeroProcesso')}
             />
 
-            {/* Cliente - Select */}
+            {/* Cliente - Select com opção Outros */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Cliente <span className="text-destructive">*</span>
@@ -456,8 +489,17 @@ ${validatedData.solicitacao}`;
                       {cliente}
                     </SelectItem>
                   ))}
+                  <SelectItem value="Outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
+              {showClienteOutro && (
+                <Input
+                  placeholder="Digite o nome do cliente"
+                  value={clienteOutro}
+                  onChange={(e) => setClienteOutro(e.target.value)}
+                  className="mt-2"
+                />
+              )}
               {errors.cliente && (
                 <p className="text-xs text-destructive">{errors.cliente}</p>
               )}

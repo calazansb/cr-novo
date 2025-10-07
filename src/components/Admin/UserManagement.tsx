@@ -318,7 +318,7 @@ const UserManagement = () => {
       for (const line of lines) {
         const parts = line.split('\t').map(p => p.trim());
         if (parts.length >= 2) {
-          const nome = parts[0].replace(/\*$/, '').trim(); // Remove asterisco se houver
+          const nome = parts[0].replace(/\*+$/g, '').trim(); // Remove todos os asteriscos do final
           const email = parts[1].trim();
           
           if (nome && email && email.includes('@')) {
