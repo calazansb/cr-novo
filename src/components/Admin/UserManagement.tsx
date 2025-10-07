@@ -74,7 +74,7 @@ const UserManagement = () => {
       // Combinar dados
       const usersWithRoles = (profilesData || []).map(profile => ({
         ...profile,
-        roles: (rolesData || []).filter(role => role.user_id === profile.user_id)
+        roles: (rolesData || []).filter(role => role.user_id === profile.id)
       }));
 
       setUsers(usersWithRoles as Profile[]);
@@ -117,10 +117,12 @@ const UserManagement = () => {
 
       if (newRole !== currentRole) {
         // Deletar role antiga
-        await supabase
+        const { error: delError } = await supabase
           .from('user_roles')
           .delete()
           .eq('user_id', editingUser.user_id);
+
+        if (delError) throw delError;
 
         // Inserir nova role
         const { error: roleError } = await supabase
