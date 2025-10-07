@@ -85,26 +85,32 @@ const ModernSidebar = ({
       {/* Sidebar */}
       <aside className={cn("fixed top-0 left-0 h-screen bg-gradient-to-br from-slate-900 via-[#1e3a5f] to-slate-950 border-r border-slate-700/30 shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl flex flex-col", isCollapsed ? "w-16" : "w-72", "lg:translate-x-0", !isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
         {/* Header da Sidebar */}
-        <div className={cn("flex items-center justify-center p-6 border-b border-slate-700/30 bg-slate-900/40 backdrop-blur-sm", isCollapsed && "p-4")}> 
-          {!isCollapsed && <div className="flex flex-col items-center justify-center w-full space-y-1">
-              <h1 className="font-display font-extrabold text-2xl text-blue-500 tracking-tight">
-                Sistema CRA
-              </h1>
-              <p className="text-sm font-semibold text-slate-300 tracking-wide">
-                Comunicação Jurídica
-              </p>
+        <div className={cn("flex items-center justify-between p-6 border-b border-slate-700/30 bg-slate-900/40 backdrop-blur-sm", isCollapsed && "justify-center p-4")}> 
+          {!isCollapsed && <div className="flex items-center justify-center w-full px-2">
+              <img 
+                src="/marca-principal-branca.png" 
+                alt="Calazans Rossi Advogados" 
+                className="h-20 w-auto object-contain"
+                onError={(e) => {
+                  console.error('Erro ao carregar logo');
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>}
           
           {isCollapsed && <div className="flex items-center justify-center">
-              <span className="text-xl font-extrabold text-blue-500">CRA</span>
+              <img 
+                src="/marca-principal-branca.png" 
+                alt="CR" 
+                className="h-8 w-auto object-contain"
+                onError={(e) => {
+                  console.error('Erro ao carregar logo');
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>}
           
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setIsCollapsed(!isCollapsed)} 
-            className="h-8 w-8 hover:bg-blue-500/20 text-slate-300 hover:text-white transition-colors absolute top-4 right-4"
-          >
+          <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className={cn("h-8 w-8 hover:bg-blue-500/20 text-slate-300 hover:text-white transition-colors absolute top-4 right-4")}>
             {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </Button>
         </div>
