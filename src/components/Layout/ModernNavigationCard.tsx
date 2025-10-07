@@ -76,19 +76,20 @@ const ModernNavigationCard = ({
   return (
     <Card 
       className={cn(
-        "group cursor-pointer transition-all duration-300 hover-lift relative overflow-hidden",
+        "group cursor-pointer transition-all duration-300 hover-lift relative overflow-hidden backdrop-blur-sm",
         "bg-gradient-to-br", variant.gradient,
         variant.border,
         variant.glow,
+        "hover:scale-[1.02] hover:shadow-2xl",
         isActive && "ring-2 ring-primary/50 shadow-glow scale-[1.02]"
       )}
       onClick={onClick}
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 dark:from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       {/* Floating Orb Effect */}
-      <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-white/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute -top-4 -right-4 w-32 h-32 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
       <CardHeader className="relative pb-4">
         <div className="flex items-start justify-between">
@@ -107,7 +108,7 @@ const ModernNavigationCard = ({
           )}
         </div>
         
-        <CardTitle className="text-lg font-display font-semibold text-foreground group-hover:text-primary transition-colors">
+        <CardTitle className="text-lg font-display font-bold text-foreground group-hover:text-primary transition-colors mt-3">
           {title}
         </CardTitle>
       </CardHeader>
@@ -120,9 +121,9 @@ const ModernNavigationCard = ({
         <Button 
           variant="outline" 
           size="sm" 
-          className="w-full group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300"
+          className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300 font-semibold"
         >
-          Acessar
+          Acessar →
         </Button>
       </CardContent>
       

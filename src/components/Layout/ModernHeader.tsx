@@ -29,7 +29,7 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
 
   return (
     <header className={cn(
-      "sticky top-0 z-40 w-full border-b border-border/40 glass-effect backdrop-blur-xl",
+      "sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg",
       className
     )}>
       <div className="container flex h-16 items-center justify-between px-6">
@@ -47,19 +47,19 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
             />
           </div>
           <div className="hidden md:block">
-            <h1 className="font-display font-semibold text-lg text-foreground">Sistema CRA</h1>
-            <p className="text-xs text-muted-foreground">Comunicação Jurídica</p>
+            <h1 className="font-display font-bold text-lg bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Sistema CRA</h1>
+            <p className="text-xs text-muted-foreground font-medium">Comunicação Jurídica</p>
           </div>
         </div>
 
         {/* Search & Navigation Info */}
         <div className="flex items-center space-x-6 flex-1 justify-center">
           <div className="hidden md:flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input
                 placeholder="Buscar documentos, formulários..."
-                className="w-64 pl-10 bg-background/50 border-border/50 focus:bg-background transition-all"
+                className="w-64 pl-10 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
           </div>
@@ -92,25 +92,25 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme}
-            className="hover:bg-accent/50"
+            className="hover:bg-primary/10 hover:text-primary transition-colors"
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
 
           {/* Settings */}
-          <Button variant="ghost" size="icon" className="hover:bg-accent/50">
+          <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary transition-colors">
             <Settings className="w-4 h-4" />
           </Button>
 
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2 hover:bg-accent/50 px-3">
-                <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary-foreground" />
+              <Button variant="ghost" className="flex items-center space-x-2 hover:bg-primary/10 px-3 transition-all">
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                  <User className="w-4 h-4 text-white" />
                 </div>
                 <div className="hidden sm:flex flex-col items-start">
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-semibold text-foreground">
                     {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
                   </span>
                   <span className="text-xs text-muted-foreground">

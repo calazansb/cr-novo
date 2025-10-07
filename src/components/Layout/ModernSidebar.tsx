@@ -39,61 +39,71 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       id: 'home' as ActiveSection,
       title: "Início",
       icon: Home,
-      color: "text-primary"
+      color: "text-blue-500",
+      bgHover: "hover:bg-blue-500/10"
     },
     {
       id: 'custom-dashboard' as ActiveSection,
       title: "Meu Dashboard",
       icon: LayoutDashboard,
-      color: "text-accent"
+      color: "text-purple-500",
+      bgHover: "hover:bg-purple-500/10"
     },
     {
       id: 'balcao' as ActiveSection,
       title: "Balcão da Controladoria",
       icon: Building,
-      color: "text-primary"
+      color: "text-emerald-500",
+      bgHover: "hover:bg-emerald-500/10"
     },
     {
       id: 'dashboard-controladoria' as ActiveSection,
       title: "Dashboard Controladoria",
       icon: BarChart3,
-      color: "text-accent-foreground"
+      color: "text-orange-500",
+      bgHover: "hover:bg-orange-500/10"
     },
     {
       id: 'decisoes' as ActiveSection,
       title: "Decisão Judicial",
       icon: Scale,
-      color: "text-purple"
+      color: "text-indigo-500",
+      bgHover: "hover:bg-indigo-500/10"
     },
     {
       id: 'pendencias' as ActiveSection,
       title: "Pendências / Urgências",
       icon: ClipboardList,
-      color: "text-warning"
+      color: "text-rose-500",
+      bgHover: "hover:bg-rose-500/10"
     },
     {
       id: 'calculo-prazos' as ActiveSection,
       title: "Cálculo de Prazos",
       icon: Calculator,
-      color: "text-info"
+      color: "text-cyan-500",
+      bgHover: "hover:bg-cyan-500/10"
     },
     {
       id: 'sugestoes-erros' as ActiveSection,
       title: "Sugestões e Erros",
       icon: Lightbulb,
-      color: "text-success"
+      color: "text-amber-500",
+      bgHover: "hover:bg-amber-500/10"
     },
     {
       id: 'assistencia' as ActiveSection,
       title: "Assistência Técnica",
       icon: Settings,
-      color: "text-accent-foreground"
+      color: "text-teal-500",
+      bgHover: "hover:bg-teal-500/10"
     },
     {
       id: 'admin-usuarios' as ActiveSection,
       title: "Gerenciar Usuários e Clientes",
       icon: Users,
-      color: "text-violet-500"
+      color: "text-violet-500",
+      bgHover: "hover:bg-violet-500/10"
     }
   ];
 
@@ -110,7 +120,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       {/* Sidebar */}
       <aside 
         className={cn(
-          "fixed top-0 left-0 h-full bg-gradient-to-b from-card via-card/95 to-card/90 border-r border-border/50 shadow-elevated z-50 transition-all duration-300 ease-in-out",
+          "fixed top-0 left-0 h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-r border-slate-700/50 shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl",
           isCollapsed ? "w-16" : "w-72",
           "lg:relative lg:translate-x-0",
           !isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -118,7 +128,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       >
         {/* Header da Sidebar */}
         <div className={cn(
-          "flex items-center justify-between p-4 border-b border-border/50",
+          "flex items-center justify-between p-4 border-b border-slate-700/50 bg-slate-800/30",
           isCollapsed && "justify-center"
         )}>
           {!isCollapsed && (
@@ -127,7 +137,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
                 <img 
                   src="/calazans-rossi-logo.png" 
                   alt="Calazans Rossi Advogados" 
-                  className="h-6 w-auto"
+                  className="h-6 w-auto brightness-110"
                   onError={(e) => {
                     console.error('Erro ao carregar logo no sidebar');
                     e.currentTarget.style.display = 'none';
@@ -135,8 +145,8 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
                 />
               </div>
               <div>
-                <h1 className="font-display font-semibold text-sm text-foreground">Sistema CRA</h1>
-                <p className="text-xs text-muted-foreground">Comunicação Jurídica</p>
+                <h1 className="font-display font-semibold text-sm text-white">Sistema CRA</h1>
+                <p className="text-xs text-slate-400">Comunicação Jurídica</p>
               </div>
             </div>
           )}
@@ -145,7 +155,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
             variant="ghost"
             size="icon"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="h-8 w-8 hover:bg-accent/50"
+            className="h-8 w-8 hover:bg-slate-700/50 text-slate-300 hover:text-white"
           >
             {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </Button>
@@ -164,19 +174,23 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
             .map((item, index) => (
             <Button
               key={item.id}
-              variant={activeSection === item.id ? "secondary" : "ghost"}
+              variant="ghost"
               className={cn(
-                "w-full justify-start h-12 transition-all duration-200 group hover-lift",
+                "w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden",
                 isCollapsed ? "px-3" : "px-4",
-                activeSection === item.id && "bg-accent/20 shadow-glow border-l-4 border-primary"
+                activeSection === item.id 
+                  ? "bg-slate-700/50 text-white border-l-4 border-primary shadow-lg" 
+                  : "text-slate-300 hover:bg-slate-700/30 hover:text-white",
+                item.bgHover
               )}
               style={{ animationDelay: `${index * 50}ms` }}
               onClick={() => onSectionChange(item.id)}
             >
               <item.icon className={cn(
-                "w-5 h-5 flex-shrink-0 transition-colors",
-                activeSection === item.id ? "text-primary" : item.color,
-                !isCollapsed && "mr-3"
+                "w-5 h-5 flex-shrink-0 transition-all duration-200",
+                activeSection === item.id ? item.color : item.color,
+                !isCollapsed && "mr-3",
+                "drop-shadow-[0_0_8px_currentColor]"
               )} />
               
               {!isCollapsed && (
@@ -185,7 +199,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
                     {item.title}
                   </span>
                   {activeSection === item.id && (
-                    <ChevronRight className="w-4 h-4 text-primary opacity-60" />
+                    <ChevronRight className="w-4 h-4 opacity-60 animate-pulse" />
                   )}
                 </>
               )}
@@ -195,14 +209,14 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
 
         {/* Footer da Sidebar */}
         {!isCollapsed && (
-          <div className="p-4 border-t border-border/50 bg-gradient-to-r from-accent/10 to-transparent">
+          <div className="p-4 border-t border-slate-700/50 bg-slate-800/30">
             <div className="text-center">
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-slate-400 leading-relaxed">
                 Sistema Profissional de<br />
                 Comunicação Jurídica
               </p>
-              <div className="mt-2 text-xs font-medium text-primary">
-                v2.0 Premium
+              <div className="mt-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-full inline-block">
+                <span className="text-xs font-medium text-primary">v2.0 Premium</span>
               </div>
             </div>
           </div>
