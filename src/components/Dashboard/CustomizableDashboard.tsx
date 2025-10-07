@@ -438,7 +438,7 @@ export const CustomizableDashboard = () => {
                     >
                       {/* Coluna 1: Código + Objeto */}
                       <div>
-                        <div className="font-semibold text-sm">{req.codigo_unico}</div>
+                        <div className="font-semibold text-sm">{formatCodigo(req.codigo_unico)}</div>
                         <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.objeto_solicitacao || 'Sem descrição'}</div>
                       </div>
                       
