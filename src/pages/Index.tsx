@@ -17,6 +17,7 @@ import UserManagement from "@/components/Admin/UserManagement";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Building, BarChart3, Scale, ClipboardList, Lightbulb, Settings, Calculator, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import DatabaseSetupNotice from "@/components/DatabaseSetupNotice";
 type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
@@ -161,7 +162,15 @@ const Index = () => {
               value: "0",
               trend: "+3%",
               loading: false
-            }].map((stat, index) => {})}
+            }].map((stat, index) => (
+              <Card key={index} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200 dark:border-slate-700">
+                <CardContent className="p-4">
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <div className="text-2xl font-bold mt-1">{stat.value}</div>
+                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">{stat.trend}</div>
+                </CardContent>
+              </Card>
+            ))}
             </div>
 
             {/* System Status */}

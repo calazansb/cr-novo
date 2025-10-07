@@ -185,6 +185,46 @@ export const useSolicitacoes = () => {
     link.click();
   };
 
+  const exportarParaExcel = async () => {
+    const XLSX = await import('xlsx');
+    
+    const dados = solicitacoes.map(s => ({
+      'Código': s.codigo_unico,
+      'Solicitante': s.nome_solicitante,
+      'Cliente': s.cliente,
+      'Número do Processo': s.numero_processo || '',
+      'Objeto da Solicitação': s.objeto_solicitacao,
+      'Descrição Detalhada': s.descricao_detalhada,
+      'Status': s.status,
+      'Data de Criação': new Date(s.data_criacao).toLocaleDateString('pt-BR'),
+      'Data de Atualização': new Date(s.data_atualizacao).toLocaleDateString('pt-BR'),
+      'Prazo de Retorno': s.prazo_retorno ? new Date(s.prazo_retorno).toLocaleDateString('pt-BR') : '',
+      'Observações': s.observacoes || ''
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dados);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Solicitações');
+
+    // Ajustar largura das colunas
+    const columnWidths = [
+      { wch: 20 }, // Código
+      { wch: 25 }, // Solicitante
+      { wch: 30 }, // Cliente
+      { wch: 20 }, // Número do Processo
+      { wch: 35 }, // Objeto
+      { wch: 50 }, // Descrição
+      { wch: 12 }, // Status
+      { wch: 15 }, // Data Criação
+      { wch: 15 }, // Data Atualização
+      { wch: 15 }, // Prazo Retorno
+      { wch: 40 }  // Observações
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    XLSX.writeFile(workbook, `solicitacoes_controladoria_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   useEffect(() => {
     // Só tentar carregar se o Supabase estiver configurado
     if (supabase) {
@@ -198,6 +238,7 @@ export const useSolicitacoes = () => {
     solicitacoes,
     loading,
     carregarSolicitacoes,
+    exportarParaExcel,
     criarSolicitacao,
     atualizarStatus,
     deletarSolicitacao,

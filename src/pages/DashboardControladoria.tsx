@@ -42,6 +42,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     loading,
     atualizarStatus,
     exportarParaCSV,
+    exportarParaExcel,
     carregarSolicitacoes,
     deletarSolicitacao
   } = useSolicitacoes();
@@ -443,9 +444,13 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   🔄 Recarregar
                 </Button>
               )}
-              <Button onClick={exportarParaCSV} className="flex items-center gap-2">
+              <Button onClick={exportarParaCSV} variant="outline" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
                 Exportar CSV
+              </Button>
+              <Button onClick={exportarParaExcel} className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Exportar Excel
               </Button>
             </div>
           </div>
