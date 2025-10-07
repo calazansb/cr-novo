@@ -44,10 +44,21 @@ const BalcaoControladoriaForm = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [usuarios, setUsuarios] = useState<{ id: string; nome: string }[]>([]);
-  const [clientes, setClientes] = useState<string[]>([
-    "Cliente A",
-    "Cliente B", 
-    "Cliente C"
+  const [clientes] = useState<string[]>([
+    "Unimed Curvelo",
+    "Casu - UFMG",
+    "Unimed Divinópolis",
+    "Unimed São José do Rio Preto",
+    "Unimed Vertente do Caparaó",
+    "Hapvida Assistência Médica LTDA",
+    "Unimed Vitória",
+    "Affiance Life",
+    "Bioimagem NDI",
+    "Cemig Saúde",
+    "Unimed Norte Fluminense",
+    "Confiança LTDA",
+    "Unimed Itaúna",
+    "Samp ES Assistência Médica"
   ]);
 
   // Auto-save draft
