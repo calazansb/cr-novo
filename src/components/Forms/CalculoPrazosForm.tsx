@@ -156,6 +156,82 @@ const CalculoPrazosForm = () => {
     setResultado(null);
   };
 
+  const copiarDetalhamento = () => {
+    if (!resultado) return;
+
+    const texto = `CÁLCULO DE PRAZO PROCESSUAL
+=====================================
+
+Prazo: ${prazoSelecionado === 'outro' ? numeroDias : prazoSelecionado} dias ${tipoContagem === 'uteis' ? 'úteis' : 'corridos'}
+Data Inicial: ${dataInicial} (${tipoDataInicial === 'disponibilizacao' ? 'disponibilização' : 'publicação'})
+Data de Publicação: ${resultado.dataPublicacao}
+Início da Contagem: ${resultado.dataInicio}
+Data de Vencimento: ${resultado.dataFinal}
+
+DETALHAMENTO DIA A DIA:
+${resultado.detalhamento.map((item, i) => 
+  `${i + 1}. ${item.data} - ${item.diaSemana} - ${item.contou ? `✓ Contou (${item.dia}º dia)` : '✗ Não contou'}`
+).join('\n')}
+
+Total de dias ${tipoContagem === 'uteis' ? 'úteis' : 'corridos'}: ${tipoContagem === 'uteis' ? resultado.diasUteis : resultado.diasCorridos}
+
+---
+Gerado pelo Sistema CRA - Calazans Rossi Advogados
+${new Date().toLocaleString('pt-BR')}`;
+
+    navigator.clipboard.writeText(texto).then(() => {
+      toast({
+        title: "Copiado!",
+        description: "Detalhamento copiado para a área de transferência",
+      });
+    }).catch(() => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar. Tente novamente.",
+        variant: "destructive"
+      });
+    });
+  };
+
+  const baixarTXT = () => {
+    if (!resultado) return;
+
+    const texto = `CÁLCULO DE PRAZO PROCESSUAL
+=====================================
+
+Prazo: ${prazoSelecionado === 'outro' ? numeroDias : prazoSelecionado} dias ${tipoContagem === 'uteis' ? 'úteis' : 'corridos'}
+Data Inicial: ${dataInicial} (${tipoDataInicial === 'disponibilizacao' ? 'disponibilização' : 'publicação'})
+Data de Publicação: ${resultado.dataPublicacao}
+Início da Contagem: ${resultado.dataInicio}
+Data de Vencimento: ${resultado.dataFinal}
+
+DETALHAMENTO DIA A DIA:
+${resultado.detalhamento.map((item, i) => 
+  `${i + 1}. ${item.data} - ${item.diaSemana} - ${item.contou ? `✓ Contou (${item.dia}º dia)` : '✗ Não contou'}`
+).join('\n')}
+
+Total de dias ${tipoContagem === 'uteis' ? 'úteis' : 'corridos'}: ${tipoContagem === 'uteis' ? resultado.diasUteis : resultado.diasCorridos}
+
+---
+Gerado pelo Sistema CRA - Calazans Rossi Advogados
+${new Date().toLocaleString('pt-BR')}`;
+
+    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `calculo-prazo-${dataInicial.replace(/\//g, '-')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Download iniciado!",
+      description: "Arquivo TXT foi baixado com sucesso",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -379,11 +455,11 @@ const CalculoPrazosForm = () => {
                 </div>
 
                 <div className="flex gap-2 mb-4">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={copiarDetalhamento}>
                     <FileText className="h-4 w-4 mr-2" />
                     Copiar Detalhamento
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={baixarTXT}>
                     <FileText className="h-4 w-4 mr-2" />
                     Baixar TXT
                   </Button>

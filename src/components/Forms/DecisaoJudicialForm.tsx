@@ -7,6 +7,18 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/lib/utils";
+import { z } from "zod";
+
+const decisaoSchema = z.object({
+  numeroProcesso: z.string().trim().min(1, "Número do processo é obrigatório").max(100, "Máximo 100 caracteres"),
+  varaTribunal: z.string().trim().min(1, "Vara/Tribunal é obrigatório").max(200, "Máximo 200 caracteres"),
+  nomeCliente: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
+  tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
+  advogadoInterno: z.string().trim().min(1, "Advogado interno é obrigatório").max(100, "Máximo 100 caracteres"),
+  adverso: z.string().trim().min(1, "Adverso é obrigatório").max(100, "Máximo 100 caracteres"),
+  procedimentoObjeto: z.string().trim().min(1, "Procedimento/Objeto é obrigatório").max(200, "Máximo 200 caracteres"),
+  resumoDecisao: z.string().trim().min(20, "Resumo deve ter pelo menos 20 caracteres").max(2000, "Máximo 2000 caracteres")
+});
 
 const DecisaoJudicialForm = () => {
   const { toast } = useToast();
@@ -137,55 +149,60 @@ ${formData.resumoDecisao}
   };
 
   const handleSubmit = () => {
-    const requiredFields = ['numeroProcesso', 'nomeCliente', 'tipoDecisao', 'resumoDecisao'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
-    
-    if (missingFields.length > 0) {
-      toast({
-        title: "Formulário incompleto",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
+    try {
+      const validatedData = decisaoSchema.parse(formData);
 
-    // Generate message
-    const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
+      const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
     
-*Cliente:* ${formData.nomeCliente}
-*Processo:* ${formData.numeroProcesso}
-*Tipo de Decisão:* ${formData.tipoDecisao}
-*Vara/Tribunal:* ${formData.varaTribunal || 'Não informado'}
-*Advogado Responsável:* ${formData.advogadoInterno || 'Não informado'}
-*Parte Adversa:* ${formData.adverso || 'Não informado'}
-*Procedimento/Objeto:* ${formData.procedimentoObjeto || 'Não informado'}
+*Cliente:* ${validatedData.nomeCliente}
+*Processo:* ${validatedData.numeroProcesso}
+*Tipo de Decisão:* ${validatedData.tipoDecisao}
+*Vara/Tribunal:* ${validatedData.varaTribunal}
+*Advogado Responsável:* ${validatedData.advogadoInterno}
+*Parte Adversa:* ${validatedData.adverso}
+*Procedimento/Objeto:* ${validatedData.procedimentoObjeto}
 
 *Resumo da Decisão:*
-${formData.resumoDecisao}
+${validatedData.resumoDecisao}
 
 `;
 
-    openWhatsApp(message);
+      openWhatsApp(message);
 
-    toast({
-      title: "Comunicação enviada!",
-      description: `Decisão judicial preparada para envio por WhatsApp!`,
-    });
-    
-    // Reset form
-    setFormData({
-      numeroProcesso: '',
-      varaTribunal: '',
-      nomeCliente: '',
-      tipoDecisao: '',
-      advogadoInterno: '',
-      adverso: '',
-      procedimentoObjeto: '',
-      resumoDecisao: ''
-    });
-    setErrors({});
-    setValidatedFields(new Set());
-    localStorage.removeItem('decisao-draft');
+      toast({
+        title: "Comunicação enviada!",
+        description: `Decisão judicial preparada para envio por WhatsApp!`,
+      });
+      
+      setFormData({
+        numeroProcesso: '',
+        varaTribunal: '',
+        nomeCliente: '',
+        tipoDecisao: '',
+        advogadoInterno: '',
+        adverso: '',
+        procedimentoObjeto: '',
+        resumoDecisao: ''
+      });
+      setErrors({});
+      setValidatedFields(new Set());
+      localStorage.removeItem('decisao-draft');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao processar formulário.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (

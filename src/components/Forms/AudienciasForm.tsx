@@ -7,6 +7,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar, Clock, Users, MessageSquare, FileSpreadsheet, Send, Copy, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const audienciaSchema = z.object({
+  data: z.string().min(1, "Data obrigatória"),
+  hora: z.string().min(1, "Hora obrigatória"),
+  processo: z.string().min(1, "Processo obrigatório").max(100),
+  tipo: z.string().min(1, "Tipo obrigatório").max(100),
+  cliente: z.string().min(1, "Cliente obrigatório").max(100),
+  adverso: z.string().max(100),
+  comarca: z.string().min(1, "Comarca obrigatória").max(100),
+  uf: z.string().min(2).max(2),
+  natureza: z.string().max(100),
+  advogado: z.string().min(1, "Advogado obrigatório").max(100),
+  modalidade: z.string().min(1, "Modalidade obrigatória")
+});
 
 interface Audiencia {
   data: string;
@@ -42,26 +57,38 @@ const AudienciasForm = () => {
       const linhas = dadosExcel.trim().split('\n');
       const audienciasProcessadas: Audiencia[] = [];
       
-      // Pular a primeira linha (cabeçalho) se existir
       const linhasParaProcessar = linhas[0].includes('Data') || linhas[0].includes('Hora') ? linhas.slice(1) : linhas;
       
       linhasParaProcessar.forEach((linha, index) => {
-        const colunas = linha.split('\t'); // Assumindo que foi copiado do Excel (separado por tab)
+        const colunas = linha.split('\t');
         
         if (colunas.length >= 11) {
-          audienciasProcessadas.push({
-            data: colunas[0]?.trim() || '',
-            hora: colunas[1]?.trim() || '',
-            processo: colunas[2]?.trim() || '',
-            tipo: colunas[3]?.trim() || '',
-            cliente: colunas[4]?.trim() || '',
-            adverso: colunas[5]?.trim() || '',
-            comarca: colunas[6]?.trim() || '',
-            uf: colunas[7]?.trim() || '',
-            natureza: colunas[8]?.trim() || '',
-            advogado: colunas[9]?.trim() || '',
-            modalidade: colunas[10]?.trim() || ''
-          });
+          try {
+            const audienciaData: Audiencia = {
+              data: colunas[0]?.trim() || '',
+              hora: colunas[1]?.trim() || '',
+              processo: colunas[2]?.trim() || '',
+              tipo: colunas[3]?.trim() || '',
+              cliente: colunas[4]?.trim() || '',
+              adverso: colunas[5]?.trim() || '',
+              comarca: colunas[6]?.trim() || '',
+              uf: colunas[7]?.trim() || '',
+              natureza: colunas[8]?.trim() || '',
+              advogado: colunas[9]?.trim() || '',
+              modalidade: colunas[10]?.trim() || ''
+            };
+
+            // Validar cada audiência
+            audienciaSchema.parse(audienciaData);
+            audienciasProcessadas.push(audienciaData);
+          } catch (validationError) {
+            console.warn(`Linha ${index + 1} com erro de validação:`, validationError);
+            toast({
+              title: "Aviso",
+              description: `Linha ${index + 1} ignorada por dados inválidos`,
+              variant: "destructive"
+            });
+          }
         }
       });
 
