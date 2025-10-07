@@ -561,16 +561,16 @@ export const CustomizableDashboard = () => {
                       }`}
                     >
                       {/* Coluna 1: Código + Processo + Descrição Completa */}
-                      <div>
-                        <div className="font-semibold text-sm mb-1">{formatCodigo(req.codigo_unico)}</div>
+                      <div className="max-w-md">
+                        <div className="font-semibold text-sm mb-1 break-words">{formatCodigo(req.codigo_unico)}</div>
                         {req.numero_processo && (
-                          <div className="text-xs text-muted-foreground font-medium mb-1">
+                          <div className="text-xs text-muted-foreground font-medium mb-1 break-words">
                             Processo: {req.numero_processo}
                           </div>
                         )}
                         <div className="text-xs text-muted-foreground">
-                          <div className="font-medium mb-0.5">Objeto: {req.objeto_solicitacao || 'Sem descrição'}</div>
-                          <div className="line-clamp-3">{req.descricao_detalhada}</div>
+                          <div className="font-medium mb-0.5 break-words">Objeto: {req.objeto_solicitacao || 'Sem descrição'}</div>
+                          <div className="break-words whitespace-normal">{req.descricao_detalhada}</div>
                         </div>
                       </div>
                       

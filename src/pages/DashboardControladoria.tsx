@@ -772,16 +772,16 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 }`}
               >
                 {/* Coluna 1: Código + Processo + Descrição Completa */}
-                <div>
-                  <div className="font-semibold text-sm mb-1">{formatCodigo(solicitacao.codigo_unico)}</div>
+                <div className="max-w-md">
+                  <div className="font-semibold text-sm mb-1 break-words">{formatCodigo(solicitacao.codigo_unico)}</div>
                   {solicitacao.numero_processo && (
-                    <div className="text-xs text-muted-foreground font-medium mb-1">
+                    <div className="text-xs text-muted-foreground font-medium mb-1 break-words">
                       Processo: {solicitacao.numero_processo}
                     </div>
                   )}
                   <div className="text-xs text-muted-foreground">
-                    <div className="font-medium mb-0.5">Objeto: {solicitacao.objeto_solicitacao}</div>
-                    <div className="line-clamp-3">{solicitacao.descricao_detalhada}</div>
+                    <div className="font-medium mb-0.5 break-words">Objeto: {solicitacao.objeto_solicitacao}</div>
+                    <div className="break-words whitespace-normal">{solicitacao.descricao_detalhada}</div>
                   </div>
                 </div>
                 
