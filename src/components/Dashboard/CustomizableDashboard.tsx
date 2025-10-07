@@ -118,19 +118,15 @@ export const CustomizableDashboard = () => {
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroNome, setFiltroNome] = useState('todos');
   const [filtroCliente, setFiltroCliente] = useState('todos');
-  const [filtroDataInicio, setFiltroDataInicio] = useState('');
-  const [filtroDataFim, setFiltroDataFim] = useState('');
-  const [filtroPrazoInicio, setFiltroPrazoInicio] = useState('');
-  const [filtroPrazoFim, setFiltroPrazoFim] = useState('');
+  const [filtroData, setFiltroData] = useState('');
+  const [filtroPrazo, setFiltroPrazo] = useState('');
   
   // Filtros temporários
   const [tempFiltroStatus, setTempFiltroStatus] = useState<string>('todos');
   const [tempFiltroNome, setTempFiltroNome] = useState('todos');
   const [tempFiltroCliente, setTempFiltroCliente] = useState('todos');
-  const [tempFiltroDataInicio, setTempFiltroDataInicio] = useState('');
-  const [tempFiltroDataFim, setTempFiltroDataFim] = useState('');
-  const [tempFiltroPrazoInicio, setTempFiltroPrazoInicio] = useState('');
-  const [tempFiltroPrazoFim, setTempFiltroPrazoFim] = useState('');
+  const [tempFiltroData, setTempFiltroData] = useState('');
+  const [tempFiltroPrazo, setTempFiltroPrazo] = useState('');
   
   // Dados para dropdowns
   const [advogados, setAdvogados] = useState<Array<{id: string, nome: string}>>([]);
@@ -242,34 +238,20 @@ export const CustomizableDashboard = () => {
     if (filtroCliente !== 'todos' && filtroCliente) {
       const clienteSelecionado = clientes.find(c => c.id === filtroCliente);
       if (clienteSelecionado && req.cliente !== clienteSelecionado.nome) {
-        return false;
+      return false;
       }
     }
     
-    if (filtroDataInicio) {
+    if (filtroData) {
       const dataCriacao = new Date(req.data_criacao);
-      const dataInicio = new Date(filtroDataInicio);
-      if (dataCriacao < dataInicio) return false;
+      const dataFiltro = new Date(filtroData);
+      if (dataCriacao.toDateString() !== dataFiltro.toDateString()) return false;
     }
     
-    if (filtroDataFim) {
-      const dataCriacao = new Date(req.data_criacao);
-      const dataFim = new Date(filtroDataFim);
-      dataFim.setHours(23, 59, 59, 999);
-      if (dataCriacao > dataFim) return false;
-    }
-    
-    if (filtroPrazoInicio && req.prazo_retorno) {
+    if (filtroPrazo && req.prazo_retorno) {
       const prazoRetorno = new Date(req.prazo_retorno);
-      const prazoInicio = new Date(filtroPrazoInicio);
-      if (prazoRetorno < prazoInicio) return false;
-    }
-    
-    if (filtroPrazoFim && req.prazo_retorno) {
-      const prazoRetorno = new Date(req.prazo_retorno);
-      const prazoFim = new Date(filtroPrazoFim);
-      prazoFim.setHours(23, 59, 59, 999);
-      if (prazoRetorno > prazoFim) return false;
+      const prazoFiltro = new Date(filtroPrazo);
+      if (prazoRetorno.toDateString() !== prazoFiltro.toDateString()) return false;
     }
     
     return true;
@@ -280,27 +262,21 @@ export const CustomizableDashboard = () => {
     setFiltroStatus(tempFiltroStatus);
     setFiltroNome(tempFiltroNome);
     setFiltroCliente(tempFiltroCliente);
-    setFiltroDataInicio(tempFiltroDataInicio);
-    setFiltroDataFim(tempFiltroDataFim);
-    setFiltroPrazoInicio(tempFiltroPrazoInicio);
-    setFiltroPrazoFim(tempFiltroPrazoFim);
+    setFiltroData(tempFiltroData);
+    setFiltroPrazo(tempFiltroPrazo);
   };
   
   const limparFiltros = () => {
     setFiltroStatus('todos');
     setFiltroNome('todos');
     setFiltroCliente('todos');
-    setFiltroDataInicio('');
-    setFiltroDataFim('');
-    setFiltroPrazoInicio('');
-    setFiltroPrazoFim('');
+    setFiltroData('');
+    setFiltroPrazo('');
     setTempFiltroStatus('todos');
     setTempFiltroNome('todos');
     setTempFiltroCliente('todos');
-    setTempFiltroDataInicio('');
-    setTempFiltroDataFim('');
-    setTempFiltroPrazoInicio('');
-    setTempFiltroPrazoFim('');
+    setTempFiltroData('');
+    setTempFiltroPrazo('');
   };
   
   const handleAtualizarStatus = async () => {
@@ -823,7 +799,7 @@ export const CustomizableDashboard = () => {
         <CardContent className="pb-3">
           <div className="space-y-3">
             {/* Filtros em Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <Select value={tempFiltroStatus} onValueChange={setTempFiltroStatus}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Status" />
@@ -863,33 +839,17 @@ export const CustomizableDashboard = () => {
               <Input
                 type="date"
                 className="h-9 text-xs"
-                value={tempFiltroDataInicio}
-                onChange={(e) => setTempFiltroDataInicio(e.target.value)}
-                placeholder="Data início"
+                value={tempFiltroData}
+                onChange={(e) => setTempFiltroData(e.target.value)}
+                placeholder="Data"
               />
               
               <Input
                 type="date"
                 className="h-9 text-xs"
-                value={tempFiltroDataFim}
-                onChange={(e) => setTempFiltroDataFim(e.target.value)}
-                placeholder="Data fim"
-              />
-              
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={tempFiltroPrazoInicio}
-                onChange={(e) => setTempFiltroPrazoInicio(e.target.value)}
-                placeholder="Prazo início"
-              />
-              
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={tempFiltroPrazoFim}
-                onChange={(e) => setTempFiltroPrazoFim(e.target.value)}
-                placeholder="Prazo fim"
+                value={tempFiltroPrazo}
+                onChange={(e) => setTempFiltroPrazo(e.target.value)}
+                placeholder="Prazo"
               />
             </div>
             

@@ -47,7 +47,6 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     deletarSolicitacao
   } = useSolicitacoes();
   const { toast } = useToast();
-  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [solicitacaoEditando, setSolicitacaoEditando] = useState<SolicitacaoControladoria | null>(null);
   const [novoStatus, setNovoStatus] = useState<string>('');
   const [observacoes, setObservacoes] = useState('');
@@ -60,21 +59,18 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Estados para filtros avançados
+  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCliente, setFiltroCliente] = useState('');
-  const [filtroDataInicio, setFiltroDataInicio] = useState('');
-  const [filtroDataFim, setFiltroDataFim] = useState('');
-  const [filtroPrazoInicio, setFiltroPrazoInicio] = useState('');
-  const [filtroPrazoFim, setFiltroPrazoFim] = useState('');
+  const [filtroData, setFiltroData] = useState('');
+  const [filtroPrazo, setFiltroPrazo] = useState('');
   
   // Estados temporários para os filtros (antes de aplicar)
   const [tempFiltroStatus, setTempFiltroStatus] = useState('todos');
   const [tempFiltroNome, setTempFiltroNome] = useState('');
   const [tempFiltroCliente, setTempFiltroCliente] = useState('');
-  const [tempFiltroDataInicio, setTempFiltroDataInicio] = useState('');
-  const [tempFiltroDataFim, setTempFiltroDataFim] = useState('');
-  const [tempFiltroPrazoInicio, setTempFiltroPrazoInicio] = useState('');
-  const [tempFiltroPrazoFim, setTempFiltroPrazoFim] = useState('');
+  const [tempFiltroData, setTempFiltroData] = useState('');
+  const [tempFiltroPrazo, setTempFiltroPrazo] = useState('');
   
   // Dados para os dropdowns
   const [advogados, setAdvogados] = useState<Array<{id: string, nome: string}>>([]);
