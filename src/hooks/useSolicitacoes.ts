@@ -82,11 +82,24 @@ export const useSolicitacoes = () => {
       console.log('📊 Resultado da inserção:', { data, error });
 
       if (error) throw error;
+
+      // Garantir persistência dos anexos mesmo se a inserção ignorar o campo
+      if (dados.anexos && dados.anexos.length > 0) {
+        const { error: updateAnexosError } = await supabase
+          .from('solicitacoes_controladoria')
+          .update({ anexos: dados.anexos } as any)
+          .eq('codigo_unico', data!.codigo_unico);
+        if (updateAnexosError) {
+          console.warn('⚠️ Falha ao fixar anexos após inserção:', updateAnexosError);
+        } else {
+          console.log('✅ Anexos fixados na solicitação', data!.codigo_unico);
+        }
+      }
       
-      console.log('✅ Solicitação criada com código:', data.codigo_unico);
-      toast.success(`Solicitação criada com código: ${data.codigo_unico}`);
+      console.log('✅ Solicitação criada com código:', data!.codigo_unico);
+      toast.success(`Solicitação criada com código: ${data!.codigo_unico}`);
       await carregarSolicitacoes(); // Recarrega a lista
-      return data.codigo_unico;
+      return data!.codigo_unico;
     } catch (error: any) {
       console.error('❌ Erro ao criar solicitação:', error);
       const msg = (error?.message || '').toString();

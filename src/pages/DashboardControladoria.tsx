@@ -120,13 +120,21 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           continue;
         }
 
-        const { data: urlData } = await supabase.storage
+        // Preferir URL pública (se bucket for público), senão gerar URL assinada
+        let finalUrl: string | null = null;
+        const { data: publicUrl } = await supabase.storage
           .from('solicitacoes-anexos')
-          .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 dias
-
-        if (urlData?.signedUrl) {
-          uploadedUrls.push(urlData.signedUrl);
+          .getPublicUrl(fileName);
+        if (publicUrl?.publicUrl) {
+          finalUrl = publicUrl.publicUrl;
+        } else {
+          const { data: signed } = await supabase.storage
+            .from('solicitacoes-anexos')
+            .createSignedUrl(fileName, 60 * 60 * 24 * 30); // 30 dias
+          if (signed?.signedUrl) finalUrl = signed.signedUrl;
         }
+
+        if (finalUrl) uploadedUrls.push(finalUrl);
       }
 
       // Atualizar o campo anexos_resposta na solicitação
@@ -138,6 +146,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
 
         if (error) {
           console.error('Erro ao salvar URLs:', error);
+          toast({ title: 'Erro ao salvar anexos de resposta', description: error.message, variant: 'destructive' });
+        } else {
+          await carregarSolicitacoes();
         }
       }
 

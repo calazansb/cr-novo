@@ -9,7 +9,7 @@ import { FormField } from "@/components/ui/form-field";
 import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
-import { openWhatsApp, formatCodigo } from "@/lib/utils";
+import { formatCodigo } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
 import { z } from "zod";
