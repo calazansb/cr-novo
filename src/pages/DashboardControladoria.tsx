@@ -7,9 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSolicitacoes } from '@/hooks/useSolicitacoes';
-import { ArrowLeft, Download, Eye, Edit, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Eye, Edit, AlertCircle, Trash2, Paperclip, ExternalLink, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { FileUpload } from '@/components/ui/file-upload';
+import { useToast } from '@/hooks/use-toast';
 
 // Tipo para compatibilidade
 type SolicitacaoControladoria = Database['public']['Tables']['solicitacoes_controladoria']['Row'];
@@ -43,6 +45,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     carregarSolicitacoes,
     deletarSolicitacao
   } = useSolicitacoes();
+  const { toast } = useToast();
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [solicitacaoEditando, setSolicitacaoEditando] = useState<SolicitacaoControladoria | null>(null);
   const [novoStatus, setNovoStatus] = useState<string>('');
@@ -50,6 +53,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [supabaseUrl, setSupabaseUrl] = useState('');
   const [supabaseKey, setSupabaseKey] = useState('');
   const [tabelaExiste, setTabelaExiste] = useState<boolean | null>(null);
+  const [arquivosResposta, setArquivosResposta] = useState<File[]>([]);
+  const [uploadingResposta, setUploadingResposta] = useState(false);
 
   // Verificar se tabela existe
   const verificarTabela = async () => {
@@ -90,12 +95,76 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     em_andamento: solicitacoes.filter(s => s.status === 'em_andamento').length,
     concluidas: solicitacoes.filter(s => s.status === 'concluida').length
   };
+  const uploadArquivosResposta = async (codigoUnico: string, solicitacaoId: string): Promise<string[]> => {
+    if (arquivosResposta.length === 0) return [];
+
+    setUploadingResposta(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of arquivosResposta) {
+        const fileName = `${codigoUnico}/respostas/${Date.now()}-${file.name}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('solicitacoes-anexos')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Erro ao fazer upload:', uploadError);
+          toast({
+            title: "Erro no upload",
+            description: `Não foi possível enviar o arquivo ${file.name}`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        const { data: urlData } = await supabase.storage
+          .from('solicitacoes-anexos')
+          .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 dias
+
+        if (urlData?.signedUrl) {
+          uploadedUrls.push(urlData.signedUrl);
+        }
+      }
+
+      // Atualizar o campo anexos_resposta na solicitação
+      if (uploadedUrls.length > 0) {
+        const { error } = await supabase
+          .from('solicitacoes_controladoria')
+          .update({ anexos_resposta: uploadedUrls } as any)
+          .eq('id', solicitacaoId);
+
+        if (error) {
+          console.error('Erro ao salvar URLs:', error);
+        }
+      }
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Erro durante upload:', error);
+      return uploadedUrls;
+    } finally {
+      setUploadingResposta(false);
+    }
+  };
+
   const handleAtualizarStatus = async () => {
     if (solicitacaoEditando && novoStatus) {
+      // Fazer upload dos arquivos de resposta se houver
+      if (arquivosResposta.length > 0) {
+        await uploadArquivosResposta(solicitacaoEditando.codigo_unico, solicitacaoEditando.id);
+        toast({
+          title: "Arquivos enviados!",
+          description: `${arquivosResposta.length} arquivo(s) de resposta anexado(s) com sucesso.`,
+        });
+      }
+      
       await atualizarStatus(solicitacaoEditando.id, novoStatus as SolicitacaoControladoria['status'], observacoes);
       setSolicitacaoEditando(null);
       setNovoStatus('');
       setObservacoes('');
+      setArquivosResposta([]);
     }
   };
   return <div className="container mx-auto p-6">
@@ -220,6 +289,12 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
+                    {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Paperclip className="h-3 w-3" />
+                        {solicitacao.anexos.length}
+                      </Badge>
+                    )}
                     <Badge className={statusColors[solicitacao.status]}>
                       {statusLabels[solicitacao.status]}
                     </Badge>
@@ -254,6 +329,50 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                             <label className="font-semibold">Descrição:</label>
                             <p className="whitespace-pre-wrap">{solicitacao.descricao_detalhada}</p>
                           </div>
+                          {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                            <div>
+                              <label className="font-semibold flex items-center gap-2">
+                                <Paperclip className="h-4 w-4" />
+                                Arquivos Anexados ({solicitacao.anexos.length}):
+                              </label>
+                              <div className="space-y-2 mt-2">
+                                {solicitacao.anexos.map((url: any, idx: number) => (
+                                  <a
+                                    key={idx}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    Arquivo {idx + 1}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
+                            <div>
+                              <label className="font-semibold flex items-center gap-2">
+                                <Upload className="h-4 w-4" />
+                                Arquivos de Resposta ({(solicitacao as any).anexos_resposta.length}):
+                              </label>
+                              <div className="space-y-2 mt-2">
+                                {(solicitacao as any).anexos_resposta.map((url: string, idx: number) => (
+                                  <a
+                                    key={idx}
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-sm text-green-600 hover:underline"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    Resposta {idx + 1}
+                                  </a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           <div>
                             <label className="font-semibold">Data de Criação:</label>
                             <p>{new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}</p>
@@ -271,6 +390,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     setSolicitacaoEditando(solicitacao);
                     setNovoStatus(solicitacao.status);
                     setObservacoes(solicitacao.observacoes || '');
+                    setArquivosResposta([]);
                   }}>
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -298,8 +418,28 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                             <label className="block text-sm font-medium mb-2">Observações:</label>
                             <Textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Adicione observações sobre o status..." />
                           </div>
-                          <Button onClick={handleAtualizarStatus} className="w-full">
-                            Atualizar Status
+                          <div>
+                            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                              <Paperclip className="h-4 w-4" />
+                              Anexar Arquivos de Resposta (Opcional)
+                            </label>
+                            <FileUpload
+                              files={arquivosResposta}
+                              onFilesChange={setArquivosResposta}
+                              maxFiles={5}
+                              maxSize={10}
+                              acceptedTypes={['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.xls', '.xlsx']}
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Máximo 5 arquivos, 10MB cada
+                            </p>
+                          </div>
+                          <Button 
+                            onClick={handleAtualizarStatus} 
+                            className="w-full"
+                            disabled={uploadingResposta}
+                          >
+                            {uploadingResposta ? 'Enviando arquivos...' : 'Atualizar Status'}
                           </Button>
                         </div>
                       </DialogContent>

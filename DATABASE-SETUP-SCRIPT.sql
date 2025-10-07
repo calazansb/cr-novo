@@ -105,7 +105,8 @@ CREATE TABLE IF NOT EXISTS public.solicitacoes_controladoria (
   cliente VARCHAR(100) NOT NULL,
   objeto_solicitacao VARCHAR(200) NOT NULL,
   descricao_detalhada TEXT NOT NULL,
-  anexos TEXT[], -- Array de URLs de anexos
+  anexos TEXT[], -- Array de URLs de anexos enviados pelo solicitante
+  anexos_resposta TEXT[], -- Array de URLs de anexos de resposta da controladoria
   status VARCHAR(50) DEFAULT 'pendente' CHECK (status IN ('pendente', 'em_andamento', 'concluido', 'cancelado')),
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   data_criacao TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
