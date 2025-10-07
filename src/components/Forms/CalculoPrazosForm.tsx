@@ -388,10 +388,11 @@ ${new Date().toLocaleString('pt-BR')}`;
         </CardContent>
       </Card>
 
-      <Alert className="border-amber-200 bg-amber-50">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertDescription className="text-amber-800">
-          <strong>Importante:</strong> Este cálculo é apenas uma estimativa. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual.
+      <Alert variant="destructive" className="border-2 border-red-600 bg-red-50 dark:bg-red-950/30 p-6">
+        <AlertTriangle className="h-8 w-8 text-red-600" />
+        <AlertDescription className="text-red-900 dark:text-red-100 text-lg font-semibold ml-2">
+          <strong className="text-xl block mb-2">⚠️ ATENÇÃO - IMPORTANTE:</strong> 
+          <span className="text-base">Este cálculo é apenas uma estimativa automatizada. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual. O escritório não se responsabiliza por eventuais erros no cálculo automático.</span>
         </AlertDescription>
       </Alert>
 
