@@ -26,13 +26,11 @@ interface DashboardControladoriaProps {
 }
 const statusColors = {
   pendente: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  em_andamento: 'bg-blue-100 text-blue-800 border-blue-200',
   concluida: 'bg-green-100 text-green-800 border-green-200',
   cancelada: 'bg-red-100 text-red-800 border-red-200'
 };
 const statusLabels = {
   pendente: 'Pendente',
-  em_andamento: 'Em Andamento',
   concluida: 'Concluída',
   cancelada: 'Cancelada'
 };
@@ -129,8 +127,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const estatisticas = {
     total: solicitacoes.length,
     pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
-    em_andamento: solicitacoes.filter(s => s.status === 'em_andamento').length,
-    concluidas: solicitacoes.filter(s => s.status === 'concluida').length
+    concluidas: solicitacoes.filter(s => s.status === 'concluida').length,
+    canceladas: solicitacoes.filter(s => s.status === 'cancelada').length
   };
   const uploadArquivosResposta = async (codigoUnico: string, solicitacaoId: string): Promise<string[]> => {
     if (arquivosResposta.length === 0) return [];
@@ -293,18 +291,18 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{estatisticas.em_andamento}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{estatisticas.canceladas}</div>
             </CardContent>
           </Card>
         </div>
@@ -321,8 +319,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 <Pie
                   data={[
                     { name: 'Pendentes', value: estatisticas.pendentes, color: '#eab308' },
-                    { name: 'Em Andamento', value: estatisticas.em_andamento, color: '#3b82f6' },
-                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' }
+                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' },
+                    { name: 'Canceladas', value: estatisticas.canceladas, color: '#ef4444' }
                   ].filter(item => item.value > 0)}
                   cx="50%"
                   cy="50%"
@@ -334,8 +332,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 >
                   {[
                     { name: 'Pendentes', value: estatisticas.pendentes, color: '#eab308' },
-                    { name: 'Em Andamento', value: estatisticas.em_andamento, color: '#3b82f6' },
-                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' }
+                    { name: 'Concluídas', value: estatisticas.concluidas, color: '#22c55e' },
+                    { name: 'Canceladas', value: estatisticas.canceladas, color: '#ef4444' }
                   ].filter(item => item.value > 0).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -366,7 +364,6 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="pendente">Pendentes</SelectItem>
-                  <SelectItem value="em_andamento">Em Andamento</SelectItem>
                   <SelectItem value="concluida">Concluídas</SelectItem>
                   <SelectItem value="cancelada">Canceladas</SelectItem>
                 </SelectContent>
@@ -448,27 +445,45 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
 
       {/* Lista de Solicitações */}
       {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="grid gap-4">
-          {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
-                    <CardDescription className="space-y-0.5">
-                      <div><strong>Solicitante:</strong> {solicitacao.nome_solicitante}</div>
-                      <div><strong>Cliente:</strong> {solicitacao.cliente}</div>
-                      <div><strong>Prazo para Retorno:</strong> {solicitacao.objeto_solicitacao}</div>
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                      <Badge variant="outline" className="flex items-center gap-1">
-                        <Paperclip className="h-3 w-3" />
-                        {solicitacao.anexos.length}
+          {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-base">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
+                      <Badge className={statusColors[solicitacao.status]}>
+                        {statusLabels[solicitacao.status]}
                       </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      <div><span className="text-muted-foreground">Processo:</span> <span className="font-medium">{solicitacao.numero_processo || 'N/A'}</span></div>
+                      <div><span className="text-muted-foreground">Cliente:</span> <span className="font-medium">{solicitacao.cliente}</span></div>
+                      <div><span className="text-muted-foreground">Prazo:</span> <span className="font-medium">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
+                      <div><span className="text-muted-foreground">Solicitante:</span> <span className="font-medium">{solicitacao.nome_solicitante}</span></div>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{solicitacao.objeto_solicitacao}</p>
+                    {(solicitacao as any).ultima_modificacao_em && (
+                      <p className="text-xs text-muted-foreground italic">
+                        Última modificação: {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR')}
+                        {(solicitacao as any).modificador?.nome && ` por ${(solicitacao as any).modificador.nome}`}
+                      </p>
                     )}
-                    <Badge className={statusColors[solicitacao.status]}>
-                      {statusLabels[solicitacao.status]}
-                    </Badge>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                        <Badge variant="outline" className="flex items-center gap-1 text-blue-600 border-blue-300">
+                          <Paperclip className="h-3 w-3" />
+                          {solicitacao.anexos.length}
+                        </Badge>
+                      )}
+                      {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
+                        <Badge variant="outline" className="flex items-center gap-1 text-green-600 border-green-300">
+                          <Upload className="h-3 w-3" />
+                          {(solicitacao as any).anexos_resposta.length}
+                        </Badge>
+                      )}
+                    </div>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
@@ -587,9 +602,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                               <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
+                               <SelectContent>
                                 <SelectItem value="pendente">Pendente</SelectItem>
-                                <SelectItem value="em_andamento">Em Andamento</SelectItem>
                                 <SelectItem value="concluida">Concluída</SelectItem>
                                 <SelectItem value="cancelada">Cancelada</SelectItem>
                               </SelectContent>

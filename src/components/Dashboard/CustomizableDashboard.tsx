@@ -288,35 +288,53 @@ export const CustomizableDashboard = () => {
       case 'recent-requests':
         return (
           <ScrollArea className="h-64">
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recentRequests.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   Nenhuma solicitação encontrada
                 </p>
               ) : (
                 recentRequests.map((req) => (
-                  <div key={req.id} className="p-3 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
+                  <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 space-y-1">
-                        <p className="font-semibold text-sm">{req.codigo_unico}</p>
-                        <div className="text-xs text-muted-foreground space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-sm">{req.codigo_unico}</p>
+                          <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
+                            {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
                           <p><span className="font-medium">Processo:</span> {req.numero_processo || 'N/A'}</p>
                           <p><span className="font-medium">Cliente:</span> {req.cliente}</p>
                           <p><span className="font-medium">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
-                          <p className="line-clamp-1"><span className="font-medium">Solicitação:</span> {req.objeto_solicitacao}</p>
+                          <div className="flex gap-1">
+                            {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                              <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
+                                📎 {req.anexos.length}
+                              </Badge>
+                            )}
+                            {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                              <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
+                                📤 {req.anexos_resposta.length}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
+                        {req.ultima_modificacao_em && (
+                          <p className="text-xs text-muted-foreground italic">
+                            Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        )}
                       </div>
-                      <Badge variant={req.status === 'pendente' ? 'secondary' : 'default'} className="shrink-0">
-                        {req.status}
-                      </Badge>
                     </div>
                     <div className="flex gap-2">
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="flex-1"
+                        className="flex-1 h-7 text-xs"
                         onClick={() => {
-                          // Navigate to view details
                           window.dispatchEvent(new CustomEvent('view-request', { detail: req.id }));
                         }}
                       >
@@ -326,9 +344,8 @@ export const CustomizableDashboard = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="flex-1"
+                        className="flex-1 h-7 text-xs"
                         onClick={() => {
-                          // Navigate to edit
                           window.dispatchEvent(new CustomEvent('edit-request', { detail: req.id }));
                         }}
                       >

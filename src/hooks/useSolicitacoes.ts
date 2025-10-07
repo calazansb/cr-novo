@@ -34,7 +34,10 @@ export const useSolicitacoes = () => {
       console.log('📡 Fazendo consulta ao Supabase...');
       const { data, error } = await supabase
         .from('solicitacoes_controladoria')
-        .select('*')
+        .select(`
+          *,
+          modificador:ultima_modificacao_por(nome)
+        `)
         .order('data_criacao', { ascending: false });
 
       console.log('📊 Resultado da consulta:', { data, error });
@@ -49,7 +52,9 @@ export const useSolicitacoes = () => {
           anexos: firstItem.anexos,
           tipo_anexos: typeof firstItem.anexos,
           anexos_resposta: firstItem.anexos_resposta,
-          tipo_anexos_resposta: typeof firstItem.anexos_resposta
+          tipo_anexos_resposta: typeof firstItem.anexos_resposta,
+          ultima_modificacao: firstItem.ultima_modificacao_em,
+          modificador: firstItem.modificador
         });
       }
       
