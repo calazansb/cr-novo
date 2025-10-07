@@ -14,14 +14,14 @@ import DashboardControladoria from "./DashboardControladoria";
 import BancoDados from "../components/BancoDados";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
-import TreinamentosPage from "@/components/Treinamentos/TreinamentosPage";
-import UserManagement from "@/components/Admin/UserManagement";
+// import TreinamentosPage from "@/components/Treinamentos/TreinamentosPage";
+// import UserManagement from "@/components/Admin/UserManagement";
 import { Building, BarChart3, Scale, ClipboardList, Lightbulb, AlertTriangle, Settings, Database, Calculator, Calendar, GraduationCap } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DatabaseSetupNotice from "@/components/DatabaseSetupNotice";
 
-type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios' | 'treinamentos';
+type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
@@ -86,14 +86,14 @@ const Index = () => {
       color: "secondary" as const,
       stats: { count: 0, label: "Agendadas" }
     },
-    {
-      id: 'treinamentos' as ActiveSection,
-      title: "Treinamentos",
-      description: "Materiais e cursos obrigatórios",
-      icon: GraduationCap,
-      color: "accent" as const,
-      stats: { count: 0, label: "Disponíveis" }
-    },
+    // {
+    //   id: 'treinamentos' as ActiveSection,
+    //   title: "Treinamentos",
+    //   description: "Materiais e cursos obrigatórios",
+    //   icon: GraduationCap,
+    //   color: "accent" as const,
+    //   stats: { count: 0, label: "Disponíveis" }
+    // },
     {
       id: 'sugestoes' as ActiveSection,
       title: "Sugestões",
@@ -216,16 +216,16 @@ const Index = () => {
         return <CalculoPrazosForm />;
       case 'audiencias':
         return <AudienciasForm />;
-      case 'admin-usuarios':
-        if (user?.user_metadata?.role !== 'admin') {
-          return (
-            <div className="p-6">
-              <h2 className="text-2xl font-semibold text-foreground mb-4">Acesso Negado</h2>
-              <p className="text-muted-foreground">Você não tem permissão para acessar esta área.</p>
-            </div>
-          );
-        }
-        return <UserManagement />;
+      // case 'admin-usuarios':
+      //   if (user?.user_metadata?.role !== 'admin') {
+      //     return (
+      //       <div className="p-6">
+      //         <h2 className="text-2xl font-semibold text-foreground mb-4">Acesso Negado</h2>
+      //         <p className="text-muted-foreground">Você não tem permissão para acessar esta área.</p>
+      //       </div>
+      //     );
+      //   }
+      //   return <UserManagement />;
       case 'sugestoes':
         return <SuestoesForm />;
       case 'erros':
@@ -238,8 +238,8 @@ const Index = () => {
         return <BancoDados />;
       case 'assistencia':
         return <AssistenciaTecnicaForm />;
-      case 'treinamentos':
-        return <TreinamentosPage />;
+      // case 'treinamentos':
+      //   return <TreinamentosPage />;
       default:
         return (
           <div className="p-6">

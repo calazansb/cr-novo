@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios' | 'treinamentos';
+type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados';
 
 interface ModernSidebarProps {
   activeSection: ActiveSection;
@@ -99,19 +99,19 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       title: "Assistência Técnica",
       icon: Settings,
       color: "text-accent-foreground"
-    },
-    {
-      id: 'treinamentos' as ActiveSection,
-      title: "Treinamentos",
-      icon: GraduationCap,
-      color: "text-blue-500"
-    },
-    {
-      id: 'admin-usuarios' as ActiveSection,
-      title: "Gerenciar Usuários",
-      icon: Users,
-      color: "text-violet-500"
     }
+    // {
+    //   id: 'treinamentos' as ActiveSection,
+    //   title: "Treinamentos",
+    //   icon: GraduationCap,
+    //   color: "text-blue-500"
+    // },
+    // {
+    //   id: 'admin-usuarios' as ActiveSection,
+    //   title: "Gerenciar Usuários",
+    //   icon: Users,
+    //   color: "text-violet-500"
+    // }
   ];
 
   return (
@@ -171,13 +171,13 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navigationItems
-            .filter(item => {
-              // Mostrar "Gerenciar Usuários" apenas para administradores
-              if (item.id === 'admin-usuarios') {
-                return user?.user_metadata?.role === 'admin';
-              }
-              return true;
-            })
+            // .filter(item => {
+            //   // Mostrar "Gerenciar Usuários" apenas para administradores
+            //   if (item.id === 'admin-usuarios') {
+            //     return user?.user_metadata?.role === 'admin';
+            //   }
+            //   return true;
+            // })
             .map((item, index) => (
             <Button
               key={item.id}
