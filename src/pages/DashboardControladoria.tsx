@@ -334,43 +334,48 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           
         </Card>}
 
+      {/* Barra Compacta: Estatísticas + Ações Rápidas */}
+      <Card className="mb-6 shadow-sm">
+        <CardContent className="py-4">
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            {/* Estatísticas Inline */}
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
+                <div className="text-xs text-muted-foreground">Pendentes</div>
+              </div>
+              <div className="h-8 w-px bg-border"></div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
+                <div className="text-xs text-muted-foreground">Concluídas</div>
+              </div>
+              <div className="h-8 w-px bg-border"></div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{estatisticas.total}</div>
+                <div className="text-xs text-muted-foreground">Total</div>
+              </div>
+            </div>
+
+            {/* Ações Rápidas */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={carregarSolicitacoes}>
+                🔄 Recarregar
+              </Button>
+              <Button onClick={exportarParaCSV} variant="outline" size="sm" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                CSV
+              </Button>
+              <Button onClick={exportarParaExcel} variant="outline" size="sm" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Excel
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Estatísticas e Gráficos */}
       <div className="space-y-4 mb-6">
-        {/* Estatísticas compactas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="shadow-sm">
-            <CardHeader className="pb-1 pt-3">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Total</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="text-xl font-bold">{estatisticas.total}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm">
-            <CardHeader className="pb-1 pt-3">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Pendentes</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="text-xl font-bold text-red-600">{estatisticas.pendentes}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm">
-            <CardHeader className="pb-1 pt-3">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Concluídas</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="text-xl font-bold text-blue-600">{estatisticas.concluidas}</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-sm">
-            <CardHeader className="pb-1 pt-3">
-              <CardTitle className="text-xs font-medium text-muted-foreground">Canceladas</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <div className="text-xl font-bold text-yellow-600">{estatisticas.canceladas}</div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Gráficos e Filtros lado a lado */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -561,20 +566,20 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                         {statusLabels[solicitacao.status]}
                       </Badge>
                     </div>
-                    <div className="space-y-0.5 text-xs">
+                    <div className="space-y-0.5 text-sm">
                       <div className="flex gap-4">
-                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Processo:</span> <span className="font-medium truncate">{solicitacao.numero_processo || 'N/A'}</span></div>
-                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Prazo:</span> <span className="font-medium">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
+                        <div className="flex-1 min-w-0"><span className="font-semibold">Processo:</span> <span className="truncate">{solicitacao.numero_processo || 'N/A'}</span></div>
+                        <div className="flex-1 min-w-0"><span className="font-semibold">Prazo:</span> <span>{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
                       </div>
                       <div className="flex gap-4">
-                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Cliente:</span> <span className="font-medium truncate">{solicitacao.cliente}</span></div>
-                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Solicitante:</span> <span className="font-medium truncate">{solicitacao.nome_solicitante}</span></div>
+                        <div className="flex-1 min-w-0"><span className="font-semibold">Cliente:</span> <span className="truncate">{solicitacao.cliente}</span></div>
+                        <div className="flex-1 min-w-0"><span className="font-semibold">Solicitante:</span> <span className="truncate">{solicitacao.nome_solicitante}</span></div>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-1">{solicitacao.objeto_solicitacao}</p>
+                    <p className="text-sm text-foreground line-clamp-1">{solicitacao.objeto_solicitacao}</p>
                     {(solicitacao as any).ultima_modificacao_em && (
-                      <p className="text-xs text-muted-foreground italic">
-                        Última modificação: {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-semibold">Modificado:</span> {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                       </p>
                     )}
                   </div>
