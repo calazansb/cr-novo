@@ -417,36 +417,53 @@ export const CustomizableDashboard = () => {
               ) : (
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
-                  <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-muted/50 border-b font-medium text-xs text-muted-foreground">
-                    <div className="col-span-3">Código</div>
-                    <div className="col-span-3">Cliente</div>
-                    <div className="col-span-2">Status</div>
-                    <div className="col-span-2">Prazo</div>
-                    <div className="col-span-2 text-right">Ações</div>
+                  <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-muted/50 border-b font-medium text-xs text-muted-foreground">
+                    <div className="col-span-2">Código</div>
+                    <div className="col-span-2">Cliente</div>
+                    <div className="col-span-4">Processo</div>
+                    <div className="col-span-1">Status</div>
+                    <div className="col-span-3 text-right">Ações</div>
                   </div>
                   
                   {/* Linhas da Tabela */}
                   {requestsFiltradas.map((req, index) => (
                     <div 
                       key={req.id} 
-                      className={`grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors ${
+                      className={`grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-muted/30 transition-colors ${
                         index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                       }`}
                     >
-                      {/* Código */}
-                      <div className="col-span-3 font-medium text-sm">
-                        {req.codigo_unico}
+                      {/* Código + Solicitante + Conteúdo */}
+                      <div className="col-span-2">
+                        <div className="font-medium text-xs">{req.codigo_unico}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{req.nome_solicitante}</div>
+                        <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{req.objeto_solicitacao}</div>
                       </div>
                       
                       {/* Cliente */}
-                      <div className="col-span-3 text-sm text-muted-foreground truncate">
+                      <div className="col-span-2 text-xs truncate">
                         {req.cliente}
                       </div>
                       
+                      {/* Processo + Data + Prazo */}
+                      <div className="col-span-4 space-y-0.5">
+                        <div className="text-xs text-muted-foreground truncate">
+                          {req.numero_processo || 'N/A'}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="text-[10px]">
+                            <span className="font-medium">Data:</span> {format(new Date(req.data_criacao), 'dd/MM/yy', { locale: ptBR })}
+                          </span>
+                          <span className="text-[10px]">
+                            <span className="font-medium">Prazo:</span> {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yy', { locale: ptBR }) : 'N/A'}
+                          </span>
+                        </div>
+                      </div>
+                      
                       {/* Status */}
-                      <div className="col-span-2">
+                      <div className="col-span-1">
                         <Badge 
-                          className={`text-xs px-2 py-0.5 ${
+                          className={`text-[10px] px-1.5 py-0 ${
                             req.status === 'concluida' 
                               ? 'bg-green-600 hover:bg-green-700 text-white' 
                               : req.status === 'pendente' 
@@ -458,50 +475,52 @@ export const CustomizableDashboard = () => {
                         </Badge>
                       </div>
                       
-                      {/* Prazo */}
-                      <div className="col-span-2 text-sm text-muted-foreground">
-                        {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
-                      </div>
-                      
-                      {/* Ações */}
-                      <div className="col-span-2 flex gap-1 justify-end items-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-primary/10"
-                          onClick={() => setSolicitacaoVisualizando(req)}
-                          title="Ver detalhes"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-primary/10"
-                          onClick={() => {
-                            setSolicitacaoEditando(req);
-                            setNovoStatus(req.status);
-                            setObservacoes(req.observacoes || '');
-                          }}
-                          title="Editar"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                          <div className="flex items-center gap-0.5 text-xs text-blue-600" title={`${req.anexos.length} anexo(s)`}>
-                            <Paperclip className="h-3.5 w-3.5" />
-                            <span>{req.anexos.length}</span>
-                          </div>
-                        )}
-                        {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                          <div className="flex items-center gap-0.5 text-xs text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
-                            <Upload className="h-3.5 w-3.5" />
-                            <span>{req.anexos_resposta.length}</span>
-                          </div>
-                        )}
+                      {/* Ações + Anexos */}
+                      <div className="col-span-3">
+                        <div className="flex gap-1 justify-end items-center mb-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 hover:bg-primary/10"
+                            onClick={() => setSolicitacaoVisualizando(req)}
+                            title="Ver detalhes"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 hover:bg-primary/10"
+                            onClick={() => {
+                              setSolicitacaoEditando(req);
+                              setNovoStatus(req.status);
+                              setObservacoes(req.observacoes || '');
+                            }}
+                            title="Editar"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
+                        {/* Anexos abaixo dos botões */}
+                        <div className="flex gap-1.5 justify-end items-center text-[10px]">
+                          {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                            <span className="flex items-center gap-0.5 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
+                              <Paperclip className="h-3 w-3" />
+                              {req.anexos.length}
+                            </span>
+                          )}
+                          {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                            <span className="flex items-center gap-0.5 text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
+                              <Upload className="h-3 w-3" />
+                              {req.anexos_resposta.length}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                }
                 </div>
               )}
             </ScrollArea>
