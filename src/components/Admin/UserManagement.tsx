@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Edit, Shield, Mail, Calendar, Key, Trash2, UserPlus } from 'lucide-react';
+import { Users, Edit, Shield, Mail, Calendar, Key, Trash2, UserPlus, Upload } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -35,6 +35,9 @@ const UserManagement = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importProgress, setImportProgress] = useState<{ current: number; total: number } | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [selectedUserForPassword, setSelectedUserForPassword] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -297,6 +300,141 @@ const UserManagement = () => {
     }
   };
 
+  const handleImportUsers = async () => {
+    if (!importText.trim()) {
+      toast({
+        title: "Erro",
+        description: "Cole a lista de usuários para importar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Parse a lista - formato: Nome \t Email ou Nome * \t Email
+      const lines = importText.split('\n').filter(line => line.trim());
+      const usersToImport: Array<{ nome: string; email: string }> = [];
+
+      for (const line of lines) {
+        const parts = line.split('\t').map(p => p.trim());
+        if (parts.length >= 2) {
+          const nome = parts[0].replace(/\*$/, '').trim(); // Remove asterisco se houver
+          const email = parts[1].trim();
+          
+          if (nome && email && email.includes('@')) {
+            usersToImport.push({ nome, email });
+          }
+        }
+      }
+
+      if (usersToImport.length === 0) {
+        toast({
+          title: "Erro",
+          description: "Nenhum usuário válido encontrado. Verifique o formato da lista.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Confirmar importação
+      const confirmed = confirm(`Deseja importar ${usersToImport.length} usuários?\n\nSenha padrão: CalazansRossi2024\n\nTodos os usuários serão criados com perfil 'Advogado'.`);
+      if (!confirmed) return;
+
+      let successCount = 0;
+      let errorCount = 0;
+      const defaultPassword = 'CalazansRossi2024';
+
+      setImportProgress({ current: 0, total: usersToImport.length });
+
+      for (let i = 0; i < usersToImport.length; i++) {
+        const user = usersToImport[i];
+        
+        try {
+          // Criar usuário via auth
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: user.email,
+            password: defaultPassword,
+            options: {
+              data: {
+                nome: user.nome
+              }
+            }
+          });
+
+          if (authError) {
+            console.error(`Erro ao criar ${user.email}:`, authError);
+            errorCount++;
+            continue;
+          }
+
+          if (!authData.user) {
+            errorCount++;
+            continue;
+          }
+
+          // Criar profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: authData.user.id,
+              user_id: authData.user.id,
+              nome: user.nome,
+              email: user.email
+            });
+
+          if (profileError) {
+            console.error(`Erro ao criar profile ${user.email}:`, profileError);
+            errorCount++;
+            continue;
+          }
+
+          // Criar role
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: authData.user.id,
+              role: 'advogado'
+            });
+
+          if (roleError) {
+            console.error(`Erro ao criar role ${user.email}:`, roleError);
+            errorCount++;
+            continue;
+          }
+
+          successCount++;
+          setImportProgress({ current: i + 1, total: usersToImport.length });
+
+          // Delay para evitar rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error) {
+          console.error(`Erro ao processar ${user.email}:`, error);
+          errorCount++;
+        }
+      }
+
+      setImportProgress(null);
+
+      toast({
+        title: "Importação Concluída",
+        description: `${successCount} usuários criados com sucesso${errorCount > 0 ? `, ${errorCount} com erro` : ''}.`,
+        variant: errorCount > 0 ? "destructive" : "default",
+      });
+
+      setIsImportDialogOpen(false);
+      setImportText('');
+      fetchUsers();
+    } catch (error) {
+      console.error('Erro ao importar usuários:', error);
+      setImportProgress(null);
+      toast({
+        title: "Erro",
+        description: "Erro ao processar importação.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getUserRole = (user: Profile): 'admin' | 'advogado' => {
     return user.roles?.[0]?.role || 'advogado';
   };
@@ -343,6 +481,78 @@ const UserManagement = () => {
             <Users className="w-4 h-4" />
             {users.length} usuários
           </Badge>
+          <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="w-4 h-4 mr-2" />
+                Importar Usuários
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Importar Usuários em Massa</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Alert>
+                  <AlertDescription>
+                    <p className="font-semibold mb-2">Instruções:</p>
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      <li>Cole a lista de usuários com formato: <code>Nome [TAB] Email</code></li>
+                      <li>Todos os usuários serão criados com senha padrão: <strong>CalazansRossi2024</strong></li>
+                      <li>Perfil padrão: <strong>Advogado</strong></li>
+                      <li>Você pode editar o perfil individualmente depois</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="import-text">Lista de Usuários</Label>
+                  <textarea
+                    id="import-text"
+                    className="w-full h-64 p-3 border rounded-md font-mono text-sm"
+                    placeholder="Marlus Riani*&#9;marlus@calazansrossi.com.br&#10;Aline Martins*&#9;aline@calazansrossi.com.br&#10;..."
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    disabled={!!importProgress}
+                  />
+                  {importProgress && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Importando... {importProgress.current} de {importProgress.total}
+                      </p>
+                      <div className="w-full bg-secondary rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all"
+                          style={{ width: `${(importProgress.current / importProgress.total) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsImportDialogOpen(false);
+                      setImportText('');
+                    }}
+                    className="flex-1"
+                    disabled={!!importProgress}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleImportUsers}
+                    className="flex-1"
+                    disabled={!!importProgress}
+                  >
+                    {importProgress ? 'Importando...' : 'Importar'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
