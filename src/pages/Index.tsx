@@ -5,26 +5,22 @@ import ModernHeader from "@/components/Layout/ModernHeader";
 import ModernNavigationCard from "@/components/Layout/ModernNavigationCard";
 import DecisaoJudicialForm from "../components/Forms/DecisaoJudicialForm";
 import PendenciasForm from "../components/Forms/PendenciasForm";
-import SuestoesForm from "../components/Forms/SuestoesForm";
-import ErrosForm from "../components/Forms/ErrosForm";
+import SugestoesErrosForm from "../components/Forms/SugestoesErrosForm";
 import AssistenciaTecnicaForm from "../components/Forms/AssistenciaTecnicaForm";
 import BalcaoControladoriaForm from "../components/Forms/BalcaoControladoriaForm";
 import CalculoPrazosForm from "../components/Forms/CalculoPrazosForm";
-import AudienciasForm from "../components/Forms/AudienciasForm";
 import DashboardControladoria from "./DashboardControladoria";
 import CustomizableDashboard from "@/components/Dashboard/CustomizableDashboard";
-import BancoDados from "../components/BancoDados";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
-// import TreinamentosPage from "@/components/Treinamentos/TreinamentosPage";
 import UserManagement from "@/components/Admin/UserManagement";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
-import { Building, BarChart3, Scale, ClipboardList, Lightbulb, AlertTriangle, Settings, Database, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
+import { Building, BarChart3, Scale, ClipboardList, Lightbulb, Settings, Calculator, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DatabaseSetupNotice from "@/components/DatabaseSetupNotice";
 
-type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios' | 'bulk-users';
+type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
@@ -71,14 +67,6 @@ const Index = () => {
       stats: { count: 0, label: "Relatórios" }
     },
     {
-      id: 'banco-dados' as ActiveSection,
-      title: "Banco de Dados",
-      description: "Repositório central de informações",
-      icon: Database,
-      color: "secondary" as const,
-      stats: { count: 0, label: "Documentos" }
-    },
-    {
       id: 'decisoes' as ActiveSection,
       title: "Decisão Judicial",
       description: "Registro e acompanhamento de decisões",
@@ -103,36 +91,12 @@ const Index = () => {
       stats: { count: 0, label: "Cálculos" }
     },
     {
-      id: 'audiencias' as ActiveSection,
-      title: "Agenda de Audiências",
-      description: "Controle de agenda processual",
-      icon: Calendar,
-      color: "secondary" as const,
-      stats: { count: 0, label: "Agendadas" }
-    },
-    // {
-    //   id: 'treinamentos' as ActiveSection,
-    //   title: "Treinamentos",
-    //   description: "Materiais e cursos obrigatórios",
-    //   icon: GraduationCap,
-    //   color: "accent" as const,
-    //   stats: { count: 0, label: "Disponíveis" }
-    // },
-    {
-      id: 'sugestoes' as ActiveSection,
-      title: "Sugestões",
-      description: "Canal de melhoria contínua",
+      id: 'sugestoes-erros' as ActiveSection,
+      title: "Sugestões e Erros",
+      description: "Melhoria contínua e registro de problemas",
       icon: Lightbulb,
       color: "success" as const,
-      stats: { count: 0, label: "Ideias" }
-    },
-    {
-      id: 'erros' as ActiveSection,
-      title: "Erros",
-      description: "Registro de problemas do sistema",
-      icon: AlertTriangle,
-      color: "destructive" as const,
-      stats: { count: 0, label: "Abertos" }
+      stats: { count: 0, label: "Registros" }
     },
     {
       id: 'assistencia' as ActiveSection,
@@ -255,8 +219,8 @@ const Index = () => {
         return <PendenciasForm />;
       case 'calculo-prazos':
         return <CalculoPrazosForm />;
-      case 'audiencias':
-        return <AudienciasForm />;
+      case 'sugestoes-erros':
+        return <SugestoesErrosForm />;
       case 'admin-usuarios':
         return <UserManagement />;
       case 'bulk-users':
@@ -272,16 +236,10 @@ const Index = () => {
             <BulkUserCreator />
           </div>
         );
-      case 'sugestoes':
-        return <SuestoesForm />;
-      case 'erros':
-        return <ErrosForm />;
       case 'balcao':
         return <BalcaoControladoriaForm />;
       case 'dashboard-controladoria':
         return <DashboardControladoria onBack={() => setActiveSection('home')} />;
-      case 'banco-dados':
-        return <BancoDados />;
       case 'assistencia':
         return <AssistenciaTecnicaForm />;
       default:

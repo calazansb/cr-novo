@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios' | 'bulk-users';
+type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
 
 interface ModernSidebarProps {
   activeSection: ActiveSection;
@@ -60,12 +60,6 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       color: "text-accent-foreground"
     },
     {
-      id: 'banco-dados' as ActiveSection,
-      title: "Banco de Dados",
-      icon: Database,
-      color: "text-secondary-foreground"
-    },
-    {
       id: 'decisoes' as ActiveSection,
       title: "Decisão Judicial",
       icon: Scale,
@@ -84,22 +78,10 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       color: "text-info"
     },
     {
-      id: 'audiencias' as ActiveSection,
-      title: "Agenda de Audiências",
-      icon: Calendar,
-      color: "text-secondary-foreground"
-    },
-    {
-      id: 'sugestoes' as ActiveSection,
-      title: "Sugestões",
+      id: 'sugestoes-erros' as ActiveSection,
+      title: "Sugestões e Erros",
       icon: Lightbulb,
       color: "text-success"
-    },
-    {
-      id: 'erros' as ActiveSection,
-      title: "Erros",
-      icon: AlertTriangle,
-      color: "text-destructive"
     },
     {
       id: 'assistencia' as ActiveSection,
@@ -109,7 +91,7 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
     },
     {
       id: 'admin-usuarios' as ActiveSection,
-      title: "Gerenciar Usuários",
+      title: "Gerenciar Usuários e Clientes",
       icon: Users,
       color: "text-violet-500"
     }
