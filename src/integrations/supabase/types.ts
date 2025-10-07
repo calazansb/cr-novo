@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      solicitacoes_controladoria: {
+        Row: {
+          anexos: string[] | null
+          anexos_resposta: string[] | null
+          cliente: string
+          codigo_unico: string
+          data_atualizacao: string
+          data_criacao: string
+          descricao_detalhada: string
+          id: string
+          nome_solicitante: string
+          numero_processo: string | null
+          objeto_solicitacao: string
+          observacoes: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          anexos?: string[] | null
+          anexos_resposta?: string[] | null
+          cliente: string
+          codigo_unico: string
+          data_atualizacao?: string
+          data_criacao?: string
+          descricao_detalhada: string
+          id?: string
+          nome_solicitante: string
+          numero_processo?: string | null
+          objeto_solicitacao: string
+          observacoes?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          anexos?: string[] | null
+          anexos_resposta?: string[] | null
+          cliente?: string
+          codigo_unico?: string
+          data_atualizacao?: string
+          data_criacao?: string
+          descricao_detalhada?: string
+          id?: string
+          nome_solicitante?: string
+          numero_processo?: string | null
+          objeto_solicitacao?: string
+          observacoes?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
