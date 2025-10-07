@@ -42,11 +42,11 @@ const ModernHeader = ({
               }} 
             />
           </div>
-          <div className="hidden lg:block border-l border-slate-300 dark:border-slate-600 pl-4 h-12 flex items-center">
-            <h1 className="font-display font-bold text-xl bg-gradient-to-r from-blue-600 to-blue-800 dark:from-blue-400 dark:to-blue-600 bg-clip-text text-transparent">
+          <div className="hidden lg:flex flex-col border-l border-slate-300 dark:border-slate-600 pl-4 h-12 justify-center">
+            <h1 className="font-display font-extrabold text-2xl bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 bg-clip-text text-transparent">
               Sistema CRA
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Comunicação Jurídica</p>
+            <p className="text-xs font-semibold text-muted-foreground">Comunicação Jurídica</p>
           </div>
         </div>
 
@@ -64,14 +64,14 @@ const ModernHeader = ({
         <div className="flex items-center space-x-3">
           {/* Current Time */}
           <div className="hidden sm:flex flex-col items-end mr-2">
-            <div className="text-sm font-medium text-foreground">
+            <div className="text-base font-bold text-foreground">
               {currentTime.toLocaleDateString('pt-BR', {
               weekday: 'short',
               day: '2-digit',
               month: 'short'
             })}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm font-semibold text-muted-foreground">
               {currentTime.toLocaleTimeString('pt-BR', {
               hour: '2-digit',
               minute: '2-digit'
@@ -87,7 +87,7 @@ const ModernHeader = ({
             variant="ghost" 
             size="icon" 
             onClick={toggleTheme} 
-            className="hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
@@ -96,7 +96,7 @@ const ModernHeader = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
           >
             <Settings className="w-5 h-5" />
           </Button>
@@ -105,14 +105,14 @@ const ModernHeader = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-3 py-2 h-auto transition-all">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center shadow-lg ring-2 ring-blue-200 dark:ring-blue-800">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-blue-100 dark:ring-blue-800">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="hidden sm:flex flex-col items-start">
-                  <span className="text-sm font-semibold text-foreground">
+                  <span className="text-sm font-bold text-foreground">
                     {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     {user?.email}
                   </span>
                 </div>
