@@ -209,11 +209,17 @@ export const CustomizableDashboard = () => {
   };
 
   const fetchRecentRequests = async () => {
+    // Buscar apenas solicitações do usuário logado
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (!currentUser) return;
+    
     const { data, error } = await supabase
       .from('solicitacoes_controladoria')
       .select('*')
+      .eq('user_id', currentUser.id) // Filtrar apenas do usuário logado
       .order('data_criacao', { ascending: false })
-      .limit(100); // Carrega mais para filtrar
+      .limit(100);
 
     if (!error && data) {
       setRecentRequests(data);
@@ -839,89 +845,107 @@ export const CustomizableDashboard = () => {
       <Card>
         <CardHeader className="pb-2 pt-3 space-y-0">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Solicitações Recentes
+            <CardTitle className="text-base flex items-center gap-2">
+              Todas as Solicitações
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent className="pb-3">
           <div className="space-y-3">
-            {/* Filtros em Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-              <Select value={tempFiltroStatus} onValueChange={setTempFiltroStatus}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos Status</SelectItem>
-                  <SelectItem value="pendente">Pendente</SelectItem>
-                  <SelectItem value="concluida">Concluída</SelectItem>
-                  <SelectItem value="cancelada">Cancelada</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Filtros em Grid - Igual ao DashboardControladoria */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Status</label>
+                <Select value={tempFiltroStatus} onValueChange={setTempFiltroStatus}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos Status</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="concluida">Concluída</SelectItem>
+                    <SelectItem value="cancelada">Cancelada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
-              <Select value={tempFiltroNome} onValueChange={setTempFiltroNome}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Solicitante" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos Solicitantes</SelectItem>
-                  {advogados.map(adv => (
-                    <SelectItem key={adv.id} value={adv.id}>{adv.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Solicitante</label>
+                <Select value={tempFiltroNome || 'todos'} onValueChange={setTempFiltroNome}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos Solicitantes</SelectItem>
+                    {advogados.map(adv => (
+                      <SelectItem key={adv.id} value={adv.id}>{adv.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               
-              <Select value={tempFiltroCliente} onValueChange={setTempFiltroCliente}>
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos Clientes</SelectItem>
-                  {clientes.map(cli => (
-                    <SelectItem key={cli.id} value={cli.id}>{cli.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Cliente</label>
+                <Select value={tempFiltroCliente || 'todos'} onValueChange={setTempFiltroCliente}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos Clientes</SelectItem>
+                    {clientes.map(cli => (
+                      <SelectItem key={cli.id} value={cli.id}>{cli.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={tempFiltroData}
-                onChange={(e) => setTempFiltroData(e.target.value)}
-                placeholder="Data"
-              />
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Data de Criação</label>
+                <Input
+                  type="date"
+                  className="h-9"
+                  value={tempFiltroData}
+                  onChange={(e) => setTempFiltroData(e.target.value)}
+                  placeholder="dd/mm/aaaa"
+                />
+              </div>
               
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={tempFiltroPrazo}
-                onChange={(e) => setTempFiltroPrazo(e.target.value)}
-                placeholder="Prazo"
-              />
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium">Data do Prazo</label>
+                <Input
+                  type="date"
+                  className="h-9"
+                  value={tempFiltroPrazo}
+                  onChange={(e) => setTempFiltroPrazo(e.target.value)}
+                  placeholder="dd/mm/aaaa"
+                />
+              </div>
             </div>
             
             {/* Botões de Aplicar e Limpar */}
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                className="flex-1"
-                onClick={aplicarFiltros}
-              >
-                Aplicar Filtros
-              </Button>
-              
+            <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
                 onClick={limparFiltros}
               >
-                Limpar Filtros
+                Limpar
+              </Button>
+              
+              <Button
+                variant="default"
+                size="sm"
+                onClick={aplicarFiltros}
+              >
+                Aplicar
               </Button>
             </div>
+            
+            {/* Contador de solicitações */}
+            <div className="text-sm text-muted-foreground">
+              Exibindo {requestsFiltradas.length} de {recentRequests.length} solicitações
+            </div>
+            
             
             {requestsFiltradas.length === 0 ? (
               <div className="px-6 py-12 text-center text-muted-foreground">
@@ -929,59 +953,63 @@ export const CustomizableDashboard = () => {
               </div>
             ) : (
             <div className="border rounded-lg overflow-hidden bg-background">
-              {/* Header da Tabela - idêntico ao DashboardControladoria */}
-              <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-                <div>Código</div>
-                <div>Solicitante</div>
-                <div>Cliente</div>
-                <div>Processo</div>
-                <div>Data</div>
-                <div>Prazo</div>
-                <div>Status</div>
-                <div className="text-right">Ações</div>
+              {/* Header da Tabela - igual ao DashboardControladoria */}
+              <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+                <div className="pr-4 border-r">Código / Processo / Objeto</div>
+                <div className="px-4 border-r text-center">Solicitante</div>
+                <div className="px-4 border-r text-center">Cliente</div>
+                <div className="px-4 border-r text-center">Data</div>
+                <div className="px-4 border-r text-center">Prazo</div>
+                <div className="px-4 border-r text-center">Status</div>
+                <div className="px-4 text-center">Ações</div>
               </div>
 
-              {/* Linhas da Tabela - idênticas em layout */}
+              {/* Linhas da Tabela - igual ao DashboardControladoria */}
               {requestsFiltradas.map((solicitacao, index) => (
                 <div 
                   key={solicitacao.id} 
-                  className={`grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
+                  className={`grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-4 items-start hover:bg-muted/30 transition-colors ${
                     index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                   }`}
                 >
-                  {/* Coluna 1: Código + Objeto */}
-                  <div>
-                    <div className="font-semibold text-sm">{formatCodigo(solicitacao.codigo_unico)}</div>
-                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{solicitacao.objeto_solicitacao}</div>
+                  {/* Coluna 1: Código + Processo + Descrição Completa */}
+                  <div className="pr-4 border-r space-y-1.5">
+                    <div className="font-semibold text-sm break-words text-black">{formatCodigo(solicitacao.codigo_unico)}</div>
+                    {solicitacao.numero_processo && (
+                      <div className="text-xs text-black break-words">
+                        <span className="font-bold">Processo:</span> {solicitacao.numero_processo}
+                      </div>
+                    )}
+                    <div className="text-xs text-black">
+                      <div className="break-words mb-1">
+                        <span className="font-bold">Objeto:</span> {solicitacao.objeto_solicitacao}
+                      </div>
+                      <div className="break-words whitespace-normal">{solicitacao.descricao_detalhada}</div>
+                    </div>
                   </div>
                   
                   {/* Coluna 2: Solicitante */}
-                  <div className="text-sm">
-                    {solicitacao.nome_solicitante}
+                  <div className="text-sm px-4 border-r text-center flex items-start justify-center">
+                    <span className="break-words text-black">{solicitacao.nome_solicitante}</span>
                   </div>
                   
                   {/* Coluna 3: Cliente */}
-                  <div className="text-sm">
-                    {solicitacao.cliente}
+                  <div className="text-sm px-4 border-r text-center flex items-start justify-center">
+                    <span className="break-words text-black">{solicitacao.cliente}</span>
                   </div>
                   
-                  {/* Coluna 4: Processo */}
-                  <div className="text-sm text-muted-foreground truncate">
-                    {solicitacao.numero_processo || 'N/A'}
-                  </div>
-                  
-                  {/* Coluna 5: Data */}
-                  <div className="text-sm text-muted-foreground">
+                  {/* Coluna 4: Data */}
+                  <div className="text-sm text-black px-4 border-r text-center flex items-start justify-center">
                     {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
                   </div>
                   
-                  {/* Coluna 6: Prazo */}
-                  <div className="text-sm text-muted-foreground">
+                  {/* Coluna 5: Prazo */}
+                  <div className="text-sm text-black px-4 border-r text-center flex items-start justify-center">
                     {solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
                   </div>
                   
-                  {/* Coluna 7: Status */}
-                  <div>
+                  {/* Coluna 6: Status */}
+                  <div className="px-4 border-r flex items-start justify-center">
                     <Badge 
                       className={`text-xs px-2.5 py-0.5 ${
                         solicitacao.status === 'concluida' 
@@ -995,9 +1023,9 @@ export const CustomizableDashboard = () => {
                     </Badge>
                   </div>
                   
-                  {/* Coluna 8: Ações */}
-                  <div>
-                    <div className="flex gap-1 justify-end items-center mb-1">
+                  {/* Coluna 7: Ações */}
+                  <div className="px-4 flex flex-col items-center justify-start">
+                    <div className="flex gap-1 justify-center items-center mb-2">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -1022,8 +1050,8 @@ export const CustomizableDashboard = () => {
                       </Button>
                     </div>
                     
-                    {/* Anexos abaixo dos botões - idênticos */}
-                    <div className="flex gap-2 justify-end items-center text-xs">
+                    {/* Anexos abaixo dos botões */}
+                    <div className="flex gap-2 justify-center items-center text-xs">
                       {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
                         <span className="flex items-center gap-0.5 text-blue-600" title={`${solicitacao.anexos.length} anexo(s)`}>
                           <Paperclip className="h-3.5 w-3.5" />
@@ -1038,8 +1066,8 @@ export const CustomizableDashboard = () => {
                       )}
                     </div>
                   </div>
-                  </div>
-                ))}
+                </div>
+              ))}
               </div>
             )}
           </div>
