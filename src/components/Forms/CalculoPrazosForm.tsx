@@ -319,10 +319,17 @@ ${new Date().toLocaleString('pt-BR')}`;
         </CardContent>
       </Card>
 
-      <Alert className="border-amber-200 bg-amber-50">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertDescription className="text-amber-800">
-          <strong>ATENÇÃO - IMPORTANTE:</strong> Este cálculo é apenas uma estimativa. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual.
+      <Alert className="border-2 border-red-600 bg-red-50 dark:bg-red-950/30 p-6">
+        <AlertDescription className="text-red-900 dark:text-red-100">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-8 w-8 text-red-600 flex-shrink-0 mt-1" />
+            <div>
+              <p className="text-xl font-bold mb-2">ATENÇÃO - IMPORTANTE</p>
+              <p className="text-base leading-relaxed">
+                Este cálculo é apenas uma estimativa automatizada. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual. O escritório não se responsabiliza por eventuais erros de cálculo.
+              </p>
+            </div>
+          </div>
         </AlertDescription>
       </Alert>
 
@@ -423,10 +430,15 @@ ${new Date().toLocaleString('pt-BR')}`;
               </CardContent>
             </Card>
             
-            <Alert className="border-red-200 bg-red-50">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                <strong>Atenção:</strong> Este resultado é apenas uma estimativa automatizada. Sempre verifique o prazo manualmente considerando feriados locais e particularidades do processo.
+            <Alert className="border-red-200 bg-red-50 dark:bg-red-950/30 p-4">
+              <AlertDescription className="text-red-800 dark:text-red-100">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block mb-1">Atenção:</strong>
+                    <span className="text-sm">Este resultado é apenas uma estimativa automatizada. Sempre verifique o prazo manualmente considerando feriados locais e particularidades do processo.</span>
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
 
