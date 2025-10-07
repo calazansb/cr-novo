@@ -43,7 +43,7 @@ const Index = () => {
     title: "Meu Dashboard",
     description: "Dashboard personalizável com widgets",
     icon: LayoutDashboard,
-    color: "accent" as const,
+    color: "teal" as const,
     stats: {
       count: 0,
       label: "Widgets"
@@ -93,7 +93,7 @@ const Index = () => {
     title: "Cálculo de Prazos",
     description: "Ferramenta de cálculo processual",
     icon: Calculator,
-    color: "accent" as const,
+    color: "rose" as const,
     stats: {
       count: 0,
       label: "Cálculos"
