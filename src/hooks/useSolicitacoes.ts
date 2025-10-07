@@ -39,7 +39,20 @@ export const useSolicitacoes = () => {
       console.log('📊 Resultado da consulta:', { data, error });
       
       if (error) throw error;
-      setSolicitacoes(data || []);
+      
+      // Log para debug dos anexos
+      if (data && data.length > 0) {
+        const firstItem: any = data[0];
+        console.log('📎 Anexos da primeira solicitação:', {
+          codigo: firstItem.codigo_unico,
+          anexos: firstItem.anexos,
+          tipo_anexos: typeof firstItem.anexos,
+          anexos_resposta: firstItem.anexos_resposta,
+          tipo_anexos_resposta: typeof firstItem.anexos_resposta
+        });
+      }
+      
+      setSolicitacoes(data as any || []);
       console.log('✅ Solicitações carregadas:', data?.length || 0);
     } catch (error) {
       console.error('❌ Erro ao carregar solicitações:', error);
