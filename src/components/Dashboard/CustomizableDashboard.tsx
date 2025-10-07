@@ -245,13 +245,23 @@ export const CustomizableDashboard = () => {
     if (filtroData) {
       const dataCriacao = new Date(req.data_criacao);
       const dataFiltro = new Date(filtroData);
-      if (dataCriacao.toDateString() !== dataFiltro.toDateString()) return false;
+      
+      // Normalizar ambas as datas para meia-noite UTC
+      dataCriacao.setHours(0, 0, 0, 0);
+      dataFiltro.setHours(0, 0, 0, 0);
+      
+      if (dataCriacao.getTime() !== dataFiltro.getTime()) return false;
     }
     
     if (filtroPrazo && req.prazo_retorno) {
       const prazoRetorno = new Date(req.prazo_retorno);
       const prazoFiltro = new Date(filtroPrazo);
-      if (prazoRetorno.toDateString() !== prazoFiltro.toDateString()) return false;
+      
+      // Normalizar ambas as datas para meia-noite UTC
+      prazoRetorno.setHours(0, 0, 0, 0);
+      prazoFiltro.setHours(0, 0, 0, 0);
+      
+      if (prazoRetorno.getTime() !== prazoFiltro.getTime()) return false;
     }
     
     return true;
@@ -551,10 +561,13 @@ export const CustomizableDashboard = () => {
                         index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                       }`}
                     >
-                      {/* Coluna 1: Código + Objeto */}
+                      {/* Coluna 1: Código + Descrição Completa */}
                       <div>
-                        <div className="font-semibold text-sm">{formatCodigo(req.codigo_unico)}</div>
-                        <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.objeto_solicitacao || 'Sem descrição'}</div>
+                        <div className="font-semibold text-sm mb-1">{formatCodigo(req.codigo_unico)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          <div className="font-medium mb-0.5">Objeto: {req.objeto_solicitacao || 'Sem descrição'}</div>
+                          <div className="line-clamp-3">{req.descricao_detalhada}</div>
+                        </div>
                       </div>
                       
                       {/* Coluna 2: Solicitante */}

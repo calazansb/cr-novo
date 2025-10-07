@@ -188,16 +188,24 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     if (filtroData) {
       const dataCriacao = new Date(s.data_criacao);
       const dataFiltro = new Date(filtroData);
-      // Compara apenas a data (ignora hora)
-      if (dataCriacao.toDateString() !== dataFiltro.toDateString()) return false;
+      
+      // Normalizar ambas as datas para meia-noite UTC
+      dataCriacao.setHours(0, 0, 0, 0);
+      dataFiltro.setHours(0, 0, 0, 0);
+      
+      if (dataCriacao.getTime() !== dataFiltro.getTime()) return false;
     }
     
     // Filtro por prazo (prazo_retorno)
     if (filtroPrazo && s.prazo_retorno) {
       const prazoRetorno = new Date(s.prazo_retorno);
       const prazoFiltro = new Date(filtroPrazo);
-      // Compara apenas a data (ignora hora)
-      if (prazoRetorno.toDateString() !== prazoFiltro.toDateString()) return false;
+      
+      // Normalizar ambas as datas para meia-noite UTC
+      prazoRetorno.setHours(0, 0, 0, 0);
+      prazoFiltro.setHours(0, 0, 0, 0);
+      
+      if (prazoRetorno.getTime() !== prazoFiltro.getTime()) return false;
     }
     
     return true;
@@ -764,10 +772,13 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   index !== solicitacoesFiltradas.length - 1 ? 'border-b' : ''
                 }`}
               >
-                {/* Coluna 1: Código + Objeto */}
+                {/* Coluna 1: Código + Descrição Completa */}
                 <div>
-                  <div className="font-semibold text-sm">{formatCodigo(solicitacao.codigo_unico)}</div>
-                  <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{solicitacao.objeto_solicitacao}</div>
+                  <div className="font-semibold text-sm mb-1">{formatCodigo(solicitacao.codigo_unico)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    <div className="font-medium mb-0.5">Objeto: {solicitacao.objeto_solicitacao}</div>
+                    <div className="line-clamp-3">{solicitacao.descricao_detalhada}</div>
+                  </div>
                 </div>
                 
                 {/* Coluna 2: Solicitante */}
