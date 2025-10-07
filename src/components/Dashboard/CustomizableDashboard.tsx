@@ -542,7 +542,7 @@ export const CustomizableDashboard = () => {
               ) : (
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
-                  <div className="grid grid-cols-[2.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+                  <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1fr_1fr_1fr_0.8fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
                     <div>Código / Processo / Objeto</div>
                     <div>Solicitante</div>
                     <div>Cliente</div>
@@ -556,7 +556,7 @@ export const CustomizableDashboard = () => {
                   {requestsFiltradas.map((req, index) => (
                     <div 
                       key={req.id} 
-                      className={`grid grid-cols-[2.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
+                      className={`grid grid-cols-[3fr_1.5fr_1.5fr_1fr_1fr_1fr_0.8fr] gap-4 px-6 py-4 items-start hover:bg-muted/30 transition-colors ${
                         index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                       }`}
                     >
