@@ -5,7 +5,10 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { openWhatsApp } from "@/lib/utils";
+import { useUsuarios } from "@/hooks/useUsuarios";
 import { z } from "zod";
 
 const assistenciaSchema = z.object({
@@ -16,6 +19,7 @@ const assistenciaSchema = z.object({
 
 const AssistenciaTecnicaForm = () => {
   const { toast } = useToast();
+  const { usuarios } = useUsuarios();
   const [formData, setFormData] = useState({
     nomeSolicitante: "",
     solicitacaoProblema: "",
@@ -223,17 +227,33 @@ ${validatedData.solicitacaoProblema}`;
 
         <CardContent className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              type="input"
-              id="nomeSolicitante"
-              label="Nome do Solicitante"
-              value={formData.nomeSolicitante}
-              onChange={(value) => handleInputChange('nomeSolicitante', value)}
-              placeholder="Digite seu nome completo"
-              required
-              error={errors.nomeSolicitante}
-              success={validatedFields.has('nomeSolicitante')}
-            />
+            {/* Nome do Solicitante - Select */}
+            <div className="space-y-2">
+              <Label htmlFor="nomeSolicitante">
+                Nome do Solicitante <span className="text-destructive">*</span>
+              </Label>
+              <Select 
+                value={formData.nomeSolicitante} 
+                onValueChange={(value) => handleInputChange('nomeSolicitante', value)}
+              >
+                <SelectTrigger className={errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}>
+                  <SelectValue placeholder="Selecione o solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  {usuarios.map((usuario) => (
+                    <SelectItem key={usuario.id} value={usuario.nome}>
+                      {usuario.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.nomeSolicitante && (
+                <p className="text-xs text-destructive">{errors.nomeSolicitante}</p>
+              )}
+              {validatedFields.has('nomeSolicitante') && !errors.nomeSolicitante && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
 
             <FormField
               type="select"

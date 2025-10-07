@@ -85,7 +85,7 @@ const BalcaoControladoriaForm = () => {
         const usuariosLimpos = data.map(u => ({
           ...u,
           nome: u.nome?.replace(/\*+$/, '').trim() || ''
-        }));
+        })).filter(u => u.nome); // Remover usuários sem nome
         setUsuarios(usuariosLimpos);
       }
     };

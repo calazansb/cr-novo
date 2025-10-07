@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Lightbulb, MessageCircle, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUsuarios } from "@/hooks/useUsuarios";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
@@ -23,6 +24,7 @@ const sugestaoSchema = z.object({
 
 const SuestoesForm = () => {
   const { toast } = useToast();
+  const { usuarios } = useUsuarios();
   const [formData, setFormData] = useState({
     categoria: "",
     titulo: "",
@@ -174,13 +176,21 @@ ${validatedData.implementacao ? `*Proposta de Implementação:*\n${validatedData
               <Label htmlFor="solicitante" className="text-sm font-medium">
                 Solicitante *
               </Label>
-              <Input
-                id="solicitante"
-                placeholder="Seu nome completo"
-                value={formData.solicitante}
-                onChange={(e) => handleInputChange('solicitante', e.target.value)}
-                className="bg-background"
-              />
+              <Select 
+                value={formData.solicitante} 
+                onValueChange={(value) => handleInputChange('solicitante', value)}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Selecione o solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  {usuarios.map((usuario) => (
+                    <SelectItem key={usuario.id} value={usuario.nome}>
+                      {usuario.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
