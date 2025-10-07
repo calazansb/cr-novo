@@ -135,60 +135,45 @@ const Index = () => {
               </p>
             </div>
 
-            {/* Navigation Menu - Compact Vertical Layout */}
-            <div className="max-w-4xl mx-auto space-y-2">
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-all text-left group"
-                  >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <Icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
-                      <p className="text-xs text-muted-foreground truncate">{item.description}</p>
-                    </div>
-                    <div className="flex-shrink-0 text-right">
-                      <div className="text-lg font-bold text-foreground">{item.stats.count}</div>
-                      <div className="text-xs text-muted-foreground">{item.stats.label}</div>
-                    </div>
-                  </button>
-                );
-              })}
+            {/* Compact Navigation List */}
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-card rounded-lg border shadow-sm divide-y">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveSection(item.id)}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-accent/50 transition-colors text-left first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <Icon className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="text-sm font-medium flex-1">{item.title}</span>
+                      <span className="text-xs text-muted-foreground">{item.stats.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Quick Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+            {/* Compact Stats */}
+            <div className="max-w-2xl mx-auto grid grid-cols-4 gap-2 mt-4">
               {[{
-              label: "Processos Ativos",
-              value: "0",
-              trend: "+12%",
-              loading: false
+              label: "Processos",
+              value: "0"
             }, {
               label: "Documentos",
-              value: "0",
-              trend: "+8%",
-              loading: false
+              value: "0"
             }, {
-              label: "Usuários Online",
-              value: "1",
-              trend: "+15%",
-              loading: false
+              label: "Online",
+              value: "1"
             }, {
-              label: "Tarefas Hoje",
-              value: "0",
-              trend: "+3%",
-              loading: false
+              label: "Tarefas",
+              value: "0"
             }].map((stat, index) => (
-              <Card key={index} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200 dark:border-slate-700">
-                <CardContent className="p-3">
+              <Card key={index} className="bg-card/50">
+                <CardContent className="p-2 text-center">
+                  <div className="text-lg font-bold">{stat.value}</div>
                   <div className="text-xs text-muted-foreground">{stat.label}</div>
-                  <div className="text-xl font-bold mt-1">{stat.value}</div>
-                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">{stat.trend}</div>
                 </CardContent>
               </Card>
             ))}
@@ -232,7 +217,7 @@ const Index = () => {
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <ModernSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
-      <div className="lg:ml-72">
+      <div className="lg:ml-64">
         <ModernHeader />
         
         <main className="container mx-auto px-4 py-6">
