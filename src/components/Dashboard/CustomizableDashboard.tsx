@@ -713,70 +713,76 @@ export const CustomizableDashboard = () => {
             </div>
             
             <ScrollArea className="h-[400px]">
-              <div className="space-y-2">
+              <div className="space-y-2 pr-2">
                 {requestsFiltradas.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     Nenhuma solicitação encontrada
                   </p>
                 ) : (
                   requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-3 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
+                    <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-semibold text-sm">{req.codigo_unico}</p>
-                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-semibold text-sm truncate">{req.codigo_unico}</p>
+                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs flex-shrink-0">
                               {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
-                            <p><span className="font-semibold">Processo:</span> {req.numero_processo || 'N/A'}</p>
-                            <p><span className="font-semibold">Cliente:</span> {req.cliente}</p>
-                            <p><span className="font-semibold">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
-                            <div className="flex gap-1">
-                              {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
-                                  📎 {req.anexos.length}
-                                </Badge>
-                              )}
-                              {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
-                                  📤 {req.anexos_resposta.length}
-                                </Badge>
+                          
+                          <div className="text-xs space-y-0">
+                            <div className="flex gap-3">
+                              <span><span className="font-semibold">Processo:</span> {req.numero_processo || 'N/A'}</span>
+                              <span><span className="font-semibold">Cliente:</span> {req.cliente}</span>
+                            </div>
+                            <div className="flex gap-3">
+                              <span><span className="font-semibold">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span>
+                              {(req.anexos?.length > 0 || req.anexos_resposta?.length > 0) && (
+                                <div className="flex gap-1">
+                                  {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                                    <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
+                                      📎 {req.anexos.length}
+                                    </Badge>
+                                  )}
+                                  {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                                    <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
+                                      📤 {req.anexos_resposta.length}
+                                    </Badge>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
+                          
                           {req.ultima_modificacao_em && (
-                            <p className="text-xs text-muted-foreground">
-                              <span className="font-semibold">Modificado:</span> {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            <p className="text-xs text-muted-foreground italic">
+                              Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           )}
                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 h-7 text-xs"
-                          onClick={() => setSolicitacaoVisualizando(req)}
-                        >
-                          <Eye className="mr-1 h-3 w-3" />
-                          Ver
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="flex-1 h-7 text-xs"
-                          onClick={() => {
-                            setSolicitacaoEditando(req);
-                            setNovoStatus(req.status);
-                            setObservacoes(req.observacoes || '');
-                          }}
-                        >
-                          <Edit className="mr-1 h-3 w-3" />
-                          Editar
-                        </Button>
+                        
+                        <div className="flex gap-1 flex-shrink-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 w-7 p-0"
+                            onClick={() => setSolicitacaoVisualizando(req)}
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => {
+                              setSolicitacaoEditando(req);
+                              setNovoStatus(req.status);
+                              setObservacoes(req.observacoes || '');
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))
