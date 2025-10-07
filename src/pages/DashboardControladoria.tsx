@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { FileUpload } from '@/components/ui/file-upload';
 import { useToast } from '@/hooks/use-toast';
+import { formatCodigo } from '@/lib/utils';
 
 // Tipo para compatibilidade
 type SolicitacaoControladoria = Database['public']['Tables']['solicitacoes_controladoria']['Row'];
@@ -293,7 +294,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <CardTitle className="text-lg">{solicitacao.codigo_unico}</CardTitle>
+                    <CardTitle className="text-lg">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
                     <CardDescription className="space-y-0.5">
                       <div><strong>Solicitante:</strong> {solicitacao.nome_solicitante}</div>
                       <div><strong>Cliente:</strong> {solicitacao.cliente}</div>
@@ -318,7 +319,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Detalhes da Solicitação {solicitacao.codigo_unico}</DialogTitle>
+                            <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
                             <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">

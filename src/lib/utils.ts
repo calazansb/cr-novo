@@ -99,3 +99,19 @@ export function openWhatsApp(message: string, phoneNumber?: string) {
     cleanup();
   }
 }
+
+// Formata código da solicitação para o padrão CTRL-DD-MM-YYYY-NNNN
+export function formatCodigo(codigo: string): string {
+  if (!codigo) return codigo;
+  const m1 = codigo.match(/^CTRL-(\d{8})-(\d{4})$/); // Ex.: CTRL-20251007-0004
+  if (m1) {
+    const y = m1[1].slice(0, 4);
+    const mo = m1[1].slice(4, 6);
+    const d = m1[1].slice(6, 8);
+    return `CTRL-${d}-${mo}-${y}-${m1[2]}`;
+  }
+  // Se já estiver no formato novo, retorna como está
+  const m2 = codigo.match(/^CTRL-\d{2}-\d{2}-\d{4}-\d{4}$/);
+  if (m2) return codigo;
+  return codigo;
+}

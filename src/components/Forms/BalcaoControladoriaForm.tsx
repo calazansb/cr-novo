@@ -9,7 +9,7 @@ import { FormField } from "@/components/ui/form-field";
 import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
-import { openWhatsApp } from "@/lib/utils";
+import { openWhatsApp, formatCodigo } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
 import { z } from "zod";
@@ -281,7 +281,9 @@ ${validatedData.solicitacao}`;
 
       message += `\n\n⚠️ *Guarde este código para acompanhar sua solicitação.*`;
 
-      openWhatsApp(message, "+553132953474");
+      // Abrir WhatsApp com a mensagem
+      const whatsappUrl = `https://wa.me/553132953474?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
 
       toast({
         title: "Solicitação registrada!",
