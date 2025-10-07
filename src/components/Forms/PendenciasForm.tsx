@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateField } from "@/components/ui/date-field";
-import { ClipboardList, MessageCircle, Mail, Calendar } from "lucide-react";
+import { AlertTriangle, MessageCircle, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientes } from "@/hooks/useClientes";
 import { openWhatsApp } from "@/lib/utils";
@@ -128,7 +128,7 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-gradient-to-br from-warning/20 to-warning/10 rounded-xl">
-              <ClipboardList className="h-12 w-12 text-warning" />
+              <AlertTriangle className="h-12 w-12 text-warning" />
             </div>
           </div>
           <CardTitle className="text-3xl text-gradient">Pendências / Urgências</CardTitle>

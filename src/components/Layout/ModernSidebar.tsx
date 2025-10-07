@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/Auth/AuthProvider";
-import { Users, Building, BarChart3, Scale, ClipboardList, Lightbulb, AlertTriangle, Settings, Database, Menu, X, Home, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
+import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, Home, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
@@ -50,7 +50,7 @@ const ModernSidebar = ({
   }, {
     id: 'pendencias' as ActiveSection,
     title: "Pendências / Urgências",
-    icon: ClipboardList,
+    icon: AlertTriangle,
     color: "text-rose-500",
     bgHover: "hover:bg-rose-500/10"
   }, {

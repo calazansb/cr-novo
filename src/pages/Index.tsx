@@ -15,7 +15,7 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 import UserManagement from "@/components/Admin/UserManagement";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
-import { Building, BarChart3, Scale, ClipboardList, Lightbulb, Settings, Calculator, LayoutDashboard } from 'lucide-react';
+import { Building, BarChart3, Scale, AlertTriangle, Lightbulb, Settings, Calculator, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -82,7 +82,7 @@ const Index = () => {
     id: 'pendencias' as ActiveSection,
     title: "Pendências / Urgências",
     description: "Gestão de tarefas prioritárias",
-    icon: ClipboardList,
+    icon: AlertTriangle,
     color: "warning" as const,
     stats: {
       count: 0,
