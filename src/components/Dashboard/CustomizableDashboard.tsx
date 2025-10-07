@@ -138,7 +138,7 @@ export const CustomizableDashboard = () => {
   const [novoStatus, setNovoStatus] = useState<string>('');
   const [observacoes, setObservacoes] = useState('');
 
-  // Carregar widgets salvos
+  // Carregar widgets salvos e configurar filtro padrão do usuário logado
   useEffect(() => {
     loadWidgets();
     fetchStats();
@@ -154,6 +154,15 @@ export const CustomizableDashboard = () => {
       
       if (!error && data) {
         setAdvogados(data);
+        
+        // Definir automaticamente o filtro para o usuário logado
+        if (user?.id) {
+          const usuarioLogado = data.find(adv => adv.id === user.id);
+          if (usuarioLogado) {
+            setFiltroNome(usuarioLogado.id);
+            setTempFiltroNome(usuarioLogado.id);
+          }
+        }
       }
     };
     
