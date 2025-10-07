@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateField } from "@/components/ui/date-field";
 import { ClipboardList, MessageCircle, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useClientes } from "@/hooks/useClientes";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
@@ -23,6 +24,7 @@ const pendenciaSchema = z.object({
 
 const PendenciasForm = () => {
   const { toast } = useToast();
+  const { clientes } = useClientes();
   const [formData, setFormData] = useState({
     numeroProcesso: "",
     tipoUrgencia: "",
@@ -34,9 +36,21 @@ const PendenciasForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [clienteOutro, setClienteOutro] = useState("");
+  const [showClienteOutro, setShowClienteOutro] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se o cliente for "Outros", mostrar campo de texto
+    if (field === 'cliente') {
+      if (value === 'Outros') {
+        setShowClienteOutro(true);
+      } else {
+        setShowClienteOutro(false);
+        setClienteOutro('');
+      }
+    }
   };
 
 
@@ -44,13 +58,26 @@ const PendenciasForm = () => {
     try {
       const validatedData = pendenciaSchema.parse(formData);
 
+      // Usar o cliente digitado se for "Outros"
+      const clienteFinal = formData.cliente === 'Outros' ? clienteOutro : validatedData.cliente;
+
+      // Validar cliente personalizado
+      if (formData.cliente === 'Outros' && !clienteOutro.trim()) {
+        toast({
+          title: "Erro de validação",
+          description: "Por favor, digite o nome do cliente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const message = `*PENDÊNCIA/URGÊNCIA - CALAZANS ROSSI ADVOGADOS*
     
 *Processo:* ${validatedData.numeroProcesso}
 *Tipo de Urgência:* ${validatedData.tipoUrgencia}
 *Prazo Limite:* ${validatedData.prazoLimite}
 *Advogado Responsável:* ${validatedData.responsavel}
-*Cliente:* ${validatedData.cliente}
+*Cliente:* ${clienteFinal}
 
 *Descrição da Pendência:*
 ${validatedData.descricao}
@@ -75,6 +102,8 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
         cliente: "",
         observacoes: ""
       });
+      setClienteOutro('');
+      setShowClienteOutro(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const firstError = error.errors[0];
@@ -168,13 +197,30 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
               <Label htmlFor="cliente" className="text-sm font-medium">
                 Cliente *
               </Label>
-              <Input
-                id="cliente"
-                placeholder="Nome do cliente"
-                value={formData.cliente}
-                onChange={(e) => handleInputChange('cliente', e.target.value)}
-                className="bg-background"
-              />
+              <Select 
+                value={formData.cliente} 
+                onValueChange={(value) => handleInputChange('cliente', value)}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map((cliente) => (
+                    <SelectItem key={cliente} value={cliente}>
+                      {cliente}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {showClienteOutro && (
+                <Input
+                  placeholder="Digite o nome do cliente"
+                  value={clienteOutro}
+                  onChange={(e) => setClienteOutro(e.target.value)}
+                  className="mt-2 bg-background"
+                />
+              )}
             </div>
           </div>
 

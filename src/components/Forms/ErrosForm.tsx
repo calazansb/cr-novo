@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateField } from "@/components/ui/date-field";
 import { AlertTriangle, MessageCircle, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useClientes } from "@/hooks/useClientes";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
@@ -25,6 +26,7 @@ const erroSchema = z.object({
 
 const ErrosForm = () => {
   const { toast } = useToast();
+  const { clientes } = useClientes();
   const [formData, setFormData] = useState({
     tipoErro: "",
     gravidade: "",
@@ -38,9 +40,21 @@ const ErrosForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [clienteOutro, setClienteOutro] = useState("");
+  const [showClienteOutro, setShowClienteOutro] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se o cliente for "Outros", mostrar campo de texto
+    if (field === 'cliente') {
+      if (value === 'Outros') {
+        setShowClienteOutro(true);
+      } else {
+        setShowClienteOutro(false);
+        setClienteOutro('');
+      }
+    }
   };
 
 
@@ -50,12 +64,15 @@ const ErrosForm = () => {
     try {
       const validatedData = erroSchema.parse(formData);
 
+      // Usar o cliente digitado se for "Outros"
+      const clienteFinal = formData.cliente === 'Outros' ? clienteOutro : (validatedData.cliente || 'N/A');
+
       const message = `*🚨 RELATÓRIO DE ERRO*
 
 *Tipo de Erro:* ${validatedData.tipoErro}
 *Gravidade:* ${validatedData.gravidade}
 *Processo:* ${validatedData.numeroProcesso || 'N/A'}
-*Cliente:* ${validatedData.cliente || 'N/A'}
+*Cliente:* ${clienteFinal}
 *Responsável:* ${validatedData.responsavel}
 
 *Descrição do Erro:*
@@ -90,6 +107,8 @@ Relatório gerado automaticamente pelo Sistema Calazans Rossi`;
         acaoCorretiva: "",
         prazoCorrecao: ""
       });
+      setClienteOutro('');
+      setShowClienteOutro(false);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const firstError = error.errors[0];
@@ -194,13 +213,30 @@ Relatório gerado automaticamente pelo Sistema Calazans Rossi`;
               <Label htmlFor="cliente" className="text-sm font-medium">
                 Cliente Afetado
               </Label>
-              <Input
-                id="cliente"
-                placeholder="Nome do cliente (se aplicável)"
-                value={formData.cliente}
-                onChange={(e) => handleInputChange('cliente', e.target.value)}
-                className="bg-background"
-              />
+              <Select 
+                value={formData.cliente} 
+                onValueChange={(value) => handleInputChange('cliente', value)}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Selecione o cliente (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map((cliente) => (
+                    <SelectItem key={cliente} value={cliente}>
+                      {cliente}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {showClienteOutro && (
+                <Input
+                  placeholder="Digite o nome do cliente"
+                  value={clienteOutro}
+                  onChange={(e) => setClienteOutro(e.target.value)}
+                  className="mt-2 bg-background"
+                />
+              )}
             </div>
 
             <DateField

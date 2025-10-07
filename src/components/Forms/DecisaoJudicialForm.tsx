@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, MessageCircle, Mail, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
+import { useClientes } from "@/hooks/useClientes";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
@@ -22,6 +25,7 @@ const decisaoSchema = z.object({
 
 const DecisaoJudicialForm = () => {
   const { toast } = useToast();
+  const { clientes } = useClientes();
   const [formData, setFormData] = useState({
     numeroProcesso: "",
     varaTribunal: "",
@@ -37,6 +41,8 @@ const DecisaoJudicialForm = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
+  const [clienteOutro, setClienteOutro] = useState("");
+  const [showClienteOutro, setShowClienteOutro] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -100,6 +106,16 @@ const DecisaoJudicialForm = () => {
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
+    // Se o cliente for "Outros", mostrar campo de texto
+    if (field === 'nomeCliente') {
+      if (value === 'Outros') {
+        setShowClienteOutro(true);
+      } else {
+        setShowClienteOutro(false);
+        setClienteOutro('');
+      }
+    }
+    
     // Validate after a short delay
     setTimeout(() => validateField(field, value), 300);
   };
@@ -152,9 +168,22 @@ ${formData.resumoDecisao}
     try {
       const validatedData = decisaoSchema.parse(formData);
 
+      // Usar o cliente digitado se for "Outros"
+      const clienteFinal = formData.nomeCliente === 'Outros' ? clienteOutro : validatedData.nomeCliente;
+
+      // Validar cliente personalizado
+      if (formData.nomeCliente === 'Outros' && !clienteOutro.trim()) {
+        toast({
+          title: "Erro de validação",
+          description: "Por favor, digite o nome do cliente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
     
-*Cliente:* ${validatedData.nomeCliente}
+*Cliente:* ${clienteFinal}
 *Processo:* ${validatedData.numeroProcesso}
 *Tipo de Decisão:* ${validatedData.tipoDecisao}
 *Vara/Tribunal:* ${validatedData.varaTribunal}
@@ -186,6 +215,8 @@ ${validatedData.resumoDecisao}
       });
       setErrors({});
       setValidatedFields(new Set());
+      setClienteOutro('');
+      setShowClienteOutro(false);
       localStorage.removeItem('decisao-draft');
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -270,17 +301,43 @@ ${validatedData.resumoDecisao}
               success={validatedFields.has('varaTribunal')}
             />
 
-            <FormField
-              type="input"
-              id="nomeCliente"
-              label="Nome do Cliente"
-              value={formData.nomeCliente}
-              onChange={(value) => handleInputChange('nomeCliente', value)}
-              placeholder="Nome completo do cliente"
-              required
-              error={errors.nomeCliente}
-              success={validatedFields.has('nomeCliente')}
-            />
+            {/* Nome do Cliente - Select */}
+            <div className="space-y-2">
+              <Label htmlFor="nomeCliente">
+                Nome do Cliente <span className="text-destructive">*</span>
+              </Label>
+              <Select 
+                value={formData.nomeCliente} 
+                onValueChange={(value) => handleInputChange('nomeCliente', value)}
+              >
+                <SelectTrigger className={errors.nomeCliente ? "border-destructive" : validatedFields.has('nomeCliente') ? "border-success" : ""}>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map((cliente) => (
+                    <SelectItem key={cliente} value={cliente}>
+                      {cliente}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {showClienteOutro && (
+                <Input
+                  placeholder="Digite o nome do cliente"
+                  value={clienteOutro}
+                  onChange={(e) => setClienteOutro(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+              
+              {errors.nomeCliente && (
+                <p className="text-xs text-destructive">{errors.nomeCliente}</p>
+              )}
+              {validatedFields.has('nomeCliente') && !errors.nomeCliente && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
 
             <FormField
               type="select"
