@@ -17,7 +17,7 @@ const decisaoSchema = z.object({
   varaTribunal: z.string().trim().min(1, "Vara/Tribunal é obrigatório").max(200, "Máximo 200 caracteres"),
   nomeCliente: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
   tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
-  advogadoInterno: z.string().trim().min(1, "Advogado interno é obrigatório").max(100, "Máximo 100 caracteres"),
+  advogadoInterno: z.string().trim().min(1, "Adv. Jurídico Interno é obrigatório").max(100, "Máximo 100 caracteres"),
   adverso: z.string().trim().min(1, "Adverso é obrigatório").max(100, "Máximo 100 caracteres"),
   procedimentoObjeto: z.string().trim().min(1, "Procedimento/Objeto é obrigatório").max(200, "Máximo 200 caracteres"),
   resumoDecisao: z.string().trim().min(20, "Resumo deve ter pelo menos 20 caracteres").max(2000, "Máximo 2000 caracteres")
@@ -363,7 +363,7 @@ ${validatedData.resumoDecisao}
             <FormField
               type="input"
               id="advogadoInterno"
-              label="Advogado Interno"
+              label="Adv. Jurídico Interno"
               value={formData.advogadoInterno}
               onChange={(value) => handleInputChange('advogadoInterno', value)}
               placeholder="Nome do advogado responsável"
