@@ -59,24 +59,26 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
-  // Novos estados para filtros avançados
+  // Estados para filtros avançados
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCliente, setFiltroCliente] = useState('');
   const [filtroDataInicio, setFiltroDataInicio] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
   const [filtroPrazoInicio, setFiltroPrazoInicio] = useState('');
   const [filtroPrazoFim, setFiltroPrazoFim] = useState('');
-
-  // Lista de solicitantes e clientes únicos extraída das solicitações
-  const solicitantesUnicos = useMemo(() => {
-    const nomes = new Set(solicitacoes.map(s => s.nome_solicitante));
-    return Array.from(nomes).sort();
-  }, [solicitacoes]);
-
-  const clientesUnicos = useMemo(() => {
-    const clientes = new Set(solicitacoes.map(s => s.cliente));
-    return Array.from(clientes).sort();
-  }, [solicitacoes]);
+  
+  // Estados temporários para os filtros (antes de aplicar)
+  const [tempFiltroStatus, setTempFiltroStatus] = useState('todos');
+  const [tempFiltroNome, setTempFiltroNome] = useState('');
+  const [tempFiltroCliente, setTempFiltroCliente] = useState('');
+  const [tempFiltroDataInicio, setTempFiltroDataInicio] = useState('');
+  const [tempFiltroDataFim, setTempFiltroDataFim] = useState('');
+  const [tempFiltroPrazoInicio, setTempFiltroPrazoInicio] = useState('');
+  const [tempFiltroPrazoFim, setTempFiltroPrazoFim] = useState('');
+  
+  // Dados para os dropdowns
+  const [advogados, setAdvogados] = useState<Array<{id: string, nome: string}>>([]);
+  const [clientes, setClientes] = useState<Array<{id: string, nome: string}>>([]);
 
   // Verificar se tabela existe
   const verificarTabela = async () => {
@@ -136,16 +138,55 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       obterUsuarioLogado();
     }
   }, []);
+  
+  // Carregar advogados e clientes
+  useEffect(() => {
+    const carregarAdvogados = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nome')
+        .in('perfil', ['advogado', 'admin'])
+        .order('nome');
+      
+      if (!error && data) {
+        setAdvogados(data);
+      }
+    };
+    
+    const carregarClientes = async () => {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .order('nome');
+      
+      if (!error && data) {
+        setClientes(data);
+      }
+    };
+    
+    carregarAdvogados();
+    carregarClientes();
+  }, []);
   // Aplicar todos os filtros
   const solicitacoesFiltradas = solicitacoes.filter(s => {
     // Filtro por status
     if (filtroStatus !== 'todos' && s.status !== filtroStatus) return false;
     
-    // Filtro por nome do solicitante (exato match)
-    if (filtroNome && filtroNome !== 'todos' && s.nome_solicitante !== filtroNome) return false;
+    // Filtro por nome do solicitante (busca parcial no nome)
+    if (filtroNome && filtroNome !== 'todos') {
+      const advogadoSelecionado = advogados.find(a => a.id === filtroNome);
+      if (advogadoSelecionado && s.nome_solicitante !== advogadoSelecionado.nome) {
+        return false;
+      }
+    }
     
-    // Filtro por cliente (exato match)
-    if (filtroCliente && filtroCliente !== 'todos' && s.cliente !== filtroCliente) return false;
+    // Filtro por cliente (busca parcial no nome)
+    if (filtroCliente && filtroCliente !== 'todos') {
+      const clienteSelecionado = clientes.find(c => c.id === filtroCliente);
+      if (clienteSelecionado && s.cliente !== clienteSelecionado.nome) {
+        return false;
+      }
+    }
     
     // Filtro por data de início (data_criacao)
     if (filtroDataInicio) {
@@ -158,7 +199,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     if (filtroDataFim) {
       const dataCriacao = new Date(s.data_criacao);
       const dataFim = new Date(filtroDataFim);
-      dataFim.setHours(23, 59, 59, 999); // Incluir todo o dia
+      dataFim.setHours(23, 59, 59, 999);
       if (dataCriacao > dataFim) return false;
     }
     
@@ -179,6 +220,35 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     
     return true;
   });
+  
+  // Função para aplicar os filtros
+  const aplicarFiltros = () => {
+    setFiltroStatus(tempFiltroStatus);
+    setFiltroNome(tempFiltroNome);
+    setFiltroCliente(tempFiltroCliente);
+    setFiltroDataInicio(tempFiltroDataInicio);
+    setFiltroDataFim(tempFiltroDataFim);
+    setFiltroPrazoInicio(tempFiltroPrazoInicio);
+    setFiltroPrazoFim(tempFiltroPrazoFim);
+  };
+  
+  // Função para limpar filtros
+  const limparFiltros = () => {
+    setFiltroStatus('todos');
+    setFiltroNome('');
+    setFiltroCliente('');
+    setFiltroDataInicio('');
+    setFiltroDataFim('');
+    setFiltroPrazoInicio('');
+    setFiltroPrazoFim('');
+    setTempFiltroStatus('todos');
+    setTempFiltroNome('');
+    setTempFiltroCliente('');
+    setTempFiltroDataInicio('');
+    setTempFiltroDataFim('');
+    setTempFiltroPrazoInicio('');
+    setTempFiltroPrazoFim('');
+  };
   const estatisticas = {
     total: solicitacoes.length,
     pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
@@ -416,7 +486,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 {/* Filtro por Status */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium">Status</label>
-                  <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                  <Select value={tempFiltroStatus} onValueChange={setTempFiltroStatus}>
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder="Filtrar por status" />
                     </SelectTrigger>
@@ -429,17 +499,17 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </Select>
                 </div>
 
-                {/* Filtro por Solicitante */}
+                {/* Filtro por Solicitante (Advogados/Admins) */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium">Solicitante</label>
-                  <Select value={filtroNome || 'todos'} onValueChange={setFiltroNome}>
+                  <Select value={tempFiltroNome || 'todos'} onValueChange={setTempFiltroNome}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos Solicitantes</SelectItem>
-                      {solicitantesUnicos.map(nome => (
-                        <SelectItem key={nome} value={nome}>{nome}</SelectItem>
+                      {advogados.map(adv => (
+                        <SelectItem key={adv.id} value={adv.id}>{adv.nome}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -448,14 +518,14 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 {/* Filtro por Cliente */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium">Cliente</label>
-                  <Select value={filtroCliente || 'todos'} onValueChange={setFiltroCliente}>
+                  <Select value={tempFiltroCliente || 'todos'} onValueChange={setTempFiltroCliente}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos Clientes</SelectItem>
-                      {clientesUnicos.map(cliente => (
-                        <SelectItem key={cliente} value={cliente}>{cliente}</SelectItem>
+                      {clientes.map(cli => (
+                        <SelectItem key={cli.id} value={cli.id}>{cli.nome}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -467,8 +537,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   <Input
                     type="date"
                     className="h-9"
-                    value={filtroDataInicio}
-                    onChange={(e) => setFiltroDataInicio(e.target.value)}
+                    value={tempFiltroDataInicio}
+                    onChange={(e) => setTempFiltroDataInicio(e.target.value)}
                   />
                 </div>
 
@@ -478,8 +548,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   <Input
                     type="date"
                     className="h-9"
-                    value={filtroDataFim}
-                    onChange={(e) => setFiltroDataFim(e.target.value)}
+                    value={tempFiltroDataFim}
+                    onChange={(e) => setTempFiltroDataFim(e.target.value)}
                   />
                 </div>
 
@@ -489,8 +559,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   <Input
                     type="date"
                     className="h-9"
-                    value={filtroPrazoInicio}
-                    onChange={(e) => setFiltroPrazoInicio(e.target.value)}
+                    value={tempFiltroPrazoInicio}
+                    onChange={(e) => setTempFiltroPrazoInicio(e.target.value)}
                   />
                 </div>
 
@@ -500,28 +570,31 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   <Input
                     type="date"
                     className="h-9"
-                    value={filtroPrazoFim}
-                    onChange={(e) => setFiltroPrazoFim(e.target.value)}
+                    value={tempFiltroPrazoFim}
+                    onChange={(e) => setTempFiltroPrazoFim(e.target.value)}
                   />
                 </div>
 
-                {/* Botão Limpar Filtros */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full h-9"
-                  onClick={() => {
-                    setFiltroStatus('todos');
-                    setFiltroNome('todos');
-                    setFiltroCliente('todos');
-                    setFiltroDataInicio('');
-                    setFiltroDataFim('');
-                    setFiltroPrazoInicio('');
-                    setFiltroPrazoFim('');
-                  }}
-                >
-                  Limpar Filtros
-                </Button>
+                {/* Botões de Aplicar e Limpar */}
+                <div className="space-y-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="w-full h-9"
+                    onClick={aplicarFiltros}
+                  >
+                    Aplicar Filtros
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-9"
+                    onClick={limparFiltros}
+                  >
+                    Limpar Filtros
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

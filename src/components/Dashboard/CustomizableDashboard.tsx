@@ -123,6 +123,19 @@ export const CustomizableDashboard = () => {
   const [filtroPrazoInicio, setFiltroPrazoInicio] = useState('');
   const [filtroPrazoFim, setFiltroPrazoFim] = useState('');
   
+  // Filtros temporários
+  const [tempFiltroStatus, setTempFiltroStatus] = useState<string>('todos');
+  const [tempFiltroNome, setTempFiltroNome] = useState('todos');
+  const [tempFiltroCliente, setTempFiltroCliente] = useState('todos');
+  const [tempFiltroDataInicio, setTempFiltroDataInicio] = useState('');
+  const [tempFiltroDataFim, setTempFiltroDataFim] = useState('');
+  const [tempFiltroPrazoInicio, setTempFiltroPrazoInicio] = useState('');
+  const [tempFiltroPrazoFim, setTempFiltroPrazoFim] = useState('');
+  
+  // Dados para dropdowns
+  const [advogados, setAdvogados] = useState<Array<{id: string, nome: string}>>([]);
+  const [clientes, setClientes] = useState<Array<{id: string, nome: string}>>([]);
+  
   // Dialogs de Ver e Editar
   const [solicitacaoVisualizando, setSolicitacaoVisualizando] = useState<any | null>(null);
   const [solicitacaoEditando, setSolicitacaoEditando] = useState<any | null>(null);
@@ -134,6 +147,33 @@ export const CustomizableDashboard = () => {
     loadWidgets();
     fetchStats();
     fetchRecentRequests();
+    
+    // Carregar advogados e clientes
+    const carregarAdvogados = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, nome')
+        .in('perfil', ['advogado', 'admin'])
+        .order('nome');
+      
+      if (!error && data) {
+        setAdvogados(data);
+      }
+    };
+    
+    const carregarClientes = async () => {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('id, nome')
+        .order('nome');
+      
+      if (!error && data) {
+        setClientes(data);
+      }
+    };
+    
+    carregarAdvogados();
+    carregarClientes();
   }, [user]);
 
   const loadWidgets = () => {
@@ -184,14 +224,27 @@ export const CustomizableDashboard = () => {
     }
   };
   
-  // Lista de solicitantes e clientes únicos
+  // Lista de solicitantes e clientes únicos (não mais usado diretamente)
   const solicitantesUnicos = Array.from(new Set(recentRequests.map(s => s.nome_solicitante))).sort();
   const clientesUnicos = Array.from(new Set(recentRequests.map(s => s.cliente))).sort();
   
-  // Aplicar filtros
+  // Aplicar filtros com dados das tabelas
   const requestsFiltradas = recentRequests.filter(req => {
     if (filtroStatus !== 'todos' && req.status !== filtroStatus) return false;
-    if (filtroNome !== 'todos' && req.nome_solicitante !== filtroNome) return false;
+    
+    if (filtroNome !== 'todos' && filtroNome) {
+      const advogadoSelecionado = advogados.find(a => a.id === filtroNome);
+      if (advogadoSelecionado && req.nome_solicitante !== advogadoSelecionado.nome) {
+        return false;
+      }
+    }
+    
+    if (filtroCliente !== 'todos' && filtroCliente) {
+      const clienteSelecionado = clientes.find(c => c.id === filtroCliente);
+      if (clienteSelecionado && req.cliente !== clienteSelecionado.nome) {
+        return false;
+      }
+    }
     
     if (filtroDataInicio) {
       const dataCriacao = new Date(req.data_criacao);
@@ -206,8 +259,49 @@ export const CustomizableDashboard = () => {
       if (dataCriacao > dataFim) return false;
     }
     
+    if (filtroPrazoInicio && req.prazo_retorno) {
+      const prazoRetorno = new Date(req.prazo_retorno);
+      const prazoInicio = new Date(filtroPrazoInicio);
+      if (prazoRetorno < prazoInicio) return false;
+    }
+    
+    if (filtroPrazoFim && req.prazo_retorno) {
+      const prazoRetorno = new Date(req.prazo_retorno);
+      const prazoFim = new Date(filtroPrazoFim);
+      prazoFim.setHours(23, 59, 59, 999);
+      if (prazoRetorno > prazoFim) return false;
+    }
+    
     return true;
-  }).slice(0, 5); // Mostra apenas os 5 primeiros após filtrar
+  }).slice(0, 10);
+  
+  // Funções de filtro
+  const aplicarFiltros = () => {
+    setFiltroStatus(tempFiltroStatus);
+    setFiltroNome(tempFiltroNome);
+    setFiltroCliente(tempFiltroCliente);
+    setFiltroDataInicio(tempFiltroDataInicio);
+    setFiltroDataFim(tempFiltroDataFim);
+    setFiltroPrazoInicio(tempFiltroPrazoInicio);
+    setFiltroPrazoFim(tempFiltroPrazoFim);
+  };
+  
+  const limparFiltros = () => {
+    setFiltroStatus('todos');
+    setFiltroNome('todos');
+    setFiltroCliente('todos');
+    setFiltroDataInicio('');
+    setFiltroDataFim('');
+    setFiltroPrazoInicio('');
+    setFiltroPrazoFim('');
+    setTempFiltroStatus('todos');
+    setTempFiltroNome('todos');
+    setTempFiltroCliente('todos');
+    setTempFiltroDataInicio('');
+    setTempFiltroDataFim('');
+    setTempFiltroPrazoInicio('');
+    setTempFiltroPrazoFim('');
+  };
   
   const handleAtualizarStatus = async () => {
     if (solicitacaoEditando && novoStatus) {
@@ -724,28 +818,13 @@ export const CustomizableDashboard = () => {
               <FileText className="h-4 w-4" />
               Solicitações Recentes
             </CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                setFiltroStatus('todos');
-                setFiltroNome('todos');
-                setFiltroCliente('todos');
-                setFiltroDataInicio('');
-                setFiltroDataFim('');
-                setFiltroPrazoInicio('');
-                setFiltroPrazoFim('');
-              }}
-            >
-              Limpar Filtros
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="pb-3">
           <div className="space-y-3">
             {/* Filtros em Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+              <Select value={tempFiltroStatus} onValueChange={setTempFiltroStatus}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -757,26 +836,26 @@ export const CustomizableDashboard = () => {
                 </SelectContent>
               </Select>
               
-              <Select value={filtroNome} onValueChange={setFiltroNome}>
+              <Select value={tempFiltroNome} onValueChange={setTempFiltroNome}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Solicitante" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos Solicitantes</SelectItem>
-                  {solicitantesUnicos.map(nome => (
-                    <SelectItem key={nome} value={nome}>{nome}</SelectItem>
+                  {advogados.map(adv => (
+                    <SelectItem key={adv.id} value={adv.id}>{adv.nome}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               
-              <Select value={filtroCliente} onValueChange={setFiltroCliente}>
+              <Select value={tempFiltroCliente} onValueChange={setTempFiltroCliente}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Cliente" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos Clientes</SelectItem>
-                  {clientesUnicos.map(cliente => (
-                    <SelectItem key={cliente} value={cliente}>{cliente}</SelectItem>
+                  {clientes.map(cli => (
+                    <SelectItem key={cli.id} value={cli.id}>{cli.nome}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -784,34 +863,55 @@ export const CustomizableDashboard = () => {
               <Input
                 type="date"
                 className="h-9 text-xs"
-                value={filtroDataInicio}
-                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                value={tempFiltroDataInicio}
+                onChange={(e) => setTempFiltroDataInicio(e.target.value)}
                 placeholder="Data início"
               />
               
               <Input
                 type="date"
                 className="h-9 text-xs"
-                value={filtroDataFim}
-                onChange={(e) => setFiltroDataFim(e.target.value)}
+                value={tempFiltroDataFim}
+                onChange={(e) => setTempFiltroDataFim(e.target.value)}
                 placeholder="Data fim"
               />
               
               <Input
                 type="date"
                 className="h-9 text-xs"
-                value={filtroPrazoInicio}
-                onChange={(e) => setFiltroPrazoInicio(e.target.value)}
+                value={tempFiltroPrazoInicio}
+                onChange={(e) => setTempFiltroPrazoInicio(e.target.value)}
                 placeholder="Prazo início"
               />
               
               <Input
                 type="date"
                 className="h-9 text-xs"
-                value={filtroPrazoFim}
-                onChange={(e) => setFiltroPrazoFim(e.target.value)}
+                value={tempFiltroPrazoFim}
+                onChange={(e) => setTempFiltroPrazoFim(e.target.value)}
                 placeholder="Prazo fim"
               />
+            </div>
+            
+            {/* Botões de Aplicar e Limpar */}
+            <div className="flex gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                className="flex-1"
+                onClick={aplicarFiltros}
+              >
+                Aplicar Filtros
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={limparFiltros}
+              >
+                Limpar Filtros
+              </Button>
             </div>
             
             {requestsFiltradas.length === 0 ? (
