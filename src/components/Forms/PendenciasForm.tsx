@@ -76,7 +76,7 @@ const PendenciasForm = () => {
 *Processo:* ${validatedData.numeroProcesso}
 *Tipo de Urgência:* ${validatedData.tipoUrgencia}
 *Prazo Limite:* ${validatedData.prazoLimite}
-*Advogado Responsável:* ${validatedData.responsavel}
+*Adv. Jurídico Interno:* ${validatedData.responsavel}
 *Cliente:* ${clienteFinal}
 
 *Descrição da Pendência:*
@@ -182,11 +182,11 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
 
             <div className="space-y-2">
               <Label htmlFor="responsavel" className="text-sm font-medium">
-                Advogado Responsável *
+                Adv. Jurídico Interno *
               </Label>
               <Input
                 id="responsavel"
-                placeholder="Nome do advogado responsável"
+                placeholder="Nome do advogado jurídico interno"
                 value={formData.responsavel}
                 onChange={(e) => handleInputChange('responsavel', e.target.value)}
                 className="bg-background"
