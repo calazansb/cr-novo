@@ -17,12 +17,13 @@ import {
   ChevronRight,
   Calculator,
   Calendar,
-  GraduationCap
+  GraduationCap,
+  LayoutDashboard
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
+type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
 
 interface ModernSidebarProps {
   activeSection: ActiveSection;
@@ -39,6 +40,12 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       title: "Início",
       icon: Home,
       color: "text-primary"
+    },
+    {
+      id: 'custom-dashboard' as ActiveSection,
+      title: "Meu Dashboard",
+      icon: LayoutDashboard,
+      color: "text-accent"
     },
     {
       id: 'balcao' as ActiveSection,

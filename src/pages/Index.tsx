@@ -11,17 +11,18 @@ import BalcaoControladoriaForm from "../components/Forms/BalcaoControladoriaForm
 import CalculoPrazosForm from "../components/Forms/CalculoPrazosForm";
 import AudienciasForm from "../components/Forms/AudienciasForm";
 import DashboardControladoria from "./DashboardControladoria";
+import CustomizableDashboard from "@/components/Dashboard/CustomizableDashboard";
 import BancoDados from "../components/BancoDados";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import ProtectedRoute from "@/components/Auth/ProtectedRoute";
 // import TreinamentosPage from "@/components/Treinamentos/TreinamentosPage";
 import UserManagement from "@/components/Admin/UserManagement";
-import { Building, BarChart3, Scale, ClipboardList, Lightbulb, AlertTriangle, Settings, Database, Calculator, Calendar, GraduationCap } from 'lucide-react';
+import { Building, BarChart3, Scale, ClipboardList, Lightbulb, AlertTriangle, Settings, Database, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import DatabaseSetupNotice from "@/components/DatabaseSetupNotice";
 
-type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
+type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
@@ -30,6 +31,14 @@ const Index = () => {
   console.log('Index component rendering, user:', user);
 
   const navigationItems = [
+    {
+      id: 'custom-dashboard' as ActiveSection,
+      title: "Meu Dashboard",
+      description: "Dashboard personalizável com widgets",
+      icon: LayoutDashboard,
+      color: "accent" as const,
+      stats: { count: 0, label: "Widgets" }
+    },
     {
       id: 'balcao' as ActiveSection,
       title: "Balcão da Controladoria",
@@ -207,6 +216,9 @@ const Index = () => {
             <DatabaseSetupNotice />
           </div>
         );
+        
+      case 'custom-dashboard':
+        return <CustomizableDashboard />;
         
       case 'decisoes':
         return <DecisaoJudicialForm />;
