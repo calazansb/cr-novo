@@ -32,15 +32,7 @@ const ModernHeader = ({
         {/* Logo - Aumentado 300% */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
-            <img 
-              src="/calazans-rossi-logo.png" 
-              alt="Calazans Rossi Advogados" 
-              className="h-16 w-auto"
-              onError={e => {
-                console.error('Erro ao carregar logo');
-                e.currentTarget.style.display = 'none';
-              }} 
-            />
+            
           </div>
           <div className="hidden lg:flex flex-col border-l border-slate-300 dark:border-slate-600 pl-4 h-12 justify-center">
             <h1 className="font-display font-extrabold text-2xl bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 bg-clip-text text-transparent">
@@ -83,21 +75,12 @@ const ModernHeader = ({
           {/* <NotificationBell /> */}
 
           {/* Theme Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme} 
-            className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-          >
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
 
           {/* Settings */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
             <Settings className="w-5 h-5" />
           </Button>
 
