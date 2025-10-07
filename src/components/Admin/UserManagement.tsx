@@ -109,7 +109,10 @@ const UserManagement = () => {
         .update({ nome: editingUser.nome })
         .eq('id', editingUser.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Erro ao atualizar profile:', profileError);
+        throw profileError;
+      }
 
       // Atualizar role
       const currentRole = editingUser.roles?.[0]?.role || 'advogado';
@@ -122,14 +125,20 @@ const UserManagement = () => {
           .delete()
           .eq('user_id', editingUser.id);
 
-        if (delError) throw delError;
+        if (delError) {
+          console.error('Erro ao deletar role antiga:', delError);
+          throw delError;
+        }
 
         // Inserir nova role
         const { error: roleError } = await supabase
           .from('user_roles')
           .insert({ user_id: editingUser.id, role: newRole });
 
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error('Erro ao inserir nova role:', roleError);
+          throw roleError;
+        }
       }
 
       toast({
@@ -141,10 +150,10 @@ const UserManagement = () => {
       setEditingUser(null);
       fetchUsers();
     } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
+      console.error('Erro ao atualizar usuário (geral):', error);
       toast({
         title: "Erro",
-        description: "Não foi possível atualizar o usuário.",
+        description: error instanceof Error ? error.message : "Não foi possível atualizar o usuário.",
         variant: "destructive",
       });
     }
