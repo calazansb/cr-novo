@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, MessageCircle, Eye, Paperclip } from "lucide-react";
+import { Building, Paperclip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,7 +41,6 @@ const BalcaoControladoriaForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
-  const [showPreview, setShowPreview] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadingFiles, setUploadingFiles] = useState(false);
   const [usuarios, setUsuarios] = useState<{ id: string; nome: string }[]>([]);
@@ -190,26 +189,6 @@ const BalcaoControladoriaForm = () => {
     return isValid;
   };
 
-  const generatePreviewMessage = () => {
-    return `
-🏛️ *BALCÃO DA CONTROLADORIA*
-
-👤 *Solicitante:* ${formData.nomeSolicitante}
-📋 *Processo:* ${formData.numeroProcesso}
-🏢 *Cliente:* ${formData.cliente}
-⚖️ *Tribunal/Órgão:* ${formData.tribunalOrgao}
-⏰ *Prazo para Retorno:* ${formData.prazoRetorno}
-
-📝 *Solicitação:*
-${formData.solicitacao}
-
-
-
----
-*Calazans Rossi Advogados*
-*Sistema de Comunicação Jurídica*
-    `.trim();
-  };
 
   const gerarCodigoLocal = () => {
     const d = new Date();
@@ -317,45 +296,20 @@ ${formData.solicitacao}
 
       if (codigoSalvo) {
         codigoUnico = codigoSalvo;
+        
+        const displayCodigo = formatCodigo(codigoUnico);
+        toast({
+          title: "Solicitação registrada com sucesso!",
+          description: `Código: ${displayCodigo}. Sua solicitação foi salva no sistema.`,
+        });
       } else {
         toast({
-          title: "Aviso",
-          description: "Solicitação enviada sem registro no dashboard. Configure o Supabase para salvar automaticamente.",
+          title: "Erro ao salvar",
+          description: "Não foi possível registrar a solicitação. Tente novamente.",
+          variant: "destructive"
         });
+        return;
       }
-
-      // Generate message with unique code
-      const displayCodigo = formatCodigo(codigoUnico);
-      let message = `*BALCÃO DA CONTROLADORIA - CALAZANS ROSSI ADVOGADOS*
-
-🏷️ *CÓDIGO DA SOLICITAÇÃO: ${displayCodigo}*
-    
-*Solicitante:* ${validatedData.nomeSolicitante}
-*Número do Processo:* ${validatedData.numeroProcesso}
-*Cliente:* ${clienteFinal}
-*Tribunal/Órgão:* ${validatedData.tribunalOrgao}
-*Prazo para Retorno:* ${validatedData.prazoRetorno}
-
-*Solicitação:*
-${validatedData.solicitacao}`;
-
-      if (anexosUrls.length > 0) {
-        message += `\n\n📎 *Arquivos Anexados (${anexosUrls.length}):*\n`;
-        anexosUrls.forEach((url, index) => {
-          message += `${index + 1}. ${url}\n`;
-        });
-      }
-
-      message += `\n\n⚠️ *Guarde este código para acompanhar sua solicitação.*`;
-
-      // Abrir WhatsApp com a mensagem
-      const whatsappUrl = `https://wa.me/553132953474?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-
-      toast({
-        title: "Solicitação registrada!",
-        description: `Código gerado: ${displayCodigo}. Sua solicitação foi registrada e encaminhada.`,
-      });
 
       // Reset form
       setFormData({
@@ -560,42 +514,17 @@ ${validatedData.solicitacao}`;
             </p>
           </div>
 
-
-          {showPreview && (
-            <div className="space-y-4 animate-scale-in">
-              <div className="bg-muted/50 rounded-lg p-4 border">
-                <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Preview da Mensagem
-                </h4>
-                <div className="whitespace-pre-wrap text-sm font-mono bg-background p-4 rounded border">
-                  {generatePreviewMessage()}
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <Button
-              onClick={() => setShowPreview(!showPreview)}
-              variant="outline"
-              size="lg"
-              className="hover-lift"
-            >
-              <Eye className="h-5 w-5 mr-2" />
-              {showPreview ? "Ocultar" : "Visualizar"} Preview
-            </Button>
-            
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <LoadingButton
                 onClick={() => handleSubmit()}
                 loading={loading || uploadingFiles}
-                loadingText={uploadingFiles ? "Enviando arquivos..." : "Enviando para WhatsApp..."}
+                loadingText={uploadingFiles ? "Enviando arquivos..." : "Salvando solicitação..."}
                 className="flex-1 hero-gradient hover:bg-primary-hover text-primary-foreground"
                 size="lg"
               >
-                <MessageCircle className="h-5 w-5 mr-2" />
-                Enviar para WhatsApp
+                <Building className="h-5 w-5 mr-2" />
+                Enviar Solicitação
                 {selectedFiles.length > 0 && (
                   <span className="ml-2 px-2 py-0.5 bg-primary-foreground/20 rounded-full text-xs">
                     {selectedFiles.length} arquivo(s)
