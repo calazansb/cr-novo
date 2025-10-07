@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-
 const DatabaseSetupNotice = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -389,7 +388,6 @@ END $$;
 -- =====================================================
 -- FIM DO SCRIPT
 -- =====================================================`;
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(sqlScript);
@@ -399,116 +397,10 @@ END $$;
       console.error('Erro ao copiar:', err);
     }
   };
-
-  return (
-    <Card className="border-warning/50 bg-gradient-to-br from-warning/5 to-transparent">
-      <CardHeader>
-        <div className="flex items-center space-x-3">
-          <div className="p-2 bg-warning/10 rounded-lg">
-            <Database className="w-5 h-5 text-warning" />
-          </div>
-          <div>
-            <CardTitle className="text-lg font-semibold text-foreground">
-              Configuração do Banco de Dados
-            </CardTitle>
-            <CardDescription>
-              Para exibir dados reais, configure as tabelas necessárias no Supabase
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
+  return <Card className="border-warning/50 bg-gradient-to-br from-warning/5 to-transparent">
       
-      <CardContent className="space-y-4">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Algumas tabelas ainda não foram criadas no seu banco de dados. 
-            Execute o script SQL abaixo no Supabase para habilitar todas as funcionalidades.
-          </AlertDescription>
-        </Alert>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-foreground">Passos para configurar:</h4>
-          </div>
-          
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">1</span>
-              <span>Acesse seu dashboard do Supabase</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">2</span>
-              <span>Vá para SQL Editor</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">3</span>
-              <span>Execute o script SQL abaixo</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="flex-shrink-0 w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">4</span>
-              <span>Recarregue esta página</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => window.open('https://supabase.com/dashboard', '_blank')}
-            className="flex-1"
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Abrir Supabase Dashboard
-          </Button>
-          
-          <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline">
-                {isExpanded ? 'Ocultar' : 'Ver'} Script SQL
-              </Button>
-            </CollapsibleTrigger>
-          </Collapsible>
-        </div>
-
-        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <CollapsibleContent className="space-y-3">
-            <div className="relative">
-              <pre className="bg-muted p-4 rounded-lg text-xs overflow-x-auto max-h-64 border">
-                <code>{sqlScript}</code>
-              </pre>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                className="absolute top-2 right-2"
-                onClick={copyToClipboard}
-              >
-                {copied ? (
-                  <>
-                    <CheckCircle className="w-3 h-3 mr-1 text-success" />
-                    Copiado!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copiar
-                  </>
-                )}
-              </Button>
-            </div>
-            
-            <Alert>
-              <AlertDescription className="text-xs">
-                💡 <strong>Dica:</strong> Após executar o script, o sistema populará automaticamente 
-                as estatísticas com dados reais das suas tabelas.
-              </AlertDescription>
-            </Alert>
-          </CollapsibleContent>
-        </Collapsible>
-      </CardContent>
-    </Card>
-  );
+      
+      
+    </Card>;
 };
-
 export default DatabaseSetupNotice;

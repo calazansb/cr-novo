@@ -7,48 +7,39 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import { ChangePasswordForm } from "@/components/Auth/ChangePasswordForm";
 import NotificationBell from "@/components/Notifications/NotificationBell";
 import { cn } from "@/lib/utils";
-
 interface ModernHeaderProps {
   className?: string;
 }
-
-const ModernHeader = ({ className }: ModernHeaderProps) => {
+const ModernHeader = ({
+  className
+}: ModernHeaderProps) => {
   const [isDark, setIsDark] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { user, signOut } = useAuth();
-
+  const {
+    user,
+    signOut
+  } = useAuth();
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('dark');
   };
-
-  return (
-    <header className={cn(
-      "sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg",
-      className
-    )}>
+  return <header className={cn("sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg", className)}>
       <div className="container flex h-16 items-center justify-between px-6">
         {/* Logo */}
         <div className="flex items-center space-x-3">
-          <div className="h-10 flex items-center">
-            <img 
-              src="/calazans-rossi-logo.png" 
-              alt="Calazans Rossi Advogados" 
-              className="h-8 w-auto"
-              onError={(e) => {
-                console.error('Erro ao carregar logo');
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+          <div className="h-10 flex items-center px-[47px] py-[4px] mx-0">
+            <img src="/calazans-rossi-logo.png" alt="Calazans Rossi Advogados" className="h-8 w-auto" onError={e => {
+            console.error('Erro ao carregar logo');
+            e.currentTarget.style.display = 'none';
+          }} />
           </div>
           <div className="hidden md:block">
-            <h1 className="font-display font-bold text-lg bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Sistema CRA</h1>
-            <p className="text-xs text-muted-foreground font-medium">Comunicação Jurídica</p>
+            <h1 className="font-display font-bold text-lg bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent px-[44px] py-px mx-[76px]">Sistema CRA</h1>
+            
           </div>
         </div>
 
@@ -56,11 +47,8 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
         <div className="flex items-center space-x-6 flex-1 justify-center">
           <div className="hidden md:flex items-center space-x-4">
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <Input
-                placeholder="Buscar documentos, formulários..."
-                className="w-64 pl-10 bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary/20 transition-all"
-              />
+              
+              
             </div>
           </div>
         </div>
@@ -70,17 +58,17 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
           {/* Current Time */}
           <div className="hidden sm:flex flex-col items-end">
             <div className="text-sm font-medium text-foreground">
-              {currentTime.toLocaleDateString('pt-BR', { 
-                weekday: 'short', 
-                day: '2-digit', 
-                month: 'short' 
-              })}
+              {currentTime.toLocaleDateString('pt-BR', {
+              weekday: 'short',
+              day: '2-digit',
+              month: 'short'
+            })}
             </div>
             <div className="text-xs text-muted-foreground">
-              {currentTime.toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
+              {currentTime.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
             </div>
           </div>
 
@@ -88,12 +76,7 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
           {/* <NotificationBell /> */}
 
           {/* Theme Toggle */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme}
-            className="hover:bg-primary/10 hover:text-primary transition-colors"
-          >
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-primary/10 hover:text-primary transition-colors">
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
 
@@ -124,14 +107,10 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
                 <User className="mr-2 h-4 w-4" />
                 Perfil
               </DropdownMenuItem>
-              <ChangePasswordForm 
-                trigger={
-                  <div className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm">
+              <ChangePasswordForm trigger={<div className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm">
                     <Settings className="mr-2 h-4 w-4" />
                     Alterar Senha
-                  </div>
-                }
-              />
+                  </div>} />
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -141,8 +120,6 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
           </DropdownMenu>
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default ModernHeader;
