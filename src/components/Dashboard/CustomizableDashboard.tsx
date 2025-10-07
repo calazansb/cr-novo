@@ -721,13 +721,10 @@ export const CustomizableDashboard = () => {
                 ) : (
                   requestsFiltradas.map((req) => (
                     <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0 space-y-0.5">
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
                             <p className="font-semibold text-sm truncate">{req.codigo_unico}</p>
-                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs flex-shrink-0">
-                              {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
-                            </Badge>
                           </div>
                           
                           <div className="text-xs space-y-0">
@@ -737,20 +734,6 @@ export const CustomizableDashboard = () => {
                             </div>
                             <div className="flex gap-3">
                               <span><span className="font-semibold">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span>
-                              {(req.anexos?.length > 0 || req.anexos_resposta?.length > 0) && (
-                                <div className="flex gap-1">
-                                  {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                                    <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
-                                      📎 {req.anexos.length}
-                                    </Badge>
-                                  )}
-                                  {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                                    <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
-                                      📤 {req.anexos_resposta.length}
-                                    </Badge>
-                                  )}
-                                </div>
-                              )}
                             </div>
                           </div>
                           
@@ -761,27 +744,50 @@ export const CustomizableDashboard = () => {
                           )}
                         </div>
                         
-                        <div className="flex gap-1 flex-shrink-0">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-7 w-7 p-0"
-                            onClick={() => setSolicitacaoVisualizando(req)}
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                            onClick={() => {
-                              setSolicitacaoEditando(req);
-                              setNovoStatus(req.status);
-                              setObservacoes(req.observacoes || '');
-                            }}
-                          >
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
+                        <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
+                          <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
+                            {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                          </Badge>
+                          
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-7 text-xs px-2"
+                              onClick={() => setSolicitacaoVisualizando(req)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              Ver
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="h-7 text-xs px-2"
+                              onClick={() => {
+                                setSolicitacaoEditando(req);
+                                setNovoStatus(req.status);
+                                setObservacoes(req.observacoes || '');
+                              }}
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Editar
+                            </Button>
+                          </div>
+                          
+                          {(req.anexos?.length > 0 || req.anexos_resposta?.length > 0) && (
+                            <div className="flex gap-1">
+                              {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-300">
+                                  📎 {req.anexos.length}
+                                </Badge>
+                              )}
+                              {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-300">
+                                  📤 {req.anexos_resposta.length}
+                                </Badge>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
