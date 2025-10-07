@@ -348,31 +348,40 @@ const BalcaoControladoriaForm = () => {
   };
 
   return (
-    <div className="animate-fade-in">
-      <Card className="shadow-sm">
-        <CardHeader className="space-y-2 pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary rounded-lg">
-                <Building className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <CardTitle className="text-xl">Balcão da Controladoria</CardTitle>
-                <CardDescription className="text-sm">
-                  Registre suas solicitações e controle os prazos
-                </CardDescription>
-              </div>
+    <div className="animate-fade-in space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Balcão da Controladoria</h2>
+          <p className="text-muted-foreground">
+            {validatedFields.size > 0 && `${validatedFields.size} de 6 campos validados`}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Auto-salvo</span>
+          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+        </div>
+      </div>
+      <Card className="shadow-elevated card-gradient hover-lift">
+        <CardHeader className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="p-4 hero-gradient rounded-xl shadow-glow animate-float">
+              <Building className="h-12 w-12 text-primary-foreground" />
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Auto-salvo</span>
-              <div className="w-2 h-2 bg-success rounded-full"></div>
-            </div>
+          </div>
+          <div className="space-y-4">
+            <CardTitle className="text-4xl font-bold text-gradient animate-slide-up">
+              Solicitação ao Balcão da Controladoria
+            </CardTitle>
+            <CardDescription className="text-lg leading-relaxed max-w-2xl mx-auto animate-slide-up">
+              Registre suas solicitações para o balcão da controladoria e mantenha o controle dos prazos.
+            </CardDescription>
           </div>
           
           {Object.keys(errors).length > 0 && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
-              <p className="text-xs text-destructive">
-                Corrija os erros nos campos destacados antes de continuar.
+            <div className="bg-destructive-light/20 border border-destructive/20 rounded-lg p-4 animate-slide-in-left">
+              <p className="text-sm text-destructive font-medium">
+                Por favor, corrija os erros nos campos destacados antes de continuar.
               </p>
             </div>
           )}
@@ -388,10 +397,10 @@ const BalcaoControladoriaForm = () => {
                 value={formData.nomeSolicitante} 
                 onValueChange={(value) => handleInputChange('nomeSolicitante', value)}
               >
-                <SelectTrigger className={errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}>
+                <SelectTrigger className={`h-9 ${errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}`}>
                   <SelectValue placeholder="Selecione o solicitante" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
                   {usuarios.map((usuario) => (
                     <SelectItem key={usuario.id} value={usuario.nome}>
                       {usuario.nome}
@@ -425,10 +434,10 @@ const BalcaoControladoriaForm = () => {
                 value={formData.cliente} 
                 onValueChange={(value) => handleInputChange('cliente', value)}
               >
-                <SelectTrigger className={errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}>
+                <SelectTrigger className={`h-9 ${errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}`}>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
                   {clientes.map((cliente) => (
                     <SelectItem key={cliente} value={cliente}>
                       {cliente}
@@ -442,7 +451,7 @@ const BalcaoControladoriaForm = () => {
                   placeholder="Digite o nome do cliente"
                   value={clienteOutro}
                   onChange={(e) => setClienteOutro(e.target.value)}
-                  className="mt-2"
+                  className="mt-2 h-9"
                 />
               )}
               {errors.cliente && (
@@ -461,6 +470,10 @@ const BalcaoControladoriaForm = () => {
               error={errors.tribunalOrgao}
               success={validatedFields.has('tribunalOrgao')}
             />
+
+            {/* Prazo Para Retorno */}
+            <div className="md:col-span-1">
+            </div>
           </div>
 
           <DateField

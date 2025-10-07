@@ -54,7 +54,7 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
             value={props.value}
             onChange={(e) => props.onChange(e.target.value)}
             className={`
-              bg-background transition-all duration-300
+              h-9 bg-background transition-all duration-300
               ${error ? 'border-destructive focus:ring-destructive/20' : ''}
               ${success ? 'border-success focus:ring-success/20' : ''}
               ${!error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''}
@@ -84,7 +84,7 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
           <Select value={props.value} onValueChange={props.onChange}>
             <SelectTrigger 
               className={`
-                bg-background transition-all duration-300
+                h-9 bg-background transition-all duration-300
                 ${error ? 'border-destructive focus:ring-destructive/20' : ''}
                 ${success ? 'border-success focus:ring-success/20' : ''}
                 ${!error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''}
@@ -92,7 +92,7 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
             >
               <SelectValue placeholder={props.placeholder} />
             </SelectTrigger>
-            <SelectContent className="max-h-60 overflow-y-auto">
+            <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
               {props.options.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

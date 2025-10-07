@@ -157,12 +157,12 @@ export const DateField: React.FC<DateFieldProps> = ({
                 onBlur={handleInputBlur}
                 onClick={handleButtonClick}
                 maxLength={10}
-                className={cn(
-                  "w-full h-10 bg-background pr-10",
-                  error ? 'border-destructive focus:ring-destructive/20' : '',
-                  success ? 'border-success focus:ring-success/20' : '',
-                  !error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''
-                )}
+                  className={cn(
+                    "w-full h-9 bg-background pr-10",
+                    error ? 'border-destructive focus:ring-destructive/20' : '',
+                    success ? 'border-success focus:ring-success/20' : '',
+                    !error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''
+                  )}
               />
               <CalendarIcon 
                 className={cn(
@@ -173,7 +173,7 @@ export const DateField: React.FC<DateFieldProps> = ({
               />
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 pointer-events-auto z-50" align="start">
             <Calendar
               mode="single"
               selected={undefined}
