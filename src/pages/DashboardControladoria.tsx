@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +57,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [arquivosResposta, setArquivosResposta] = useState<File[]>([]);
   const [uploadingResposta, setUploadingResposta] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Novos estados para filtros avançados
   const [filtroNome, setFiltroNome] = useState('');
@@ -107,11 +108,24 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     }
   };
   
+  // Obter usuário logado
+  const obterUsuarioLogado = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    } catch (error) {
+      console.error('Erro ao obter usuário:', error);
+    }
+  };
+  
   // Verificar tabela ao montar o componente
   React.useEffect(() => {
     if (supabase) {
       verificarTabela();
       verificarAdmin();
+      obterUsuarioLogado();
     }
   }, []);
   // Aplicar todos os filtros
@@ -145,6 +159,15 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     concluidas: solicitacoes.filter(s => s.status === 'concluida').length,
     canceladas: solicitacoes.filter(s => s.status === 'cancelada').length
   };
+
+  // Solicitações recentes do usuário logado (últimas 6)
+  const solicitacoesRecentes = useMemo(() => {
+    if (!currentUserId) return [];
+    return solicitacoes
+      .filter(s => s.user_id === currentUserId)
+      .sort((a, b) => new Date(b.data_criacao).getTime() - new Date(a.data_criacao).getTime())
+      .slice(0, 6);
+  }, [solicitacoes, currentUserId]);
 
   // Estatísticas de solicitações pendentes por tempo
   const estatisticasPendentesPorTempo = useMemo(() => {
@@ -518,25 +541,11 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       </div>
 
 
-      {/* Barra de Ações */}
+      {/* Título da seção de todas as solicitações */}
       <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Todas as Solicitações</h2>
         <div className="text-sm text-muted-foreground">
           Exibindo {solicitacoesFiltradas.length} de {solicitacoes.length} solicitações
-        </div>
-        <div className="flex gap-2">
-          {supabase && tabelaExiste && (
-            <Button variant="outline" size="sm" onClick={carregarSolicitacoes}>
-              🔄 Recarregar
-            </Button>
-          )}
-          <Button onClick={exportarParaCSV} variant="outline" size="sm" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            CSV
-          </Button>
-          <Button onClick={exportarParaExcel} size="sm" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Excel
-          </Button>
         </div>
       </div>
 
