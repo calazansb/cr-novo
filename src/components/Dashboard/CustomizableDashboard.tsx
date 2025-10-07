@@ -578,96 +578,215 @@ export const CustomizableDashboard = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <LayoutDashboard className="h-8 w-8" />
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <LayoutDashboard className="h-6 w-6" />
             Meu Dashboard
           </h2>
-          <p className="text-muted-foreground">
-            Personalize seu dashboard adicionando, removendo e reorganizando widgets
+          <p className="text-sm text-muted-foreground">
+            Visão geral e acesso rápido
           </p>
         </div>
+      </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Widget
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Adicionar Widget</DialogTitle>
-              <DialogDescription>
-                Escolha um widget para adicionar ao seu dashboard
-              </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="max-h-[500px] pr-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {availableWidgets.map((template) => {
-                  const Icon = template.icon;
-                  const isAdded = widgets.some(w => w.type === template.type);
-                  
-                  return (
-                    <Card
-                      key={template.type}
-                      className={cn(
-                        'cursor-pointer hover:shadow-md transition-all',
-                        isAdded && 'opacity-50'
-                      )}
-                      onClick={() => !isAdded && addWidget(template)}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg">
-                            <Icon className="h-5 w-5 text-primary" />
+      {/* Layout Compacto: Estatísticas e Ações Rápidas lado a lado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Estatísticas */}
+        <Card>
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Visão Geral de Estatísticas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-3">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-warning">{stats.pending}</div>
+                <div className="text-xs text-muted-foreground">Pendentes</div>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-success">{stats.completed}</div>
+                <div className="text-xs text-muted-foreground">Concluídas</div>
+              </div>
+              <div className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-primary">{stats.total}</div>
+                <div className="text-xs text-muted-foreground">Total</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Ações Rápidas */}
+        <Card>
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Ações Rápidas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-3">
+            <div className="grid grid-cols-1 gap-2">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start h-9" 
+                size="sm"
+                onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'balcao' }))}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Solicitação
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start h-9" 
+                size="sm"
+                onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'dashboard-controladoria' }))}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Relatórios
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start h-9" 
+                size="sm"
+                onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'admin-usuarios' }))}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Equipe
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Solicitações Recentes - Largura Total */}
+      <Card>
+        <CardHeader className="pb-2 pt-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Solicitações Recentes
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pb-3">
+          <div className="space-y-3">
+            {/* Filtros Compactos */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <select 
+                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+              >
+                <option value="todos">Todos Status</option>
+                <option value="pendente">Pendente</option>
+                <option value="concluida">Concluída</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
+              
+              <select 
+                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
+                value={filtroNome}
+                onChange={(e) => setFiltroNome(e.target.value)}
+              >
+                <option value="todos">Todos Solicitantes</option>
+                {solicitantesUnicos.map(nome => (
+                  <option key={nome} value={nome}>{nome}</option>
+                ))}
+              </select>
+              
+              <input
+                type="date"
+                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                placeholder="Data início"
+              />
+              
+              <input
+                type="date"
+                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+                placeholder="Data fim"
+              />
+            </div>
+            
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-2">
+                {requestsFiltradas.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhuma solicitação encontrada
+                  </p>
+                ) : (
+                  requestsFiltradas.map((req) => (
+                    <div key={req.id} className="p-3 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold text-sm">{req.codigo_unico}</p>
+                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
+                              {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                            </Badge>
                           </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-sm">{template.title}</CardTitle>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {template.description}
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+                            <p><span className="font-semibold">Processo:</span> {req.numero_processo || 'N/A'}</p>
+                            <p><span className="font-semibold">Cliente:</span> {req.cliente}</p>
+                            <p><span className="font-semibold">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
+                            <div className="flex gap-1">
+                              {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
+                                  📎 {req.anexos.length}
+                                </Badge>
+                              )}
+                              {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
+                                  📤 {req.anexos_resposta.length}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
+                          {req.ultima_modificacao_em && (
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-semibold">Modificado:</span> {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                             </p>
-                          </div>
-                          {isAdded && (
-                            <CheckCircle2 className="h-5 w-5 text-success" />
                           )}
                         </div>
-                      </CardHeader>
-                    </Card>
-                  );
-                })}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 h-7 text-xs"
+                          onClick={() => setSolicitacaoVisualizando(req)}
+                        >
+                          <Eye className="mr-1 h-3 w-3" />
+                          Ver
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="flex-1 h-7 text-xs"
+                          onClick={() => {
+                            setSolicitacaoEditando(req);
+                            setNovoStatus(req.status);
+                            setObservacoes(req.observacoes || '');
+                          }}
+                        >
+                          <Edit className="mr-1 h-3 w-3" />
+                          Editar
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </ScrollArea>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {widgets.length === 0 ? (
-        <Card className="p-12 text-center">
-          <LayoutDashboard className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h3 className="text-xl font-semibold mb-2">Seu dashboard está vazio</h3>
-          <p className="text-muted-foreground mb-6">
-            Comece adicionando widgets para personalizar sua visualização
-          </p>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Primeiro Widget
-          </Button>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {widgets
-            .sort((a, b) => a.position - b.position)
-            .map(renderWidget)}
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <GripVertical className="h-4 w-4" />
-        <span>Arraste os widgets para reorganizá-los</span>
-      </div>
       
       {/* Dialog de Visualização */}
       {solicitacaoVisualizando && (
