@@ -477,13 +477,15 @@ export const CustomizableDashboard = () => {
                           {/* Badges de anexos */}
                           <div className="flex flex-col gap-1 items-end">
                             {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-400">
-                                📎 {req.anexos.length}
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-400 flex items-center gap-1">
+                                <Paperclip className="h-3 w-3" />
+                                {req.anexos.length}
                               </Badge>
                             )}
                             {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-400">
-                                📤 {req.anexos_resposta.length}
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-400 flex items-center gap-1">
+                                <Upload className="h-3 w-3" />
+                                {req.anexos_resposta.length}
                               </Badge>
                             )}
                           </div>
