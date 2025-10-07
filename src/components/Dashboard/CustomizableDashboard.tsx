@@ -243,25 +243,16 @@ export const CustomizableDashboard = () => {
     }
     
     if (filtroData) {
-      const dataCriacao = new Date(req.data_criacao);
-      const dataFiltro = new Date(filtroData);
-      
-      // Extrair apenas ano, mês e dia para comparação
-      const dataCriacaoStr = `${dataCriacao.getFullYear()}-${String(dataCriacao.getMonth() + 1).padStart(2, '0')}-${String(dataCriacao.getDate()).padStart(2, '0')}`;
-      const dataFiltroStr = `${dataFiltro.getFullYear()}-${String(dataFiltro.getMonth() + 1).padStart(2, '0')}-${String(dataFiltro.getDate()).padStart(2, '0')}`;
-      
-      if (dataCriacaoStr !== dataFiltroStr) return false;
+      const dc = new Date(req.data_criacao);
+      const dcStr = `${dc.getFullYear()}-${String(dc.getMonth() + 1).padStart(2, '0')}-${String(dc.getDate()).padStart(2, '0')}`;
+      const [fy, fm, fd] = filtroData.split('-').map(Number);
+      const dfStr = `${fy}-${String(fm).padStart(2, '0')}-${String(fd).padStart(2, '0')}`;
+      if (dcStr !== dfStr) return false;
     }
     
-    if (filtroPrazo && req.prazo_retorno) {
-      const prazoRetorno = new Date(req.prazo_retorno);
-      const prazoFiltro = new Date(filtroPrazo);
-      
-      // Extrair apenas ano, mês e dia para comparação
-      const prazoRetornoStr = `${prazoRetorno.getFullYear()}-${String(prazoRetorno.getMonth() + 1).padStart(2, '0')}-${String(prazoRetorno.getDate()).padStart(2, '0')}`;
-      const prazoFiltroStr = `${prazoFiltro.getFullYear()}-${String(prazoFiltro.getMonth() + 1).padStart(2, '0')}-${String(prazoFiltro.getDate()).padStart(2, '0')}`;
-      
-      if (prazoRetornoStr !== prazoFiltroStr) return false;
+    if (filtroPrazo) {
+      const prazoStr = req.prazo_retorno ? String(req.prazo_retorno) : null;
+      if (!prazoStr || prazoStr !== filtroPrazo) return false;
     }
     
     return true;
@@ -549,7 +540,7 @@ export const CustomizableDashboard = () => {
                     <div className="px-4 border-r text-center">Data</div>
                     <div className="px-4 border-r text-center">Prazo</div>
                     <div className="px-4 border-r text-center">Status</div>
-                    <div className="pl-4 text-right">Ações</div>
+                    <div className="px-4 text-center">Ações</div>
                   </div>
                   
                   {/* Linhas da Tabela */}
@@ -610,8 +601,8 @@ export const CustomizableDashboard = () => {
                       </div>
                       
                       {/* Coluna 7: Ações */}
-                      <div className="pl-4">
-                        <div className="flex gap-1 justify-end items-center mb-1">
+                      <div className="px-4 flex items-start justify-center">
+                        <div className="flex gap-1 justify-center items-start mb-1">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -637,7 +628,7 @@ export const CustomizableDashboard = () => {
                         </div>
                         
                         {/* Anexos abaixo dos botões */}
-                        <div className="flex gap-2 justify-end items-center text-xs">
+                        <div className="flex gap-2 justify-center items-center text-xs">
                           {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
                             <span className="flex items-center gap-1 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
                               <Paperclip className="h-3 w-3" />
