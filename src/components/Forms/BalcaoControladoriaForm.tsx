@@ -10,6 +10,16 @@ import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
+import { z } from "zod";
+
+const balcaoSchema = z.object({
+  nomeSolicitante: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
+  numeroProcesso: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  cliente: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  tribunalOrgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  prazoRetorno: z.string().min(1, "Campo obrigatório"),
+  solicitacao: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres")
+});
 
 const BalcaoControladoriaForm = () => {
   const { toast } = useToast();
@@ -153,28 +163,18 @@ ${formData.solicitacao}
   };
 
   const handleSubmit = async () => {
-    const requiredFields = ['nomeSolicitante', 'numeroProcesso', 'cliente', 'tribunalOrgao', 'prazoRetorno', 'solicitacao'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
-    
-    if (missingFields.length > 0) {
-      toast({
-        title: "Formulário incompleto",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
     
     try {
+      const validatedData = balcaoSchema.parse(formData);
+
       // Tenta salvar no Supabase; se não houver, gera código local e prossegue  
       const solicitacaoData: NovasolicitacaoControladoria = {
-        nome_solicitante: formData.nomeSolicitante,
-        numero_processo: formData.numeroProcesso || '',
-        cliente: formData.cliente,
-        objeto_solicitacao: formData.tribunalOrgao,
-        descricao_detalhada: formData.solicitacao,
+        nome_solicitante: validatedData.nomeSolicitante,
+        numero_processo: validatedData.numeroProcesso || '',
+        cliente: validatedData.cliente,
+        objeto_solicitacao: validatedData.tribunalOrgao,
+        descricao_detalhada: validatedData.solicitacao,
         user_id: user?.id || ''
       };
       
@@ -193,14 +193,14 @@ ${formData.solicitacao}
 
 🏷️ *CÓDIGO DA SOLICITAÇÃO: ${codigoUnico}*
     
-*Solicitante:* ${formData.nomeSolicitante}
-*Número do Processo:* ${formData.numeroProcesso}
-*Cliente:* ${formData.cliente}
-*Tribunal/Órgão:* ${formData.tribunalOrgao}
-*Prazo para Retorno:* ${formData.prazoRetorno}
+*Solicitante:* ${validatedData.nomeSolicitante}
+*Número do Processo:* ${validatedData.numeroProcesso}
+*Cliente:* ${validatedData.cliente}
+*Tribunal/Órgão:* ${validatedData.tribunalOrgao}
+*Prazo para Retorno:* ${validatedData.prazoRetorno}
 
 *Solicitação:*
-${formData.solicitacao}
+${validatedData.solicitacao}
 
 
 
@@ -222,14 +222,26 @@ ${formData.solicitacao}
         prazoRetorno: "",
         solicitacao: ""
       });
+      setErrors({});
+      setValidatedFields(new Set());
+      localStorage.removeItem('balcao-controladoria-draft');
       
     } catch (error) {
-      console.error('Erro ao enviar solicitação:', error);
-      toast({
-        title: "Erro ao enviar",
-        description: "Ocorreu um erro ao registrar a solicitação. Tente novamente.",
-        variant: "destructive"
-      });
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        console.error('Erro ao enviar solicitação:', error);
+        toast({
+          title: "Erro ao enviar",
+          description: "Ocorreu um erro ao registrar a solicitação. Tente novamente.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }

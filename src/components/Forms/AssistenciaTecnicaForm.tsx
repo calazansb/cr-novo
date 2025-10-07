@@ -6,6 +6,13 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/lib/utils";
+import { z } from "zod";
+
+const assistenciaSchema = z.object({
+  nomeSolicitante: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
+  solicitacaoProblema: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres"),
+  nivelUrgencia: z.string().min(1, "Campo obrigatório")
+});
 
 const AssistenciaTecnicaForm = () => {
   const { toast } = useToast();
@@ -123,45 +130,54 @@ ${formData.solicitacaoProblema}
   };
 
   const handleSubmit = (type: 'whatsapp' | 'email') => {
-    if (!validateAllFields()) {
-      toast({
-        title: "Formulário incompleto",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
+    try {
+      const validatedData = assistenciaSchema.parse(formData);
 
-    const urgencyEmoji = {
-      'Alta': '🔴',
-      'Média': '🟡', 
-      'Baixa': '🟢'
-    };
+      const urgencyEmoji = {
+        'Alta': '🔴',
+        'Média': '🟡', 
+        'Baixa': '🟢'
+      };
 
-    const message = `*ASSISTÊNCIA TÉCNICA - CALAZANS ROSSI ADVOGADOS*
+      const message = `*ASSISTÊNCIA TÉCNICA - CALAZANS ROSSI ADVOGADOS*
     
-*Solicitante:* ${formData.nomeSolicitante}
-*Nível de Urgência:* ${urgencyEmoji[formData.nivelUrgencia as keyof typeof urgencyEmoji]} ${formData.nivelUrgencia}
+*Solicitante:* ${validatedData.nomeSolicitante}
+*Nível de Urgência:* ${urgencyEmoji[validatedData.nivelUrgencia as keyof typeof urgencyEmoji]} ${validatedData.nivelUrgencia}
 
 *Solicitação/Problema Técnico:*
-${formData.solicitacaoProblema}`;
+${validatedData.solicitacaoProblema}`;
 
-    openWhatsApp(message);
+      openWhatsApp(message);
 
-    toast({
-      title: "Solicitação enviada!",
-      description: `Assistência técnica preparada para envio por WhatsApp!`,
-    });
-    
-    // Reset form
-    setFormData({
-      nomeSolicitante: '',
-      solicitacaoProblema: '',
-      nivelUrgencia: ''
-    });
-    setErrors({});
-    setValidatedFields(new Set());
-    localStorage.removeItem('assistencia-draft');
+      toast({
+        title: "Solicitação enviada!",
+        description: `Assistência técnica preparada para envio por WhatsApp!`,
+      });
+      
+      setFormData({
+        nomeSolicitante: '',
+        solicitacaoProblema: '',
+        nivelUrgencia: ''
+      });
+      setErrors({});
+      setValidatedFields(new Set());
+      localStorage.removeItem('assistencia-draft');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao processar formulário.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
