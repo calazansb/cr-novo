@@ -322,7 +322,7 @@ ${new Date().toLocaleString('pt-BR')}`;
       <Alert className="border-amber-200 bg-amber-50">
         <AlertTriangle className="h-4 w-4 text-amber-600" />
         <AlertDescription className="text-amber-800">
-          <strong>ATENÇÃO - IMPORTANTE:</strong> Este cálculo é apenas uma estimativa. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual.
+          <strong> ATENÇÃO - IMPORTANTE:</strong> Este cálculo é apenas uma estimativa. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual.
         </AlertDescription>
       </Alert>
 
