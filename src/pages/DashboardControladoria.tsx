@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -62,6 +62,12 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [filtroDataInicio, setFiltroDataInicio] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
 
+  // Lista de solicitantes únicos extraída das solicitações
+  const solicitantesUnicos = useMemo(() => {
+    const nomes = new Set(solicitacoes.map(s => s.nome_solicitante));
+    return Array.from(nomes).sort();
+  }, [solicitacoes]);
+
   // Verificar se tabela existe
   const verificarTabela = async () => {
     if (!supabase) return false;
@@ -99,8 +105,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     // Filtro por status
     if (filtroStatus !== 'todos' && s.status !== filtroStatus) return false;
     
-    // Filtro por nome do solicitante
-    if (filtroNome && !s.nome_solicitante.toLowerCase().includes(filtroNome.toLowerCase())) return false;
+    // Filtro por nome do solicitante (exato match)
+    if (filtroNome && filtroNome !== 'todos' && s.nome_solicitante !== filtroNome) return false;
     
     // Filtro por data de início
     if (filtroDataInicio) {
@@ -325,14 +331,22 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               </Select>
             </div>
 
-            {/* Filtro por Nome */}
+            {/* Filtro por Nome (Dropdown) */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Nome do Solicitante</label>
-              <Input
-                placeholder="Buscar por nome..."
-                value={filtroNome}
-                onChange={(e) => setFiltroNome(e.target.value)}
-              />
+              <Select value={filtroNome} onValueChange={setFiltroNome}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o solicitante" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os Solicitantes</SelectItem>
+                  {solicitantesUnicos.map((nome) => (
+                    <SelectItem key={nome} value={nome}>
+                      {nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Filtro por Data Início */}
@@ -362,7 +376,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               variant="outline" 
               onClick={() => {
                 setFiltroStatus('todos');
-                setFiltroNome('');
+                setFiltroNome('todos');
                 setFiltroDataInicio('');
                 setFiltroDataFim('');
               }}
