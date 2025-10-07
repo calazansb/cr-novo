@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Calendar, Clock, Calculator, FileText, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 const CalculoPrazosForm = () => {
   const [dataInicial, setDataInicial] = useState('');
   const [numeroDias, setNumeroDias] = useState('');
@@ -21,18 +22,13 @@ const CalculoPrazosForm = () => {
     diasCorridos: number;
     dataInicio: string;
     dataPublicacao: string;
-    detalhamento: {
-      data: string;
-      diaSemana: string;
-      contou: boolean;
-      dia: number | null;
-    }[];
+    detalhamento: { data: string; diaSemana: string; contou: boolean; dia: number | null }[];
   } | null>(null);
-  const {
-    toast
-  } = useToast();
+  
+  const { toast } = useToast();
+
   const calcularPrazo = () => {
-    if (!dataInicial || !numeroDias && prazoSelecionado === 'outro') {
+    if (!dataInicial || (!numeroDias && prazoSelecionado === 'outro')) {
       toast({
         title: "Erro",
         description: "Preencha a data inicial e o número de dias",
@@ -40,10 +36,12 @@ const CalculoPrazosForm = () => {
       });
       return;
     }
+
     const prazoFinal = prazoSelecionado === 'outro' ? parseInt(numeroDias) : parseInt(prazoSelecionado);
+    
     if (!prazoFinal || prazoFinal <= 0) {
       toast({
-        title: "Erro",
+        title: "Erro", 
         description: "Informe um número de dias válido",
         variant: "destructive"
       });
@@ -53,19 +51,16 @@ const CalculoPrazosForm = () => {
     // Criar a data corretamente interpretando a string no formato YYYY-MM-DD
     const [ano, mes, dia] = dataInicial.split('-').map(Number);
     const dataInicialDate = new Date(ano, mes - 1, dia);
+    
     let dataPublicacaoDate;
     let dataInicioContagem;
-    const detalhamento: {
-      data: string;
-      diaSemana: string;
-      contou: boolean;
-      dia: number | null;
-    }[] = [];
+    const detalhamento: { data: string; diaSemana: string; contou: boolean; dia: number | null }[] = [];
+
     if (tipoDataInicial === 'disponibilizacao') {
       // Publicação é no primeiro dia útil seguinte à disponibilização
       dataPublicacaoDate = new Date(dataInicialDate);
       dataPublicacaoDate.setDate(dataPublicacaoDate.getDate() + 1);
-
+      
       // Encontrar o primeiro dia útil
       while (dataPublicacaoDate.getDay() === 0 || dataPublicacaoDate.getDay() === 6) {
         dataPublicacaoDate.setDate(dataPublicacaoDate.getDate() + 1);
@@ -78,19 +73,21 @@ const CalculoPrazosForm = () => {
     // Início da contagem é no primeiro dia útil seguinte à publicação
     dataInicioContagem = new Date(dataPublicacaoDate);
     dataInicioContagem.setDate(dataInicioContagem.getDate() + 1);
-
+    
     // Encontrar o primeiro dia útil para início da contagem
     while (dataInicioContagem.getDay() === 0 || dataInicioContagem.getDay() === 6) {
       dataInicioContagem.setDate(dataInicioContagem.getDate() + 1);
     }
+
     let currentDate = new Date(dataInicioContagem);
     let diasContados = 0;
+
     if (tipoContagem === 'uteis') {
       // Cálculo de dias úteis (segunda a sexta)
       while (diasContados < prazoFinal) {
         const dayOfWeek = currentDate.getDay();
         const diaSemanaNames = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado'];
-
+        
         // Se não é sábado (6) nem domingo (0)
         if (dayOfWeek !== 0 && dayOfWeek !== 6) {
           diasContados++;
@@ -108,6 +105,7 @@ const CalculoPrazosForm = () => {
             dia: null
           });
         }
+        
         if (diasContados < prazoFinal) {
           currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -117,19 +115,23 @@ const CalculoPrazosForm = () => {
       for (let i = 1; i <= prazoFinal; i++) {
         const dayOfWeek = currentDate.getDay();
         const diaSemanaNames = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado'];
+        
         detalhamento.push({
           data: currentDate.toLocaleDateString('pt-BR'),
           diaSemana: diaSemanaNames[dayOfWeek],
           contou: true,
           dia: i
         });
+        
         if (i < prazoFinal) {
           currentDate.setDate(currentDate.getDate() + 1);
         }
       }
       diasContados = prazoFinal;
     }
+
     const diasTotais = Math.ceil((currentDate.getTime() - dataInicioContagem.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
     setResultado({
       dataFinal: currentDate.toLocaleDateString('pt-BR'),
       diasUteis: tipoContagem === 'uteis' ? prazoFinal : 0,
@@ -138,11 +140,13 @@ const CalculoPrazosForm = () => {
       dataPublicacao: dataPublicacaoDate.toLocaleDateString('pt-BR'),
       detalhamento
     });
+
     toast({
       title: "Prazo calculado",
-      description: `Vencimento: ${currentDate.toLocaleDateString('pt-BR')}`
+      description: `Vencimento: ${currentDate.toLocaleDateString('pt-BR')}`,
     });
   };
+
   const limparCalculo = () => {
     setDataInicial('');
     setNumeroDias('');
@@ -151,8 +155,10 @@ const CalculoPrazosForm = () => {
     setTipoDataInicial('publicacao');
     setResultado(null);
   };
+
   const copiarDetalhamento = () => {
     if (!resultado) return;
+
     const texto = `CÁLCULO DE PRAZO PROCESSUAL
 =====================================
 
@@ -163,17 +169,20 @@ Início da Contagem: ${resultado.dataInicio}
 Data de Vencimento: ${resultado.dataFinal}
 
 DETALHAMENTO DIA A DIA:
-${resultado.detalhamento.map((item, i) => `${i + 1}. ${item.data} - ${item.diaSemana} - ${item.contou ? `✓ Contou (${item.dia}º dia)` : '✗ Não contou'}`).join('\n')}
+${resultado.detalhamento.map((item, i) => 
+  `${i + 1}. ${item.data} - ${item.diaSemana} - ${item.contou ? `✓ Contou (${item.dia}º dia)` : '✗ Não contou'}`
+).join('\n')}
 
 Total de dias ${tipoContagem === 'uteis' ? 'úteis' : 'corridos'}: ${tipoContagem === 'uteis' ? resultado.diasUteis : resultado.diasCorridos}
 
 ---
 Gerado pelo Sistema CRA - Calazans Rossi Advogados
 ${new Date().toLocaleString('pt-BR')}`;
+
     navigator.clipboard.writeText(texto).then(() => {
       toast({
         title: "Copiado!",
-        description: "Detalhamento copiado para a área de transferência"
+        description: "Detalhamento copiado para a área de transferência",
       });
     }).catch(() => {
       toast({
@@ -183,8 +192,10 @@ ${new Date().toLocaleString('pt-BR')}`;
       });
     });
   };
+
   const baixarTXT = () => {
     if (!resultado) return;
+
     const texto = `CÁLCULO DE PRAZO PROCESSUAL
 =====================================
 
@@ -195,16 +206,17 @@ Início da Contagem: ${resultado.dataInicio}
 Data de Vencimento: ${resultado.dataFinal}
 
 DETALHAMENTO DIA A DIA:
-${resultado.detalhamento.map((item, i) => `${i + 1}. ${item.data} - ${item.diaSemana} - ${item.contou ? `✓ Contou (${item.dia}º dia)` : '✗ Não contou'}`).join('\n')}
+${resultado.detalhamento.map((item, i) => 
+  `${i + 1}. ${item.data} - ${item.diaSemana} - ${item.contou ? `✓ Contou (${item.dia}º dia)` : '✗ Não contou'}`
+).join('\n')}
 
 Total de dias ${tipoContagem === 'uteis' ? 'úteis' : 'corridos'}: ${tipoContagem === 'uteis' ? resultado.diasUteis : resultado.diasCorridos}
 
 ---
 Gerado pelo Sistema CRA - Calazans Rossi Advogados
 ${new Date().toLocaleString('pt-BR')}`;
-    const blob = new Blob([texto], {
-      type: 'text/plain;charset=utf-8'
-    });
+
+    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -213,12 +225,15 @@ ${new Date().toLocaleString('pt-BR')}`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+
     toast({
       title: "Download iniciado!",
-      description: "Arquivo TXT foi baixado com sucesso"
+      description: "Arquivo TXT foi baixado com sucesso",
     });
   };
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center space-y-0 pb-2">
           <Calculator className="h-5 w-5 text-primary mr-2" />
@@ -242,7 +257,13 @@ ${new Date().toLocaleString('pt-BR')}`;
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="dataInicial">Data Inicial</Label>
-                <Input id="dataInicial" type="date" value={dataInicial} onChange={e => setDataInicial(e.target.value)} placeholder="dd/mm/aaaa" />
+                <Input
+                  id="dataInicial"
+                  type="date"
+                  value={dataInicial}
+                  onChange={(e) => setDataInicial(e.target.value)}
+                  placeholder="dd/mm/aaaa"
+                />
               </div>
 
               <div className="space-y-2">
@@ -260,7 +281,15 @@ ${new Date().toLocaleString('pt-BR')}`;
                     <SelectItem value="outro">Outro prazo</SelectItem>
                   </SelectContent>
                 </Select>
-                {prazoSelecionado === 'outro' && <Input type="number" placeholder="Digite o número de dias" value={numeroDias} onChange={e => setNumeroDias(e.target.value)} className="mt-2" />}
+                {prazoSelecionado === 'outro' && (
+                  <Input
+                    type="number"
+                    placeholder="Digite o número de dias"
+                    value={numeroDias}
+                    onChange={(e) => setNumeroDias(e.target.value)}
+                    className="mt-2"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -268,17 +297,37 @@ ${new Date().toLocaleString('pt-BR')}`;
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Tipo de Contagem</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoContagem === 'uteis' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoContagem('uteis')}>
+              <div 
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  tipoContagem === 'uteis' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+                onClick={() => setTipoContagem('uteis')}
+              >
                 <div className="flex items-center space-x-2">
-                  <input type="radio" checked={tipoContagem === 'uteis'} onChange={() => setTipoContagem('uteis')} className="text-primary" />
+                  <input
+                    type="radio"
+                    checked={tipoContagem === 'uteis'}
+                    onChange={() => setTipoContagem('uteis')}
+                    className="text-primary"
+                  />
                   <Label className="cursor-pointer font-medium">Dias Úteis</Label>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">Exclui sábados e domingos</p>
               </div>
 
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoContagem === 'corridos' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoContagem('corridos')}>
+              <div 
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  tipoContagem === 'corridos' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+                onClick={() => setTipoContagem('corridos')}
+              >
                 <div className="flex items-center space-x-2">
-                  <input type="radio" checked={tipoContagem === 'corridos'} onChange={() => setTipoContagem('corridos')} className="text-primary" />
+                  <input
+                    type="radio"
+                    checked={tipoContagem === 'corridos'}
+                    onChange={() => setTipoContagem('corridos')}
+                    className="text-primary"
+                  />
                   <Label className="cursor-pointer font-medium">Dias Corridos</Label>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">Inclui todos os dias</p>
@@ -289,17 +338,37 @@ ${new Date().toLocaleString('pt-BR')}`;
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Tipo de Data Inicial</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoDataInicial === 'publicacao' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoDataInicial('publicacao')}>
+              <div 
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  tipoDataInicial === 'publicacao' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+                onClick={() => setTipoDataInicial('publicacao')}
+              >
                 <div className="flex items-center space-x-2">
-                  <input type="radio" checked={tipoDataInicial === 'publicacao'} onChange={() => setTipoDataInicial('publicacao')} className="text-primary" />
+                  <input
+                    type="radio"
+                    checked={tipoDataInicial === 'publicacao'}
+                    onChange={() => setTipoDataInicial('publicacao')}
+                    className="text-primary"
+                  />
                   <Label className="cursor-pointer font-medium">Data de Publicação</Label>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">Data oficial da publicação</p>
               </div>
 
-              <div className={`p-4 border rounded-lg cursor-pointer transition-colors ${tipoDataInicial === 'disponibilizacao' ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => setTipoDataInicial('disponibilizacao')}>
+              <div 
+                className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  tipoDataInicial === 'disponibilizacao' ? 'border-primary bg-primary/5' : 'border-border'
+                }`}
+                onClick={() => setTipoDataInicial('disponibilizacao')}
+              >
                 <div className="flex items-center space-x-2">
-                  <input type="radio" checked={tipoDataInicial === 'disponibilizacao'} onChange={() => setTipoDataInicial('disponibilizacao')} className="text-primary" />
+                  <input
+                    type="radio"
+                    checked={tipoDataInicial === 'disponibilizacao'}
+                    onChange={() => setTipoDataInicial('disponibilizacao')}
+                    className="text-primary"
+                  />
                   <Label className="cursor-pointer font-medium">Data de Disponibilização</Label>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">Data de disponibilização eletrônica</p>
@@ -319,14 +388,16 @@ ${new Date().toLocaleString('pt-BR')}`;
         </CardContent>
       </Card>
 
-      <Alert className="border-amber-200 bg-amber-50">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertDescription className="text-amber-800">
-          <strong> ATENÇÃO - IMPORTANTE:</strong> Este cálculo é apenas uma estimativa. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual.
+      <Alert variant="destructive" className="border-2 border-red-600 bg-red-50 dark:bg-red-950/30 p-6">
+        <AlertTriangle className="h-8 w-8 text-red-600" />
+        <AlertDescription className="text-red-900 dark:text-red-100 text-lg font-semibold ml-2">
+          <strong className="text-xl block mb-2">⚠️ ATENÇÃO - IMPORTANTE:</strong> 
+          <span className="text-base">Este cálculo é apenas uma estimativa automatizada. Sempre confira o prazo manualmente e consulte a legislação vigente antes de tomar qualquer decisão processual. O escritório não se responsabiliza por eventuais erros no cálculo automático.</span>
         </AlertDescription>
       </Alert>
 
-      {resultado && <Card>
+      {resultado && (
+        <Card>
           <CardHeader className="flex flex-row items-center space-y-0 pb-2">
             <Clock className="h-5 w-5 text-green-600 mr-2" />
             <CardTitle>Resultado do Cálculo</CardTitle>
@@ -351,17 +422,21 @@ ${new Date().toLocaleString('pt-BR')}`;
                 <div className="text-sm text-muted-foreground">Data de Vencimento</div>
               </div>
               
-              {tipoContagem === 'uteis' && resultado.diasUteis > 0 && <div className="text-center p-4 bg-muted rounded-lg">
+              {tipoContagem === 'uteis' && resultado.diasUteis > 0 && (
+                <div className="text-center p-4 bg-muted rounded-lg">
                   <FileText className="h-8 w-8 mx-auto mb-2 text-orange-600" />
                   <div className="text-2xl font-bold text-orange-600">{resultado.diasUteis}</div>
                   <div className="text-sm text-muted-foreground">Dias Úteis</div>
-                </div>}
+                </div>
+              )}
               
-              {tipoContagem === 'corridos' && <div className="text-center p-4 bg-muted rounded-lg">
+              {tipoContagem === 'corridos' && (
+                <div className="text-center p-4 bg-muted rounded-lg">
                   <Clock className="h-8 w-8 mx-auto mb-2 text-orange-600" />
                   <div className="text-2xl font-bold text-orange-600">{resultado.diasCorridos}</div>
                   <div className="text-sm text-muted-foreground">Dias Corridos</div>
-                </div>}
+                </div>
+              )}
             </div>
 
             {/* Detalhamento da Contagem */}
@@ -403,21 +478,29 @@ ${new Date().toLocaleString('pt-BR')}`;
                     </div>
                     
                     <div className="max-h-64 overflow-y-auto">
-                      {resultado.detalhamento.map((item, index) => <div key={index} className="px-4 py-2 border-b grid grid-cols-4 gap-4 text-sm hover:bg-muted/50">
+                      {resultado.detalhamento.map((item, index) => (
+                        <div key={index} className="px-4 py-2 border-b grid grid-cols-4 gap-4 text-sm hover:bg-muted/50">
                           <div>{item.data}</div>
                           <div>{item.diaSemana}</div>
                           <div>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${item.contou ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                              item.contou 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
                               {item.contou ? '✓ Sim' : '✗ Não'}
                             </span>
                           </div>
                           <div>{item.dia ? `${item.dia}º dia` : '-'}</div>
-                        </div>)}
+                        </div>
+                      ))}
                     </div>
                     
-                    {resultado.detalhamento.some(item => !item.contou) && <div className="px-4 py-2 bg-muted/30 text-xs text-muted-foreground italic">
+                    {resultado.detalhamento.some(item => !item.contou) && (
+                      <div className="px-4 py-2 bg-muted/30 text-xs text-muted-foreground italic">
                         Fim de semana - não conta
-                      </div>}
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -439,7 +522,10 @@ ${new Date().toLocaleString('pt-BR')}`;
               </div>
             </div>
           </CardContent>
-        </Card>}
-    </div>;
+        </Card>
+      )}
+    </div>
+  );
 };
+
 export default CalculoPrazosForm;
