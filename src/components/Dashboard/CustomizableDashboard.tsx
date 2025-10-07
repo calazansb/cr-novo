@@ -441,46 +441,87 @@ export const CustomizableDashboard = () => {
         return (
           <div className="space-y-3">
             {/* Filtros */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <select 
-                className="text-xs border rounded px-2 py-1 bg-background"
-                value={filtroStatus}
-                onChange={(e) => setFiltroStatus(e.target.value)}
-              >
-                <option value="todos">Todos Status</option>
-                <option value="pendente">Pendente</option>
-                <option value="concluida">Concluída</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
+            <div className="space-y-2 mb-4 p-3 bg-muted/30 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Status</label>
+                  <select 
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                    value={filtroStatus}
+                    onChange={(e) => setFiltroStatus(e.target.value)}
+                  >
+                    <option value="todos">Todos Status</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="concluida">Concluída</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Solicitante</label>
+                  <select 
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                    value={filtroNome}
+                    onChange={(e) => setFiltroNome(e.target.value)}
+                  >
+                    <option value="todos">Todos Solicitantes</option>
+                    {solicitantesUnicos.map(nome => (
+                      <option key={nome} value={nome}>{nome}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+                  <select 
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                    value={filtroCliente}
+                    onChange={(e) => setFiltroCliente(e.target.value)}
+                  >
+                    <option value="todos">Todos Clientes</option>
+                    {clientesUnicos.map(nome => (
+                      <option key={nome} value={nome}>{nome}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Data de Criação</label>
+                  <input
+                    type="date"
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                    value={filtroData}
+                    onChange={(e) => setFiltroData(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Prazo de Retorno</label>
+                  <input
+                    type="date"
+                    className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                    value={filtroPrazo}
+                    onChange={(e) => setFiltroPrazo(e.target.value)}
+                  />
+                </div>
+              </div>
               
-              <select 
-                className="text-xs border rounded px-2 py-1 bg-background"
-                value={filtroNome}
-                onChange={(e) => setFiltroNome(e.target.value)}
-              >
-                <option value="todos">Todos Solicitantes</option>
-                {solicitantesUnicos.map(nome => (
-                  <option key={nome} value={nome}>{nome}</option>
-                ))}
-              </select>
-              
-              <input
-                type="date"
-                className="text-xs border rounded px-2 py-1 bg-background"
-                value={filtroData}
-                onChange={(e) => setFiltroData(e.target.value)}
-                placeholder="Data da Criação"
-                title="Data da Criação"
-              />
-              
-              <input
-                type="date"
-                className="text-xs border rounded px-2 py-1 bg-background"
-                value={filtroPrazo}
-                onChange={(e) => setFiltroPrazo(e.target.value)}
-                placeholder="Data do Prazo"
-                title="Data do Prazo"
-              />
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs px-3"
+                  onClick={() => {
+                    setFiltroStatus('todos');
+                    setFiltroNome('todos');
+                    setFiltroCliente('todos');
+                    setFiltroData('');
+                    setFiltroPrazo('');
+                  }}
+                >
+                  Limpar
+                </Button>
+              </div>
             </div>
             
             <ScrollArea className="h-56">
