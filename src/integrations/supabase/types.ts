@@ -102,7 +102,15 @@ export type Database = {
           ultima_modificacao_por?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_controladoria_ultima_modificacao_por_fkey"
+            columns: ["ultima_modificacao_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
