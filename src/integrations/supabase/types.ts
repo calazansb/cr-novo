@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          nome: string | null
+          perfil: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          nome?: string | null
+          perfil?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          perfil?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       solicitacoes_controladoria: {
         Row: {
           anexos: string[] | null
