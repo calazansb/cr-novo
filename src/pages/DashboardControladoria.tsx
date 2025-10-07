@@ -189,11 +189,11 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       const dataCriacao = new Date(s.data_criacao);
       const dataFiltro = new Date(filtroData);
       
-      // Normalizar ambas as datas para meia-noite UTC
-      dataCriacao.setHours(0, 0, 0, 0);
-      dataFiltro.setHours(0, 0, 0, 0);
+      // Extrair apenas ano, mês e dia para comparação
+      const dataCriacaoStr = `${dataCriacao.getFullYear()}-${String(dataCriacao.getMonth() + 1).padStart(2, '0')}-${String(dataCriacao.getDate()).padStart(2, '0')}`;
+      const dataFiltroStr = `${dataFiltro.getFullYear()}-${String(dataFiltro.getMonth() + 1).padStart(2, '0')}-${String(dataFiltro.getDate()).padStart(2, '0')}`;
       
-      if (dataCriacao.getTime() !== dataFiltro.getTime()) return false;
+      if (dataCriacaoStr !== dataFiltroStr) return false;
     }
     
     // Filtro por prazo (prazo_retorno)
@@ -201,11 +201,11 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       const prazoRetorno = new Date(s.prazo_retorno);
       const prazoFiltro = new Date(filtroPrazo);
       
-      // Normalizar ambas as datas para meia-noite UTC
-      prazoRetorno.setHours(0, 0, 0, 0);
-      prazoFiltro.setHours(0, 0, 0, 0);
+      // Extrair apenas ano, mês e dia para comparação
+      const prazoRetornoStr = `${prazoRetorno.getFullYear()}-${String(prazoRetorno.getMonth() + 1).padStart(2, '0')}-${String(prazoRetorno.getDate()).padStart(2, '0')}`;
+      const prazoFiltroStr = `${prazoFiltro.getFullYear()}-${String(prazoFiltro.getMonth() + 1).padStart(2, '0')}-${String(prazoFiltro.getDate()).padStart(2, '0')}`;
       
-      if (prazoRetorno.getTime() !== prazoFiltro.getTime()) return false;
+      if (prazoRetornoStr !== prazoFiltroStr) return false;
     }
     
     return true;
@@ -748,11 +748,10 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       ) : (
         <div className="border rounded-lg overflow-hidden bg-background">
           {/* Header da Tabela */}
-          <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-            <div>Código</div>
+          <div className="grid grid-cols-[2.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+            <div>Código / Processo / Objeto</div>
             <div>Solicitante</div>
             <div>Cliente</div>
-            <div>Processo</div>
             <div>Data</div>
             <div>Prazo</div>
             <div>Status</div>
@@ -768,13 +767,18 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
             solicitacoesFiltradas.map((solicitacao, index) => (
               <div 
                 key={solicitacao.id} 
-                className={`grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
+                className={`grid grid-cols-[2.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
                   index !== solicitacoesFiltradas.length - 1 ? 'border-b' : ''
                 }`}
               >
-                {/* Coluna 1: Código + Descrição Completa */}
+                {/* Coluna 1: Código + Processo + Descrição Completa */}
                 <div>
                   <div className="font-semibold text-sm mb-1">{formatCodigo(solicitacao.codigo_unico)}</div>
+                  {solicitacao.numero_processo && (
+                    <div className="text-xs text-muted-foreground font-medium mb-1">
+                      Processo: {solicitacao.numero_processo}
+                    </div>
+                  )}
                   <div className="text-xs text-muted-foreground">
                     <div className="font-medium mb-0.5">Objeto: {solicitacao.objeto_solicitacao}</div>
                     <div className="line-clamp-3">{solicitacao.descricao_detalhada}</div>
@@ -791,22 +795,17 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   {solicitacao.cliente}
                 </div>
                 
-                {/* Coluna 4: Processo */}
-                <div className="text-sm text-muted-foreground truncate">
-                  {solicitacao.numero_processo || 'N/A'}
-                </div>
-                
-                {/* Coluna 5: Data */}
+                {/* Coluna 4: Data */}
                 <div className="text-sm text-muted-foreground">
                   {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
                 </div>
                 
-                {/* Coluna 6: Prazo */}
+                {/* Coluna 5: Prazo */}
                 <div className="text-sm text-muted-foreground">
                   {solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
                 </div>
                 
-                {/* Coluna 7: Status */}
+                {/* Coluna 6: Status */}
                 <div>
                   <Badge 
                     className={`text-xs px-2.5 py-0.5 ${
@@ -821,7 +820,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </Badge>
                 </div>
                 
-                {/* Coluna 8: Ações */}
+                {/* Coluna 7: Ações */}
                 <div>
                   <div className="flex gap-1 justify-end items-center mb-1">
                     <Dialog>
