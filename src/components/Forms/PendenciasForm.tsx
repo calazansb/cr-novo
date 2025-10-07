@@ -9,6 +9,17 @@ import { DateField } from "@/components/ui/date-field";
 import { ClipboardList, MessageCircle, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { openWhatsApp } from "@/lib/utils";
+import { z } from "zod";
+
+const pendenciaSchema = z.object({
+  numeroProcesso: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  tipoUrgencia: z.string().min(1, "Campo obrigatório"),
+  prazoLimite: z.string().min(1, "Campo obrigatório"),
+  responsavel: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  descricao: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres"),
+  cliente: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  observacoes: z.string().max(500, "Máximo 500 caracteres").optional()
+});
 
 const PendenciasForm = () => {
   const { toast } = useToast();
@@ -30,49 +41,56 @@ const PendenciasForm = () => {
 
 
   const handleSubmit = () => {
-    const requiredFields = ['numeroProcesso', 'tipoUrgencia', 'prazoLimite', 'responsavel', 'descricao', 'cliente'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
-    
-    if (missingFields.length > 0) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
+    try {
+      const validatedData = pendenciaSchema.parse(formData);
 
-    const message = `*PENDÊNCIA/URGÊNCIA - CALAZANS ROSSI ADVOGADOS*
+      const message = `*PENDÊNCIA/URGÊNCIA - CALAZANS ROSSI ADVOGADOS*
     
-*Processo:* ${formData.numeroProcesso}
-*Tipo de Urgência:* ${formData.tipoUrgencia}
-*Prazo Limite:* ${formData.prazoLimite}
-*Advogado Responsável:* ${formData.responsavel}
-*Cliente:* ${formData.cliente}
+*Processo:* ${validatedData.numeroProcesso}
+*Tipo de Urgência:* ${validatedData.tipoUrgencia}
+*Prazo Limite:* ${validatedData.prazoLimite}
+*Advogado Responsável:* ${validatedData.responsavel}
+*Cliente:* ${validatedData.cliente}
 
 *Descrição da Pendência:*
-${formData.descricao}
+${validatedData.descricao}
 
-${formData.observacoes ? `*Observações:*\n${formData.observacoes}` : ''}
+${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` : ''}
 
 `;
 
-    openWhatsApp(message);
+      openWhatsApp(message);
 
-    toast({
-      title: "Pendência comunicada!",
-      description: `Urgência preparada para envio via WhatsApp.`,
-    });
+      toast({
+        title: "Pendência comunicada!",
+        description: `Urgência preparada para envio via WhatsApp.`,
+      });
 
-    setFormData({
-      numeroProcesso: "",
-      tipoUrgencia: "",
-      prazoLimite: "",
-      responsavel: "",
-      descricao: "",
-      cliente: "",
-      observacoes: ""
-    });
+      setFormData({
+        numeroProcesso: "",
+        tipoUrgencia: "",
+        prazoLimite: "",
+        responsavel: "",
+        descricao: "",
+        cliente: "",
+        observacoes: ""
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao processar formulário.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (

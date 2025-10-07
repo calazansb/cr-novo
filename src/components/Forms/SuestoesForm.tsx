@@ -8,6 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Lightbulb, MessageCircle, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { openWhatsApp } from "@/lib/utils";
+import { z } from "zod";
+
+const sugestaoSchema = z.object({
+  categoria: z.string().min(1, "Campo obrigatório"),
+  titulo: z.string().trim().min(5, "Mínimo 5 caracteres").max(100, "Máximo 100 caracteres"),
+  descricao: z.string().trim().min(20, "Mínimo 20 caracteres").max(1000, "Máximo 1000 caracteres"),
+  prioridade: z.string().min(1, "Campo obrigatório"),
+  departamento: z.string().min(1, "Campo obrigatório"),
+  solicitante: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
+  beneficios: z.string().max(500, "Máximo 500 caracteres").optional(),
+  implementacao: z.string().max(500, "Máximo 500 caracteres").optional()
+});
 
 const SuestoesForm = () => {
   const { toast } = useToast();
@@ -30,53 +42,60 @@ const SuestoesForm = () => {
 
 
   const handleSubmit = () => {
-    const requiredFields = ['categoria', 'titulo', 'descricao', 'prioridade', 'departamento', 'solicitante'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
-    
-    if (missingFields.length > 0) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
+    try {
+      const validatedData = sugestaoSchema.parse(formData);
 
-    const message = `*SUGESTÃO - CALAZANS ROSSI ADVOGADOS*
+      const message = `*SUGESTÃO - CALAZANS ROSSI ADVOGADOS*
     
-*Título:* ${formData.titulo}
-*Categoria:* ${formData.categoria}
-*Prioridade:* ${formData.prioridade}
-*Departamento:* ${formData.departamento}
-*Solicitante:* ${formData.solicitante}
+*Título:* ${validatedData.titulo}
+*Categoria:* ${validatedData.categoria}
+*Prioridade:* ${validatedData.prioridade}
+*Departamento:* ${validatedData.departamento}
+*Solicitante:* ${validatedData.solicitante}
 
 *Descrição:*
-${formData.descricao}
+${validatedData.descricao}
 
-${formData.beneficios ? `*Benefícios Esperados:*\n${formData.beneficios}` : ''}
+${validatedData.beneficios ? `*Benefícios Esperados:*\n${validatedData.beneficios}` : ''}
 
-${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implementacao}` : ''}
+${validatedData.implementacao ? `*Proposta de Implementação:*\n${validatedData.implementacao}` : ''}
 
 `;
 
-    const phoneNumber = '5531998259845'; // Número padrão para sugestões
-    openWhatsApp(message, phoneNumber);
+      const phoneNumber = '5531998259845';
+      openWhatsApp(message, phoneNumber);
 
-    toast({
-      title: "Sugestão enviada!",
-      description: `Sua sugestão foi preparada para envio via WhatsApp.`,
-    });
+      toast({
+        title: "Sugestão enviada!",
+        description: `Sua sugestão foi preparada para envio via WhatsApp.`,
+      });
 
-    setFormData({
-      categoria: "",
-      titulo: "",
-      descricao: "",
-      prioridade: "",
-      departamento: "",
-      solicitante: "",
-      beneficios: "",
-      implementacao: ""
-    });
+      setFormData({
+        categoria: "",
+        titulo: "",
+        descricao: "",
+        prioridade: "",
+        departamento: "",
+        solicitante: "",
+        beneficios: "",
+        implementacao: ""
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao processar formulário.",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   return (
@@ -100,7 +119,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
                 Categoria *
               </Label>
               <Select value={formData.categoria} onValueChange={(value) => handleInputChange('categoria', value)}>
-                <SelectTrigger className="bg-input">
+                <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -120,7 +139,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
                 Prioridade *
               </Label>
               <Select value={formData.prioridade} onValueChange={(value) => handleInputChange('prioridade', value)}>
-                <SelectTrigger className="bg-input">
+                <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,7 +156,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
                 Departamento Afetado *
               </Label>
               <Select value={formData.departamento} onValueChange={(value) => handleInputChange('departamento', value)}>
-                <SelectTrigger className="bg-input">
+                <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Selecione o departamento" />
                 </SelectTrigger>
                 <SelectContent>
@@ -160,7 +179,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
                 placeholder="Seu nome completo"
                 value={formData.solicitante}
                 onChange={(e) => handleInputChange('solicitante', e.target.value)}
-                className="bg-input"
+                className="bg-background"
               />
             </div>
           </div>
@@ -174,7 +193,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
               placeholder="Resumo da sua sugestão em uma linha"
               value={formData.titulo}
               onChange={(e) => handleInputChange('titulo', e.target.value)}
-              className="bg-input"
+              className="bg-background"
             />
           </div>
 
@@ -187,7 +206,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
               placeholder="Descreva sua sugestão detalhadamente, incluindo o problema atual e a solução proposta"
               value={formData.descricao}
               onChange={(e) => handleInputChange('descricao', e.target.value)}
-              className="min-h-32 bg-input"
+              className="min-h-32 bg-background"
             />
           </div>
 
@@ -200,7 +219,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
               placeholder="Quais benefícios esta sugestão pode trazer para o escritório?"
               value={formData.beneficios}
               onChange={(e) => handleInputChange('beneficios', e.target.value)}
-              className="min-h-24 bg-input"
+              className="min-h-24 bg-background"
             />
           </div>
 
@@ -213,7 +232,7 @@ ${formData.implementacao ? `*Proposta de Implementação:*\n${formData.implement
               placeholder="Como você sugere que esta melhoria seja implementada?"
               value={formData.implementacao}
               onChange={(e) => handleInputChange('implementacao', e.target.value)}
-              className="min-h-24 bg-input"
+              className="min-h-24 bg-background"
             />
           </div>
 

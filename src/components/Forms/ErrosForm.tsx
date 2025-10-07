@@ -9,6 +9,19 @@ import { DateField } from "@/components/ui/date-field";
 import { AlertTriangle, MessageCircle, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { openWhatsApp } from "@/lib/utils";
+import { z } from "zod";
+
+const erroSchema = z.object({
+  tipoErro: z.string().min(1, "Campo obrigatório"),
+  gravidade: z.string().min(1, "Campo obrigatório"),
+  numeroProcesso: z.string().max(100, "Máximo 100 caracteres").optional(),
+  descricaoErro: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres"),
+  impacto: z.string().trim().min(10, "Mínimo 10 caracteres").max(500, "Máximo 500 caracteres"),
+  responsavel: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  cliente: z.string().max(100, "Máximo 100 caracteres").optional(),
+  acaoCorretiva: z.string().max(500, "Máximo 500 caracteres").optional(),
+  prazoCorrecao: z.string().optional()
+});
 
 const ErrosForm = () => {
   const { toast } = useToast();
@@ -31,40 +44,30 @@ const ErrosForm = () => {
   };
 
 
-  const handleSubmit = async () => {
-    const requiredFields = ['tipoErro', 'gravidade', 'descricaoErro', 'impacto', 'responsavel'];
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
-    
-    if (missingFields.length > 0) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSubmit = () => {
     setLoading(true);
 
     try {
+      const validatedData = erroSchema.parse(formData);
+
       const message = `*🚨 RELATÓRIO DE ERRO*
 
-*Tipo de Erro:* ${formData.tipoErro}
-*Gravidade:* ${formData.gravidade}
-*Processo:* ${formData.numeroProcesso || 'N/A'}
-*Cliente:* ${formData.cliente || 'N/A'}
-*Responsável:* ${formData.responsavel}
+*Tipo de Erro:* ${validatedData.tipoErro}
+*Gravidade:* ${validatedData.gravidade}
+*Processo:* ${validatedData.numeroProcesso || 'N/A'}
+*Cliente:* ${validatedData.cliente || 'N/A'}
+*Responsável:* ${validatedData.responsavel}
 
 *Descrição do Erro:*
-${formData.descricaoErro}
+${validatedData.descricaoErro}
 
 *Impacto:*
-${formData.impacto}
+${validatedData.impacto}
 
 *Ação Corretiva:*
-${formData.acaoCorretiva || 'N/A'}
+${validatedData.acaoCorretiva || 'N/A'}
 
-*Prazo para Correção:* ${formData.prazoCorrecao || 'N/A'}
+*Prazo para Correção:* ${validatedData.prazoCorrecao || 'N/A'}
 
 ---
 Relatório gerado automaticamente pelo Sistema Calazans Rossi`;
@@ -88,11 +91,20 @@ Relatório gerado automaticamente pelo Sistema Calazans Rossi`;
         prazoCorrecao: ""
       });
     } catch (error) {
-      toast({
-        title: "Erro no envio",
-        description: "Ocorreu um erro ao enviar o relatório. Tente novamente.",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao processar formulário.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
