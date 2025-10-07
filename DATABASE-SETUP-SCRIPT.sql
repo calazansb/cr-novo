@@ -121,10 +121,10 @@ DECLARE
   novo_codigo VARCHAR(50);
   contador INTEGER := 1;
 BEGIN
-  -- Gera código no formato CTRL-YYYYMMDD-NNNN
+  -- Gera código no formato CTRL-DD-MM-YYYY-NNNN
   LOOP
     novo_codigo := 'CTRL-' || 
-                   TO_CHAR(NOW(), 'YYYYMMDD') || '-' || 
+                   TO_CHAR(NOW(), 'DD-MM-YYYY') || '-' || 
                    LPAD(contador::TEXT, 4, '0');
     
     -- Verifica se o código já existe
