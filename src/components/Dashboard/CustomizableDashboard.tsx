@@ -68,13 +68,6 @@ const availableWidgets: WidgetTemplate[] = [
     defaultSize: 'medium'
   },
   {
-    type: 'recent-requests',
-    title: 'Solicitações Recentes',
-    description: 'Lista das últimas solicitações criadas',
-    icon: FileText,
-    defaultSize: 'medium'
-  },
-  {
     type: 'status-chart',
     title: 'Gráfico de Status',
     description: 'Distribuição visual de solicitações por status',
@@ -142,13 +135,17 @@ export const CustomizableDashboard = () => {
   const loadWidgets = () => {
     const saved = localStorage.getItem(`dashboard-widgets-${user?.id}`);
     if (saved) {
-      setWidgets(JSON.parse(saved));
+      const parsed: Widget[] = JSON.parse(saved);
+      const filtered = parsed.filter(w => w.type !== 'recent-requests');
+      setWidgets(filtered);
+      if (filtered.length !== parsed.length) {
+        saveWidgets(filtered);
+      }
     } else {
-      // Widgets padrão: lado a lado
+      // Widgets padrão: lado a lado (sem "Solicitações Recentes" como widget)
       const defaultWidgets: Widget[] = [
         { id: '1', type: 'stats-overview', title: 'Visão Geral de Estatísticas', position: 0, size: 'medium' },
-        { id: '2', type: 'quick-actions', title: 'Ações Rápidas', position: 1, size: 'medium' },
-        { id: '3', type: 'recent-requests', title: 'Solicitações Recentes', position: 2, size: 'large' }
+        { id: '2', type: 'quick-actions', title: 'Ações Rápidas', position: 1, size: 'medium' }
       ];
       setWidgets(defaultWidgets);
       saveWidgets(defaultWidgets);
@@ -723,132 +720,125 @@ export const CustomizableDashboard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-3">
-          <div className="space-y-3">
-            {/* Filtros Compactos */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <select 
-                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
-                value={filtroStatus}
-                onChange={(e) => setFiltroStatus(e.target.value)}
-              >
-                <option value="todos">Todos Status</option>
-                <option value="pendente">Pendente</option>
-                <option value="concluida">Concluída</option>
-                <option value="cancelada">Cancelada</option>
-              </select>
-              
-              <select 
-                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
-                value={filtroNome}
-                onChange={(e) => setFiltroNome(e.target.value)}
-              >
-                <option value="todos">Todos Solicitantes</option>
-                {solicitantesUnicos.map(nome => (
-                  <option key={nome} value={nome}>{nome}</option>
-                ))}
-              </select>
-              
-              <input
-                type="date"
-                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
-                value={filtroDataInicio}
-                onChange={(e) => setFiltroDataInicio(e.target.value)}
-                placeholder="Data início"
-              />
-              
-              <input
-                type="date"
-                className="text-xs border rounded px-2 py-1.5 bg-background h-9"
-                value={filtroDataFim}
-                onChange={(e) => setFiltroDataFim(e.target.value)}
-                placeholder="Data fim"
-              />
+          {requestsFiltradas.length === 0 ? (
+            <div className="px-6 py-12 text-center text-muted-foreground">
+              Nenhuma solicitação encontrada
             </div>
-            
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-2 pr-2">
-                {requestsFiltradas.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Nenhuma solicitação encontrada
-                  </p>
-                ) : (
-                  requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0 space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-sm truncate">{req.codigo_unico}</p>
-                          </div>
-                          
-                          <div className="text-xs space-y-0">
-                            <div className="flex gap-3">
-                              <span><span className="font-semibold">Processo:</span> {req.numero_processo || 'N/A'}</span>
-                              <span><span className="font-semibold">Cliente:</span> {req.cliente}</span>
-                            </div>
-                            <div className="flex gap-3">
-                              <span><span className="font-semibold">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span>
-                            </div>
-                          </div>
-                          
-                          {req.ultima_modificacao_em && (
-                            <p className="text-xs text-muted-foreground italic">
-                              Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
-                          <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
-                            {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
-                          </Badge>
-                          
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-7 text-xs px-2"
-                              onClick={() => setSolicitacaoVisualizando(req)}
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Ver
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="h-7 text-xs px-2"
-                              onClick={() => {
-                                setSolicitacaoEditando(req);
-                                setNovoStatus(req.status);
-                                setObservacoes(req.observacoes || '');
-                              }}
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Editar
-                            </Button>
-                          </div>
-                          
-                          {(req.anexos?.length > 0 || req.anexos_resposta?.length > 0) && (
-                            <div className="flex gap-1">
-                              {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-300">
-                                  📎 {req.anexos.length}
-                                </Badge>
-                              )}
-                              {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                                <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-300">
-                                  📤 {req.anexos_resposta.length}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
+          ) : (
+            <div className="border rounded-lg overflow-hidden bg-background">
+              {/* Header da Tabela - idêntico ao DashboardControladoria */}
+              <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+                <div>Código</div>
+                <div>Solicitante</div>
+                <div>Cliente</div>
+                <div>Processo</div>
+                <div>Data</div>
+                <div>Prazo</div>
+                <div>Status</div>
+                <div className="text-right">Ações</div>
               </div>
-            </ScrollArea>
-          </div>
+
+              {/* Linhas da Tabela - idênticas em layout */}
+              {requestsFiltradas.map((solicitacao, index) => (
+                <div 
+                  key={solicitacao.id} 
+                  className={`grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
+                    index !== requestsFiltradas.length - 1 ? 'border-b' : ''
+                  }`}
+                >
+                  {/* Coluna 1: Código + Objeto */}
+                  <div>
+                    <div className="font-semibold text-sm">{formatCodigo(solicitacao.codigo_unico)}</div>
+                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{solicitacao.objeto_solicitacao}</div>
+                  </div>
+                  
+                  {/* Coluna 2: Solicitante */}
+                  <div className="text-sm">
+                    {solicitacao.nome_solicitante}
+                  </div>
+                  
+                  {/* Coluna 3: Cliente */}
+                  <div className="text-sm">
+                    {solicitacao.cliente}
+                  </div>
+                  
+                  {/* Coluna 4: Processo */}
+                  <div className="text-sm text-muted-foreground truncate">
+                    {solicitacao.numero_processo || 'N/A'}
+                  </div>
+                  
+                  {/* Coluna 5: Data */}
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
+                  </div>
+                  
+                  {/* Coluna 6: Prazo */}
+                  <div className="text-sm text-muted-foreground">
+                    {solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
+                  </div>
+                  
+                  {/* Coluna 7: Status */}
+                  <div>
+                    <Badge 
+                      className={`text-xs px-2.5 py-0.5 ${
+                        solicitacao.status === 'concluida' 
+                          ? 'bg-green-600 hover:bg-green-700 text-white' 
+                          : solicitacao.status === 'pendente' 
+                          ? 'bg-red-600 hover:bg-red-700 text-white' 
+                          : 'bg-gray-600 hover:bg-gray-700 text-white'
+                      }`}
+                    >
+                      {solicitacao.status === 'pendente' ? 'Pendente' : solicitacao.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                    </Badge>
+                  </div>
+                  
+                  {/* Coluna 8: Ações */}
+                  <div>
+                    <div className="flex gap-1 justify-end items-center mb-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-primary/10"
+                        onClick={() => setSolicitacaoVisualizando(solicitacao)}
+                        title="Ver detalhes"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-primary/10"
+                        onClick={() => {
+                          setSolicitacaoEditando(solicitacao);
+                          setNovoStatus(solicitacao.status);
+                          setObservacoes(solicitacao.observacoes || '');
+                        }}
+                        title="Editar"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    {/* Anexos abaixo dos botões - idênticos */}
+                    <div className="flex gap-2 justify-end items-center text-xs">
+                      {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                        <span className="flex items-center gap-0.5 text-blue-600" title={`${solicitacao.anexos.length} anexo(s)`}>
+                          <Paperclip className="h-3.5 w-3.5" />
+                          {solicitacao.anexos.length}
+                        </span>
+                      )}
+                      {solicitacao.anexos_resposta && Array.isArray(solicitacao.anexos_resposta) && solicitacao.anexos_resposta.length > 0 && (
+                        <span className="flex items-center gap-0.5 text-green-600" title={`${solicitacao.anexos_resposta.length} resposta(s)`}>
+                          <Upload className="h-3.5 w-3.5" />
+                          {solicitacao.anexos_resposta.length}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
