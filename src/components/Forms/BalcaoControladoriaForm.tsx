@@ -259,9 +259,10 @@ ${formData.solicitacao}
       }
 
       // Generate message with unique code
+      const displayCodigo = formatCodigo(codigoUnico);
       let message = `*BALCÃO DA CONTROLADORIA - CALAZANS ROSSI ADVOGADOS*
 
-🏷️ *CÓDIGO DA SOLICITAÇÃO: ${codigoUnico}*
+🏷️ *CÓDIGO DA SOLICITAÇÃO: ${displayCodigo}*
     
 *Solicitante:* ${validatedData.nomeSolicitante}
 *Número do Processo:* ${validatedData.numeroProcesso}
@@ -287,7 +288,7 @@ ${validatedData.solicitacao}`;
 
       toast({
         title: "Solicitação registrada!",
-        description: `Código gerado: ${codigoUnico}. Sua solicitação foi registrada e encaminhada.`,
+        description: `Código gerado: ${displayCodigo}. Sua solicitação foi registrada e encaminhada.`,
       });
 
       // Reset form
