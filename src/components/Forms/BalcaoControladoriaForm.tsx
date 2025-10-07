@@ -1,0 +1,398 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building, MessageCircle, Mail, Eye } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+import { LoadingButton } from "@/components/ui/loading-button";
+import { FormField } from "@/components/ui/form-field";
+import { DateField } from "@/components/ui/date-field";
+import { Button } from "@/components/ui/button";
+import { openWhatsApp } from "@/lib/utils";
+import { useAuth } from "@/components/Auth/AuthProvider";
+import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
+
+const BalcaoControladoriaForm = () => {
+  const { toast } = useToast();
+  const { criarSolicitacao } = useSolicitacoes();
+  const { user } = useAuth();
+  const [formData, setFormData] = useState({
+    nomeSolicitante: "",
+    numeroProcesso: "",
+    cliente: "",
+    tribunalOrgao: "",
+    prazoRetorno: "",
+    solicitacao: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Auto-save draft
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('balcao-controladoria-draft', JSON.stringify(formData));
+    }, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [formData]);
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = localStorage.getItem('balcao-controladoria-draft');
+    if (draft) {
+      try {
+        const parsedDraft = JSON.parse(draft);
+        setFormData(prev => ({ ...prev, ...parsedDraft }));
+        toast({
+          title: "Rascunho carregado",
+          description: "Seus dados foram recuperados automaticamente.",
+        });
+      } catch (error) {
+        console.error('Error loading draft:', error);
+      }
+    }
+  }, [toast]);
+
+  const validateField = (field: string, value: string) => {
+    let error = '';
+    
+    switch (field) {
+      case 'nomeSolicitante':
+        if (!value.trim()) error = 'Nome do solicitante é obrigatório';
+        else if (value.trim().length < 3) error = 'Nome deve ter pelo menos 3 caracteres';
+        break;
+      case 'numeroProcesso':
+        if (!value.trim()) error = 'Número do processo é obrigatório';
+        break;
+      case 'cliente':
+        if (!value.trim()) error = 'Cliente é obrigatório';
+        break;
+      case 'tribunalOrgao':
+        if (!value.trim()) error = 'Tribunal/Órgão é obrigatório';
+        break;
+      case 'prazoRetorno':
+        if (!value.trim()) error = 'Prazo para retorno é obrigatório';
+        break;
+      case 'solicitacao':
+        if (!value.trim()) error = 'Solicitação é obrigatória';
+        else if (value.trim().length < 10) error = 'Solicitação deve ter pelo menos 10 caracteres';
+        break;
+      default:
+        if (!value.trim()) error = 'Este campo é obrigatório';
+    }
+    
+    setErrors(prev => ({ ...prev, [field]: error }));
+    
+    if (!error && value.trim()) {
+      setValidatedFields(prev => new Set(prev).add(field));
+    } else {
+      setValidatedFields(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(field);
+        return newSet;
+      });
+    }
+    
+    return !error;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Validate after a short delay
+    setTimeout(() => validateField(field, value), 300);
+  };
+
+
+  const validateAllFields = () => {
+    const requiredFields = [
+      'nomeSolicitante', 'numeroProcesso', 'cliente', 
+      'tribunalOrgao', 'prazoRetorno', 'solicitacao'
+    ];
+
+    let isValid = true;
+    const newErrors: { [key: string]: string } = {};
+
+    requiredFields.forEach(field => {
+      const value = formData[field as keyof typeof formData] as string;
+      if (!validateField(field, value)) {
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  };
+
+  const generatePreviewMessage = () => {
+    return `
+🏛️ *BALCÃO DA CONTROLADORIA*
+
+👤 *Solicitante:* ${formData.nomeSolicitante}
+📋 *Processo:* ${formData.numeroProcesso}
+🏢 *Cliente:* ${formData.cliente}
+⚖️ *Tribunal/Órgão:* ${formData.tribunalOrgao}
+⏰ *Prazo para Retorno:* ${formData.prazoRetorno}
+
+📝 *Solicitação:*
+${formData.solicitacao}
+
+
+
+---
+*Calazans Rossi Advogados*
+*Sistema de Comunicação Jurídica*
+    `.trim();
+  };
+
+  const gerarCodigoLocal = () => {
+    const d = new Date();
+    const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    const seq = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `CTRL-${ymd}-${seq}`;
+  };
+
+  const handleSubmit = async () => {
+    const requiredFields = ['nomeSolicitante', 'numeroProcesso', 'cliente', 'tribunalOrgao', 'prazoRetorno', 'solicitacao'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Formulário incompleto",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      // Tenta salvar no Supabase; se não houver, gera código local e prossegue  
+      const solicitacaoData: NovasolicitacaoControladoria = {
+        nome_solicitante: formData.nomeSolicitante,
+        numero_processo: formData.numeroProcesso || '',
+        cliente: formData.cliente,
+        objeto_solicitacao: formData.tribunalOrgao,
+        descricao_detalhada: formData.solicitacao,
+        user_id: user?.id || ''
+      };
+      
+      let codigoUnico = await criarSolicitacao(solicitacaoData);
+
+      if (!codigoUnico) {
+        codigoUnico = gerarCodigoLocal();
+        toast({
+          title: "Aviso",
+          description: "Solicitação enviada sem registro no dashboard. Configure o Supabase para salvar automaticamente.",
+        });
+      }
+
+      // Generate message with unique code
+      const message = `*BALCÃO DA CONTROLADORIA - CALAZANS ROSSI ADVOGADOS*
+
+🏷️ *CÓDIGO DA SOLICITAÇÃO: ${codigoUnico}*
+    
+*Solicitante:* ${formData.nomeSolicitante}
+*Número do Processo:* ${formData.numeroProcesso}
+*Cliente:* ${formData.cliente}
+*Tribunal/Órgão:* ${formData.tribunalOrgao}
+*Prazo para Retorno:* ${formData.prazoRetorno}
+
+*Solicitação:*
+${formData.solicitacao}
+
+
+
+⚠️ *Guarde este código para acompanhar sua solicitação.*`;
+
+      openWhatsApp(message, "+553132953474");
+
+      toast({
+        title: "Solicitação registrada!",
+        description: `Código gerado: ${codigoUnico}. Sua solicitação foi registrada e encaminhada.`,
+      });
+
+      // Reset form
+      setFormData({
+        nomeSolicitante: "",
+        numeroProcesso: "",
+        cliente: "",
+        tribunalOrgao: "",
+        prazoRetorno: "",
+        solicitacao: ""
+      });
+      
+    } catch (error) {
+      console.error('Erro ao enviar solicitação:', error);
+      toast({
+        title: "Erro ao enviar",
+        description: "Ocorreu um erro ao registrar a solicitação. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Balcão da Controladoria</h2>
+          <p className="text-muted-foreground">
+            {validatedFields.size > 0 && `${validatedFields.size} de 6 campos validados`}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Auto-salvo</span>
+          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+        </div>
+      </div>
+      <Card className="shadow-elevated card-gradient hover-lift">
+        <CardHeader className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="p-4 hero-gradient rounded-xl shadow-glow animate-float">
+              <Building className="h-12 w-12 text-primary-foreground" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <CardTitle className="text-4xl font-bold text-gradient animate-slide-up">
+              Solicitação ao Balcão da Controladoria
+            </CardTitle>
+            <CardDescription className="text-lg leading-relaxed max-w-2xl mx-auto animate-slide-up">
+              Registre suas solicitações para o balcão da controladoria e mantenha o controle dos prazos.
+            </CardDescription>
+          </div>
+          
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-destructive-light/20 border border-destructive/20 rounded-lg p-4 animate-slide-in-left">
+              <p className="text-sm text-destructive font-medium">
+                Por favor, corrija os erros nos campos destacados antes de continuar.
+              </p>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              type="input"
+              id="nomeSolicitante"
+              label="Nome do Solicitante"
+              value={formData.nomeSolicitante}
+              onChange={(value) => handleInputChange('nomeSolicitante', value)}
+              placeholder="Digite o nome do solicitante"
+              required
+              error={errors.nomeSolicitante}
+              success={validatedFields.has('nomeSolicitante')}
+            />
+
+            <FormField
+              type="input"
+              id="numeroProcesso"
+              label="Número do Processo"
+              value={formData.numeroProcesso}
+              onChange={(value) => handleInputChange('numeroProcesso', value)}
+              placeholder="Digite o número do processo"
+              required
+              error={errors.numeroProcesso}
+              success={validatedFields.has('numeroProcesso')}
+            />
+
+            <FormField
+              type="input"
+              id="cliente"
+              label="Cliente"
+              value={formData.cliente}
+              onChange={(value) => handleInputChange('cliente', value)}
+              placeholder="Nome do cliente"
+              required
+              error={errors.cliente}
+              success={validatedFields.has('cliente')}
+            />
+
+            <FormField
+              type="input"
+              id="tribunalOrgao"
+              label="Tribunal / Órgão"
+              value={formData.tribunalOrgao}
+              onChange={(value) => handleInputChange('tribunalOrgao', value)}
+              placeholder="Ex: TJ-SP, STJ, Tribunal Regional"
+              required
+              error={errors.tribunalOrgao}
+              success={validatedFields.has('tribunalOrgao')}
+            />
+          </div>
+
+          <DateField
+            label="Prazo Para Retorno"
+            id="prazoRetorno"
+            value={formData.prazoRetorno}
+            onChange={(value) => handleInputChange('prazoRetorno', value)}
+            placeholder="Selecione o prazo para retorno"
+            required
+            error={errors.prazoRetorno}
+            success={validatedFields.has('prazoRetorno')}
+          />
+
+          <FormField
+            type="textarea"
+            id="solicitacao"
+            label="Solicitação"
+            value={formData.solicitacao}
+            onChange={(value) => handleInputChange('solicitacao', value)}
+            placeholder="Descreva detalhadamente sua solicitação"
+            rows={4}
+            required
+            error={errors.solicitacao}
+            success={validatedFields.has('solicitacao')}
+          />
+
+
+          {showPreview && (
+            <div className="space-y-4 animate-scale-in">
+              <div className="bg-muted/50 rounded-lg p-4 border">
+                <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Preview da Mensagem
+                </h4>
+                <div className="whitespace-pre-wrap text-sm font-mono bg-background p-4 rounded border">
+                  {generatePreviewMessage()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            <Button
+              onClick={() => setShowPreview(!showPreview)}
+              variant="outline"
+              size="lg"
+              className="hover-lift"
+            >
+              <Eye className="h-5 w-5 mr-2" />
+              {showPreview ? "Ocultar" : "Visualizar"} Preview
+            </Button>
+            
+            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+              <LoadingButton
+                onClick={() => handleSubmit()}
+                loading={loading}
+                loadingText="Enviando para WhatsApp..."
+                className="flex-1 hero-gradient hover:bg-primary-hover text-primary-foreground"
+                size="lg"
+              >
+                <MessageCircle className="h-5 w-5 mr-2" />
+                Enviar para WhatsApp
+              </LoadingButton>
+              
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default BalcaoControladoriaForm;

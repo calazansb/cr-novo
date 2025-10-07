@@ -1,0 +1,382 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Building2, MessageCircle, Mail, Eye } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+import { LoadingButton } from "@/components/ui/loading-button";
+import { FormField } from "@/components/ui/form-field";
+import { Button } from "@/components/ui/button";
+import { openWhatsApp } from "@/lib/utils";
+
+const DecisaoJudicialForm = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    numeroProcesso: "",
+    varaTribunal: "",
+    nomeCliente: "",
+    tipoDecisao: "",
+    advogadoInterno: "",
+    adverso: "",
+    procedimentoObjeto: "",
+    resumoDecisao: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Auto-save draft
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('decisao-draft', JSON.stringify(formData));
+    }, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [formData]);
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = localStorage.getItem('decisao-draft');
+    if (draft) {
+      try {
+        const parsedDraft = JSON.parse(draft);
+        setFormData(prev => ({ ...prev, ...parsedDraft }));
+        toast({
+          title: "Rascunho carregado",
+          description: "Seus dados foram recuperados automaticamente.",
+        });
+      } catch (error) {
+        console.error('Error loading draft:', error);
+      }
+    }
+  }, [toast]);
+
+  const validateField = (field: string, value: string) => {
+    let error = '';
+    
+    switch (field) {
+      case 'numeroProcesso':
+        if (!value.trim()) error = 'Número do processo é obrigatório';
+        break;
+      case 'nomeCliente':
+        if (!value.trim()) error = 'Nome do cliente é obrigatório';
+        else if (value.trim().length < 3) error = 'Nome deve ter pelo menos 3 caracteres';
+        break;
+      case 'resumoDecisao':
+        if (!value.trim()) error = 'Resumo da decisão é obrigatório';
+        else if (value.trim().length < 20) error = 'Resumo deve ter pelo menos 20 caracteres';
+        break;
+      default:
+        if (!value.trim()) error = 'Este campo é obrigatório';
+    }
+    
+    setErrors(prev => ({ ...prev, [field]: error }));
+    
+    if (!error && value.trim()) {
+      setValidatedFields(prev => new Set(prev).add(field));
+    } else {
+      setValidatedFields(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(field);
+        return newSet;
+      });
+    }
+    
+    return !error;
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Validate after a short delay
+    setTimeout(() => validateField(field, value), 300);
+  };
+
+
+  const validateAllFields = () => {
+    const requiredFields = [
+      'numeroProcesso', 'varaTribunal', 'nomeCliente', 
+      'tipoDecisao', 'advogadoInterno', 'adverso', 
+      'procedimentoObjeto', 'resumoDecisao'
+    ];
+
+    let isValid = true;
+    const newErrors: { [key: string]: string } = {};
+
+    requiredFields.forEach(field => {
+      const value = formData[field as keyof typeof formData] as string;
+      if (!validateField(field, value)) {
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  };
+
+  const generatePreviewMessage = () => {
+    return `
+🏛️ *DECISÃO JUDICIAL COMUNICADA*
+
+📋 *Processo:* ${formData.numeroProcesso}
+⚖️ *Vara/Tribunal:* ${formData.varaTribunal}
+👤 *Cliente:* ${formData.nomeCliente}
+📄 *Tipo:* ${formData.tipoDecisao}
+👨‍💼 *Advogado:* ${formData.advogadoInterno}
+🔄 *Parte Adversa:* ${formData.adverso}
+🎯 *Objeto:* ${formData.procedimentoObjeto}
+
+📝 *Resumo da Decisão:*
+${formData.resumoDecisao}
+
+
+
+---
+*Calazans Rossi Advogados*
+*Sistema de Comunicação Jurídica*
+    `.trim();
+  };
+
+  const handleSubmit = () => {
+    const requiredFields = ['numeroProcesso', 'nomeCliente', 'tipoDecisao', 'resumoDecisao'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Formulário incompleto",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Generate message
+    const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
+    
+*Cliente:* ${formData.nomeCliente}
+*Processo:* ${formData.numeroProcesso}
+*Tipo de Decisão:* ${formData.tipoDecisao}
+*Vara/Tribunal:* ${formData.varaTribunal || 'Não informado'}
+*Advogado Responsável:* ${formData.advogadoInterno || 'Não informado'}
+*Parte Adversa:* ${formData.adverso || 'Não informado'}
+*Procedimento/Objeto:* ${formData.procedimentoObjeto || 'Não informado'}
+
+*Resumo da Decisão:*
+${formData.resumoDecisao}
+
+`;
+
+    openWhatsApp(message);
+
+    toast({
+      title: "Comunicação enviada!",
+      description: `Decisão judicial preparada para envio por WhatsApp!`,
+    });
+    
+    // Reset form
+    setFormData({
+      numeroProcesso: '',
+      varaTribunal: '',
+      nomeCliente: '',
+      tipoDecisao: '',
+      advogadoInterno: '',
+      adverso: '',
+      procedimentoObjeto: '',
+      resumoDecisao: ''
+    });
+    setErrors({});
+    setValidatedFields(new Set());
+    localStorage.removeItem('decisao-draft');
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Decisão Judicial</h2>
+          <p className="text-muted-foreground">
+            {validatedFields.size > 0 && `${validatedFields.size} de 8 campos validados`}
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Auto-salvo</span>
+          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+        </div>
+      </div>
+      <Card className="shadow-elevated card-gradient hover-lift">
+        <CardHeader className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="p-4 hero-gradient rounded-xl shadow-glow animate-float">
+              <Building2 className="h-12 w-12 text-primary-foreground" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <CardTitle className="text-4xl font-bold text-gradient animate-slide-up">
+              Registro de Decisão Judicial
+            </CardTitle>
+            <CardDescription className="text-lg leading-relaxed max-w-2xl mx-auto animate-slide-up">
+              Centralize suas decisões judiciais aqui e fortaleça nossa comunicação com o cliente.
+            </CardDescription>
+          </div>
+          
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-destructive-light/20 border border-destructive/20 rounded-lg p-4 animate-slide-in-left">
+              <p className="text-sm text-destructive font-medium">
+                Por favor, corrija os erros nos campos destacados antes de continuar.
+              </p>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              type="input"
+              id="numeroProcesso"
+              label="Número do Processo"
+              value={formData.numeroProcesso}
+              onChange={(value) => handleInputChange('numeroProcesso', value)}
+              placeholder="Digite o número do processo"
+              required
+              error={errors.numeroProcesso}
+              success={validatedFields.has('numeroProcesso')}
+            />
+
+            <FormField
+              type="input"
+              id="varaTribunal"
+              label="Vara/Tribunal"
+              value={formData.varaTribunal}
+              onChange={(value) => handleInputChange('varaTribunal', value)}
+              placeholder="Ex: 1ª Vara Cível de São Paulo"
+              required
+              error={errors.varaTribunal}
+              success={validatedFields.has('varaTribunal')}
+            />
+
+            <FormField
+              type="input"
+              id="nomeCliente"
+              label="Nome do Cliente"
+              value={formData.nomeCliente}
+              onChange={(value) => handleInputChange('nomeCliente', value)}
+              placeholder="Nome completo do cliente"
+              required
+              error={errors.nomeCliente}
+              success={validatedFields.has('nomeCliente')}
+            />
+
+            <FormField
+              type="select"
+              id="tipoDecisao"
+              label="Decisão (Sentença / Acórdão)"
+              value={formData.tipoDecisao}
+              onChange={(value) => handleInputChange('tipoDecisao', value)}
+              placeholder="Selecione o tipo de decisão"
+              required
+              error={errors.tipoDecisao}
+              success={validatedFields.has('tipoDecisao')}
+              options={[
+                { value: 'acordao-favoravel', label: 'Acórdão Favorável' },
+                { value: 'acordao-parcialmente-favoravel', label: 'Acórdão Parcialmente Favorável' },
+                { value: 'acordao-desfavoravel', label: 'Acórdão Desfavorável' },
+                { value: 'sentenca-favoravel', label: 'Sentença / Decisão Favorável' },
+                { value: 'sentenca-parcialmente-favoravel', label: 'Sentença / Decisão Parcialmente Favorável' },
+                { value: 'sentenca-desfavoravel', label: 'Sentença / Decisão Desfavorável' },
+                { value: 'liberacao-valor-bloqueado', label: 'Liberação de Valor Bloqueado' }
+              ]}
+            />
+
+            <FormField
+              type="input"
+              id="advogadoInterno"
+              label="Advogado Interno"
+              value={formData.advogadoInterno}
+              onChange={(value) => handleInputChange('advogadoInterno', value)}
+              placeholder="Nome do advogado responsável"
+              required
+              error={errors.advogadoInterno}
+              success={validatedFields.has('advogadoInterno')}
+            />
+
+            <FormField
+              type="input"
+              id="adverso"
+              label="Adverso"
+              value={formData.adverso}
+              onChange={(value) => handleInputChange('adverso', value)}
+              placeholder="Nome da parte adversa"
+              required
+              error={errors.adverso}
+              success={validatedFields.has('adverso')}
+            />
+          </div>
+
+          <FormField
+            type="input"
+            id="procedimentoObjeto"
+            label="Procedimento Objeto"
+            value={formData.procedimentoObjeto}
+            onChange={(value) => handleInputChange('procedimentoObjeto', value)}
+            placeholder="Ex: Cirurgia Bariátrica, Medicamento Domiciliar, Cirurgia de Urgência"
+            required
+            error={errors.procedimentoObjeto}
+            success={validatedFields.has('procedimentoObjeto')}
+          />
+
+          <FormField
+            type="textarea"
+            id="resumoDecisao"
+            label="Resumo da Decisão"
+            value={formData.resumoDecisao}
+            onChange={(value) => handleInputChange('resumoDecisao', value)}
+            placeholder="Descreva brevemente o conteúdo da decisão"
+            rows={4}
+            required
+            error={errors.resumoDecisao}
+            success={validatedFields.has('resumoDecisao')}
+          />
+
+
+          {showPreview && (
+            <div className="space-y-4 animate-scale-in">
+              <div className="bg-muted/50 rounded-lg p-4 border">
+                <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Preview da Mensagem
+                </h4>
+                <div className="whitespace-pre-wrap text-sm font-mono bg-background p-4 rounded border">
+                  {generatePreviewMessage()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            <Button
+              onClick={() => setShowPreview(!showPreview)}
+              variant="outline"
+              size="lg"
+              className="hover-lift"
+            >
+              <Eye className="h-5 w-5 mr-2" />
+              {showPreview ? "Ocultar" : "Visualizar"} Preview
+            </Button>
+            
+            <LoadingButton
+              onClick={() => handleSubmit()}
+              loading={loading}
+              loadingText="Enviando pelo WhatsApp..."
+              className="w-full hover-lift"
+              size="lg"
+            >
+              <MessageCircle className="h-5 w-5 mr-2" />
+              Enviar pelo WhatsApp
+            </LoadingButton>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default DecisaoJudicialForm;

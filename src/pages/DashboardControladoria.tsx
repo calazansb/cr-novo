@@ -1,0 +1,351 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useSolicitacoes } from '@/hooks/useSolicitacoes';
+import { ArrowLeft, Download, Eye, Edit, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+
+// Tipo para compatibilidade
+type SolicitacaoControladoria = Database['public']['Tables']['solicitacoes_controladoria']['Row'];
+
+import { Input } from '@/components/ui/input';
+import SetupButton from '@/components/SetupButton';
+import CreateTableButton from '@/components/CreateTableButton';
+interface DashboardControladoriaProps {
+  onBack: () => void;
+}
+const statusColors = {
+  pendente: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  em_andamento: 'bg-blue-100 text-blue-800 border-blue-200',
+  concluida: 'bg-green-100 text-green-800 border-green-200',
+  cancelada: 'bg-red-100 text-red-800 border-red-200'
+};
+const statusLabels = {
+  pendente: 'Pendente',
+  em_andamento: 'Em Andamento',
+  concluida: 'Concluída',
+  cancelada: 'Cancelada'
+};
+const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
+  onBack
+}) => {
+  const {
+    solicitacoes,
+    loading,
+    atualizarStatus,
+    exportarParaCSV,
+    carregarSolicitacoes,
+    deletarSolicitacao
+  } = useSolicitacoes();
+  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
+  const [solicitacaoEditando, setSolicitacaoEditando] = useState<SolicitacaoControladoria | null>(null);
+  const [novoStatus, setNovoStatus] = useState<string>('');
+  const [observacoes, setObservacoes] = useState('');
+  const [supabaseUrl, setSupabaseUrl] = useState('');
+  const [supabaseKey, setSupabaseKey] = useState('');
+  const [tabelaExiste, setTabelaExiste] = useState<boolean | null>(null);
+
+  // Verificar se tabela existe
+  const verificarTabela = async () => {
+    if (!supabase) return false;
+    try {
+      console.log('🔍 Verificando se tabela existe...');
+      const {
+        data,
+        error
+      } = await supabase.from('solicitacoes_controladoria').select('id').limit(1);
+      console.log('📊 Resultado verificação tabela:', {
+        data,
+        error
+      });
+      if (error && error.message.includes('does not exist')) {
+        setTabelaExiste(false);
+        return false;
+      }
+      setTabelaExiste(true);
+      return true;
+    } catch (error) {
+      console.error('Erro ao verificar tabela:', error);
+      setTabelaExiste(false);
+      return false;
+    }
+  };
+
+  // Verificar tabela ao montar o componente
+  React.useEffect(() => {
+    if (supabase) {
+      verificarTabela();
+    }
+  }, []);
+  const solicitacoesFiltradas = filtroStatus === 'todos' ? solicitacoes : solicitacoes.filter(s => s.status === filtroStatus);
+  const estatisticas = {
+    total: solicitacoes.length,
+    pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
+    em_andamento: solicitacoes.filter(s => s.status === 'em_andamento').length,
+    concluidas: solicitacoes.filter(s => s.status === 'concluida').length
+  };
+  const handleAtualizarStatus = async () => {
+    if (solicitacaoEditando && novoStatus) {
+      await atualizarStatus(solicitacaoEditando.id, novoStatus as SolicitacaoControladoria['status'], observacoes);
+      setSolicitacaoEditando(null);
+      setNovoStatus('');
+      setObservacoes('');
+    }
+  };
+  return <div className="container mx-auto p-6">
+      <div className="flex items-center gap-4 mb-6">
+        <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
+        <h1 className="text-3xl font-bold">Dashboard - Balcão da Controladoria</h1>
+        {!supabase && <Badge variant="destructive" className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" />
+            Supabase não configurado
+          </Badge>}
+      </div>
+
+        {!supabase ? <Card className="mb-6 border-orange-200 bg-orange-50">
+          <CardContent className="pt-4 space-y-4">
+            <div className="flex items-center gap-2 text-orange-800">
+              <AlertCircle className="h-5 w-5" />
+              <p className="text-sm">
+                <strong>Aviso:</strong> O Supabase não está configurado. As solicitações enviadas não serão salvas no dashboard.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input placeholder="Supabase URL (ex: https://xxxx.supabase.co)" value={supabaseUrl} onChange={e => setSupabaseUrl(e.target.value)} />
+              <Input placeholder="Supabase Public ANON Key" type="password" value={supabaseKey} onChange={e => setSupabaseKey(e.target.value)} />
+            </div>
+            <Button onClick={() => {
+          const url = supabaseUrl.trim();
+          const key = supabaseKey.trim();
+          if (!url || !key) return;
+          try {
+            window.localStorage.setItem('vite_supabase_url', url);
+            window.localStorage.setItem('vite_supabase_anon_key', key);
+            (window as any).VITE_SUPABASE_URL = url;
+            (window as any).VITE_SUPABASE_ANON_KEY = key;
+            window.location.reload();
+          } catch (e) {
+            console.error('Erro ao salvar config do Supabase', e);
+          }
+        }}>
+              Salvar e Recarregar
+            </Button>
+          </CardContent>
+        </Card> : <Card className="mb-6 border-blue-200 bg-blue-50">
+          
+        </Card>}
+
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{estatisticas.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{estatisticas.pendentes}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{estatisticas.em_andamento}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filtros e Exportação */}
+      <div className="flex justify-between items-center mb-6">
+        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filtrar por status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos</SelectItem>
+            <SelectItem value="pendente">Pendentes</SelectItem>
+            <SelectItem value="em_andamento">Em Andamento</SelectItem>
+            <SelectItem value="concluida">Concluídas</SelectItem>
+            <SelectItem value="cancelada">Canceladas</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Button onClick={exportarParaCSV} className="flex items-center gap-2">
+          <Download className="h-4 w-5" />
+          Exportar CSV
+        </Button>
+        
+        {supabase && tabelaExiste && <Button variant="outline" onClick={() => {
+        console.log('🔍 Testando conexão Supabase...');
+        carregarSolicitacoes();
+      }}>
+            🔄 Recarregar
+          </Button>}
+      </div>
+
+      {/* Lista de Solicitações */}
+      {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="grid gap-4">
+          {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{solicitacao.codigo_unico}</CardTitle>
+                    <CardDescription>
+                      {solicitacao.nome_solicitante} • {solicitacao.cliente}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={statusColors[solicitacao.status]}>
+                      {statusLabels[solicitacao.status]}
+                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Detalhes da Solicitação {solicitacao.codigo_unico}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="font-semibold">Solicitante:</label>
+                            <p>{solicitacao.nome_solicitante}</p>
+                          </div>
+                          <div>
+                            <label className="font-semibold">Cliente:</label>
+                            <p>{solicitacao.cliente}</p>
+                          </div>
+                          <div>
+                            <label className="font-semibold">Processo:</label>
+                            <p>{solicitacao.numero_processo || 'Não informado'}</p>
+                          </div>
+                          <div>
+                            <label className="font-semibold">Objeto:</label>
+                            <p>{solicitacao.objeto_solicitacao}</p>
+                          </div>
+                          <div>
+                            <label className="font-semibold">Descrição:</label>
+                            <p className="whitespace-pre-wrap">{solicitacao.descricao_detalhada}</p>
+                          </div>
+                          <div>
+                            <label className="font-semibold">Data de Criação:</label>
+                            <p>{new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}</p>
+                          </div>
+                          {solicitacao.observacoes && <div>
+                              <label className="font-semibold">Observações:</label>
+                              <p className="whitespace-pre-wrap">{solicitacao.observacoes}</p>
+                            </div>}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" onClick={() => {
+                    setSolicitacaoEditando(solicitacao);
+                    setNovoStatus(solicitacao.status);
+                    setObservacoes(solicitacao.observacoes || '');
+                  }}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Editar Status - {solicitacao.codigo_unico}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Status:</label>
+                            <Select value={novoStatus} onValueChange={setNovoStatus}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pendente">Pendente</SelectItem>
+                                <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                                <SelectItem value="concluida">Concluída</SelectItem>
+                                <SelectItem value="cancelada">Cancelada</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Observações:</label>
+                            <Textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Adicione observações sobre o status..." />
+                          </div>
+                          <Button onClick={handleAtualizarStatus} className="w-full">
+                            Atualizar Status
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir a solicitação <strong>{solicitacao.codigo_unico}</strong>?
+                            <br />
+                            Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deletarSolicitacao(solicitacao.id)} className="bg-red-600 hover:bg-red-700">
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-2">
+                  <strong>Objeto:</strong> {solicitacao.objeto_solicitacao}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Criado em: {new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}
+                </p>
+              </CardContent>
+            </Card>)}
+          
+          {solicitacoesFiltradas.length === 0 && <Card>
+              <CardContent className="text-center py-8">
+                <p className="text-muted-foreground">Nenhuma solicitação encontrada.</p>
+              </CardContent>
+            </Card>}
+        </div>}
+    </div>;
+};
+export default DashboardControladoria;
