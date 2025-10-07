@@ -131,11 +131,11 @@ export const DateField: React.FC<DateFieldProps> = ({
   const displayValue = value ? convertToDisplayFormat(value) : '';
 
   return (
-    <div className={`space-y-2 animate-slide-up ${className}`}>
+    <div className={`space-y-1.5 ${className}`}>
       <Label 
         htmlFor={id} 
         className={`
-          text-sm font-medium transition-colors duration-300 flex items-center gap-2
+          text-xs font-medium transition-colors flex items-center gap-1.5
           ${error ? 'text-destructive' : success ? 'text-success' : 'text-foreground'}
         `}
       >
@@ -188,14 +188,8 @@ export const DateField: React.FC<DateFieldProps> = ({
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-destructive animate-slide-in-left">
+        <div className="flex items-center gap-1.5 text-xs text-destructive">
           <span>{error}</span>
-        </div>
-      )}
-      
-      {success && !error && (
-        <div className="flex items-center gap-2 text-sm text-success animate-slide-in-left">
-          <span>Data válida</span>
         </div>
       )}
     </div>

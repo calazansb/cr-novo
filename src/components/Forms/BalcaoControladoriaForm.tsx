@@ -348,49 +348,40 @@ const BalcaoControladoriaForm = () => {
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Balcão da Controladoria</h2>
-          <p className="text-muted-foreground">
-            {validatedFields.size > 0 && `${validatedFields.size} de 6 campos validados`}
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Auto-salvo</span>
-          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-        </div>
-      </div>
-      <Card className="shadow-elevated card-gradient hover-lift">
-        <CardHeader className="text-center space-y-6">
-          <div className="flex justify-center">
-            <div className="p-4 hero-gradient rounded-xl shadow-glow animate-float">
-              <Building className="h-12 w-12 text-primary-foreground" />
+    <div className="animate-fade-in">
+      <Card className="shadow-sm">
+        <CardHeader className="space-y-2 pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary rounded-lg">
+                <Building className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Balcão da Controladoria</CardTitle>
+                <CardDescription className="text-sm">
+                  Registre suas solicitações e controle os prazos
+                </CardDescription>
+              </div>
             </div>
-          </div>
-          <div className="space-y-4">
-            <CardTitle className="text-4xl font-bold text-gradient animate-slide-up">
-              Solicitação ao Balcão da Controladoria
-            </CardTitle>
-            <CardDescription className="text-lg leading-relaxed max-w-2xl mx-auto animate-slide-up">
-              Registre suas solicitações para o balcão da controladoria e mantenha o controle dos prazos.
-            </CardDescription>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Auto-salvo</span>
+              <div className="w-2 h-2 bg-success rounded-full"></div>
+            </div>
           </div>
           
           {Object.keys(errors).length > 0 && (
-            <div className="bg-destructive-light/20 border border-destructive/20 rounded-lg p-4 animate-slide-in-left">
-              <p className="text-sm text-destructive font-medium">
-                Por favor, corrija os erros nos campos destacados antes de continuar.
+            <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
+              <p className="text-xs text-destructive">
+                Corrija os erros nos campos destacados antes de continuar.
               </p>
             </div>
           )}
         </CardHeader>
-        <CardContent className="space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Nome do Solicitante - Select */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">
                 Nome do Solicitante <span className="text-destructive">*</span>
               </label>
               <Select 
@@ -426,8 +417,8 @@ const BalcaoControladoriaForm = () => {
             />
 
             {/* Cliente - Select com opção Outros */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground">
                 Cliente <span className="text-destructive">*</span>
               </label>
               <Select 
@@ -496,9 +487,9 @@ const BalcaoControladoriaForm = () => {
             success={validatedFields.has('solicitacao')}
           />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Paperclip className="h-4 w-4" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground flex items-center gap-2">
+              <Paperclip className="h-3.5 w-3.5" />
               Anexar Arquivos (Opcional)
             </label>
             <FileUpload
@@ -509,29 +500,25 @@ const BalcaoControladoriaForm = () => {
               acceptedTypes={['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.xls', '.xlsx']}
             />
             <p className="text-xs text-muted-foreground">
-              Máximo 5 arquivos, 10MB cada. Formatos: PDF, DOC, DOCX, JPG, PNG, XLS, XLSX
+              Máximo 5 arquivos, 10MB cada
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-              <LoadingButton
-                onClick={() => handleSubmit()}
-                loading={loading || uploadingFiles}
-                loadingText={uploadingFiles ? "Enviando arquivos..." : "Salvando solicitação..."}
-                className="flex-1 hero-gradient hover:bg-primary-hover text-primary-foreground"
-                size="lg"
-              >
-                <Building className="h-5 w-5 mr-2" />
-                Enviar Solicitação
-                {selectedFiles.length > 0 && (
-                  <span className="ml-2 px-2 py-0.5 bg-primary-foreground/20 rounded-full text-xs">
-                    {selectedFiles.length} arquivo(s)
-                  </span>
-                )}
-              </LoadingButton>
-              
-            </div>
+          <div className="flex justify-end pt-4">
+            <LoadingButton
+              onClick={() => handleSubmit()}
+              loading={loading || uploadingFiles}
+              loadingText={uploadingFiles ? "Enviando..." : "Salvando..."}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <Building className="h-4 w-4 mr-2" />
+              Enviar Solicitação
+              {selectedFiles.length > 0 && (
+                <span className="ml-2 px-1.5 py-0.5 bg-primary-foreground/20 rounded-full text-xs">
+                  {selectedFiles.length}
+                </span>
+              )}
+            </LoadingButton>
           </div>
         </CardContent>
       </Card>

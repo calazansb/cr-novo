@@ -69,9 +69,9 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
             placeholder={props.placeholder}
             value={props.value}
             onChange={(e) => props.onChange(e.target.value)}
-            rows={props.rows || 4}
+            rows={props.rows || 3}
             className={`
-              bg-background transition-all duration-300 resize-none
+              bg-background transition-all resize-none
               ${error ? 'border-destructive focus:ring-destructive/20' : ''}
               ${success ? 'border-success focus:ring-success/20' : ''}
               ${!error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''}
@@ -108,32 +108,25 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
   };
 
   return (
-    <div className={`space-y-2 animate-slide-up ${className}`}>
+    <div className={`space-y-1.5 ${className}`}>
       <Label 
         htmlFor={id} 
         className={`
-          text-sm font-medium transition-colors duration-300 flex items-center gap-2
+          text-xs font-medium transition-colors flex items-center gap-1.5
           ${error ? 'text-destructive' : success ? 'text-success' : 'text-foreground'}
         `}
       >
         {label}
         {required && <span className="text-destructive">*</span>}
-        {success && <CheckCircle2 className="h-4 w-4 text-success" />}
+        {success && <CheckCircle2 className="h-3.5 w-3.5 text-success" />}
       </Label>
       
       {renderField()}
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-destructive animate-slide-in-left">
-          <AlertCircle className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 text-xs text-destructive">
+          <AlertCircle className="h-3.5 w-3.5" />
           <span>{error}</span>
-        </div>
-      )}
-      
-      {success && !error && (
-        <div className="flex items-center gap-2 text-sm text-success animate-slide-in-left">
-          <CheckCircle2 className="h-4 w-4" />
-          <span>Campo validado com sucesso</span>
         </div>
       )}
     </div>
