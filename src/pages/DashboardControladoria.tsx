@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSolicitacoes } from '@/hooks/useSolicitacoes';
 import { ArrowLeft, Download, Eye, Edit, AlertCircle, Trash2, Paperclip, ExternalLink, Upload } from 'lucide-react';
@@ -151,13 +151,23 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
 
   const handleAtualizarStatus = async () => {
     if (solicitacaoEditando && novoStatus) {
+      let uploadedCount = 0;
       // Fazer upload dos arquivos de resposta se houver
       if (arquivosResposta.length > 0) {
-        await uploadArquivosResposta(solicitacaoEditando.codigo_unico, solicitacaoEditando.id);
-        toast({
-          title: "Arquivos enviados!",
-          description: `${arquivosResposta.length} arquivo(s) de resposta anexado(s) com sucesso.`,
-        });
+        const urls = await uploadArquivosResposta(solicitacaoEditando.codigo_unico, solicitacaoEditando.id);
+        uploadedCount = urls.length;
+        if (uploadedCount > 0) {
+          toast({
+            title: "Arquivos enviados!",
+            description: `${uploadedCount} arquivo(s) de resposta anexado(s) com sucesso.`,
+          });
+        } else {
+          toast({
+            title: "Nenhum arquivo enviado",
+            description: "Não foi possível anexar os arquivos de resposta.",
+            variant: "destructive"
+          });
+        }
       }
       
       await atualizarStatus(solicitacaoEditando.id, novoStatus as SolicitacaoControladoria['status'], observacoes);
@@ -304,11 +314,12 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Detalhes da Solicitação {solicitacao.codigo_unico}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Detalhes da Solicitação {solicitacao.codigo_unico}</DialogTitle>
+                            <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
                           <div>
                             <label className="font-semibold">Solicitante:</label>
                             <p>{solicitacao.nome_solicitante}</p>
