@@ -417,51 +417,58 @@ export const CustomizableDashboard = () => {
               ) : (
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
-                  <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-muted/50 border-b font-medium text-xs text-muted-foreground">
-                    <div className="col-span-2">Código</div>
-                    <div className="col-span-2">Cliente</div>
-                    <div className="col-span-4">Processo</div>
-                    <div className="col-span-1">Status</div>
-                    <div className="col-span-3 text-right">Ações</div>
+                  <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] gap-3 px-4 py-2 bg-muted/50 border-b font-medium text-xs text-muted-foreground">
+                    <div>Código</div>
+                    <div>Solicitante</div>
+                    <div>Cliente</div>
+                    <div>Processo</div>
+                    <div>Data</div>
+                    <div>Prazo</div>
+                    <div>Status</div>
+                    <div className="text-right">Ações</div>
                   </div>
                   
                   {/* Linhas da Tabela */}
                   {requestsFiltradas.map((req, index) => (
                     <div 
                       key={req.id} 
-                      className={`grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-muted/30 transition-colors ${
+                      className={`grid grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] gap-3 px-4 py-3 items-center hover:bg-muted/30 transition-colors ${
                         index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                       }`}
                     >
-                      {/* Código + Solicitante + Conteúdo */}
-                      <div className="col-span-2">
+                      {/* Coluna 1: Código + Objeto */}
+                      <div>
                         <div className="font-medium text-xs">{req.codigo_unico}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{req.nome_solicitante}</div>
-                        <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{req.objeto_solicitacao}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{req.objeto_solicitacao}</div>
                       </div>
                       
-                      {/* Cliente */}
-                      <div className="col-span-2 text-xs truncate">
+                      {/* Coluna 2: Solicitante */}
+                      <div className="text-xs truncate">
+                        {req.nome_solicitante}
+                      </div>
+                      
+                      {/* Coluna 3: Cliente */}
+                      <div className="text-xs truncate">
                         {req.cliente}
                       </div>
                       
-                      {/* Processo + Data + Prazo */}
-                      <div className="col-span-4 space-y-0.5">
-                        <div className="text-xs text-muted-foreground truncate">
-                          {req.numero_processo || 'N/A'}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="text-[10px]">
-                            <span className="font-medium">Data:</span> {format(new Date(req.data_criacao), 'dd/MM/yy', { locale: ptBR })}
-                          </span>
-                          <span className="text-[10px]">
-                            <span className="font-medium">Prazo:</span> {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yy', { locale: ptBR }) : 'N/A'}
-                          </span>
-                        </div>
+                      {/* Coluna 4: Processo */}
+                      <div className="text-xs text-muted-foreground truncate">
+                        {req.numero_processo || 'N/A'}
                       </div>
                       
-                      {/* Status */}
-                      <div className="col-span-1">
+                      {/* Coluna 5: Data */}
+                      <div className="text-[10px] text-muted-foreground">
+                        {format(new Date(req.data_criacao), 'dd/MM/yy', { locale: ptBR })}
+                      </div>
+                      
+                      {/* Coluna 6: Prazo */}
+                      <div className="text-[10px] text-muted-foreground">
+                        {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yy', { locale: ptBR }) : 'N/A'}
+                      </div>
+                      
+                      {/* Coluna 7: Status */}
+                      <div>
                         <Badge 
                           className={`text-[10px] px-1.5 py-0 ${
                             req.status === 'concluida' 
@@ -471,12 +478,12 @@ export const CustomizableDashboard = () => {
                               : 'bg-gray-600 hover:bg-gray-700 text-white'
                           }`}
                         >
-                          {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                          {req.status === 'pendente' ? 'Pend.' : req.status === 'concluida' ? 'Conc.' : 'Canc.'}
                         </Badge>
                       </div>
                       
-                      {/* Ações + Anexos */}
-                      <div className="col-span-3">
+                      {/* Coluna 8: Ações */}
+                      <div>
                         <div className="flex gap-1 justify-end items-center mb-0.5">
                           <Button
                             variant="ghost"

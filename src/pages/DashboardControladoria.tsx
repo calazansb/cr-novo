@@ -560,12 +560,15 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       ) : (
         <div className="border rounded-lg overflow-hidden bg-background">
           {/* Header da Tabela */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-            <div className="col-span-2">Código</div>
-            <div className="col-span-2">Cliente</div>
-            <div className="col-span-4">Processo</div>
-            <div className="col-span-1">Status</div>
-            <div className="col-span-3 text-right">Ações</div>
+          <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+            <div>Código</div>
+            <div>Solicitante</div>
+            <div>Cliente</div>
+            <div>Processo</div>
+            <div>Data</div>
+            <div>Prazo</div>
+            <div>Status</div>
+            <div className="text-right">Ações</div>
           </div>
           
           {/* Linhas da Tabela */}
@@ -577,39 +580,43 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
             solicitacoesFiltradas.map((solicitacao, index) => (
               <div 
                 key={solicitacao.id} 
-                className={`grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
+                className={`grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
                   index !== solicitacoesFiltradas.length - 1 ? 'border-b' : ''
                 }`}
               >
-                {/* Código + Solicitante + Conteúdo */}
-                <div className="col-span-2">
+                {/* Coluna 1: Código + Objeto */}
+                <div>
                   <div className="font-semibold text-sm">{formatCodigo(solicitacao.codigo_unico)}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{solicitacao.nome_solicitante}</div>
                   <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{solicitacao.objeto_solicitacao}</div>
                 </div>
                 
-                {/* Cliente */}
-                <div className="col-span-2 text-sm">
+                {/* Coluna 2: Solicitante */}
+                <div className="text-sm">
+                  {solicitacao.nome_solicitante}
+                </div>
+                
+                {/* Coluna 3: Cliente */}
+                <div className="text-sm">
                   {solicitacao.cliente}
                 </div>
                 
-                {/* Processo + Data + Prazo */}
-                <div className="col-span-4 space-y-0.5">
-                  <div className="text-sm text-muted-foreground">
-                    {solicitacao.numero_processo || 'N/A'}
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>
-                      <span className="font-medium">Data:</span> {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
-                    </span>
-                    <span>
-                      <span className="font-medium">Prazo:</span> {solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
-                    </span>
-                  </div>
+                {/* Coluna 4: Processo */}
+                <div className="text-sm text-muted-foreground truncate">
+                  {solicitacao.numero_processo || 'N/A'}
                 </div>
                 
-                {/* Status */}
-                <div className="col-span-1">
+                {/* Coluna 5: Data */}
+                <div className="text-sm text-muted-foreground">
+                  {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
+                </div>
+                
+                {/* Coluna 6: Prazo */}
+                <div className="text-sm text-muted-foreground">
+                  {solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
+                </div>
+                
+                {/* Coluna 7: Status */}
+                <div>
                   <Badge 
                     className={`text-xs px-2.5 py-0.5 ${
                       solicitacao.status === 'concluida' 
@@ -623,8 +630,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </Badge>
                 </div>
                 
-                {/* Ações + Anexos */}
-                <div className="col-span-3">
+                {/* Coluna 8: Ações */}
+                <div>
                   <div className="flex gap-1 justify-end items-center mb-1">
                     <Dialog>
                       <DialogTrigger asChild>
