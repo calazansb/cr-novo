@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, MessageCircle, Mail, Eye } from "lucide-react";
+import { Building, MessageCircle, Eye, Paperclip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/ui/file-upload";
 import { openWhatsApp } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
@@ -38,6 +40,8 @@ const BalcaoControladoriaForm = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -162,6 +166,48 @@ ${formData.solicitacao}
     return `CTRL-${ymd}-${seq}`;
   };
 
+  const uploadArquivos = async (codigoUnico: string): Promise<string[]> => {
+    if (selectedFiles.length === 0) return [];
+
+    setUploadingFiles(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of selectedFiles) {
+        const fileName = `${codigoUnico}/${Date.now()}-${file.name}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('solicitacoes-anexos')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Erro ao fazer upload:', uploadError);
+          toast({
+            title: "Erro no upload",
+            description: `Não foi possível enviar o arquivo ${file.name}`,
+            variant: "destructive"
+          });
+          continue;
+        }
+
+        const { data: urlData } = await supabase.storage
+          .from('solicitacoes-anexos')
+          .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 dias
+
+        if (urlData?.signedUrl) {
+          uploadedUrls.push(urlData.signedUrl);
+        }
+      }
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Erro durante upload:', error);
+      return uploadedUrls;
+    } finally {
+      setUploadingFiles(false);
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     
@@ -169,19 +215,26 @@ ${formData.solicitacao}
       const validatedData = balcaoSchema.parse(formData);
 
       // Tenta salvar no Supabase; se não houver, gera código local e prossegue  
+      let codigoUnico = gerarCodigoLocal();
+
+      // Upload dos arquivos primeiro
+      const anexosUrls = await uploadArquivos(codigoUnico);
+
       const solicitacaoData: NovasolicitacaoControladoria = {
         nome_solicitante: validatedData.nomeSolicitante,
         numero_processo: validatedData.numeroProcesso || '',
         cliente: validatedData.cliente,
         objeto_solicitacao: validatedData.tribunalOrgao,
         descricao_detalhada: validatedData.solicitacao,
-        user_id: user?.id || ''
+        user_id: user?.id || '',
+        anexos: anexosUrls.length > 0 ? anexosUrls : undefined
       };
       
-      let codigoUnico = await criarSolicitacao(solicitacaoData);
+      const codigoSalvo = await criarSolicitacao(solicitacaoData);
 
-      if (!codigoUnico) {
-        codigoUnico = gerarCodigoLocal();
+      if (codigoSalvo) {
+        codigoUnico = codigoSalvo;
+      } else {
         toast({
           title: "Aviso",
           description: "Solicitação enviada sem registro no dashboard. Configure o Supabase para salvar automaticamente.",
@@ -189,7 +242,7 @@ ${formData.solicitacao}
       }
 
       // Generate message with unique code
-      const message = `*BALCÃO DA CONTROLADORIA - CALAZANS ROSSI ADVOGADOS*
+      let message = `*BALCÃO DA CONTROLADORIA - CALAZANS ROSSI ADVOGADOS*
 
 🏷️ *CÓDIGO DA SOLICITAÇÃO: ${codigoUnico}*
     
@@ -200,11 +253,16 @@ ${formData.solicitacao}
 *Prazo para Retorno:* ${validatedData.prazoRetorno}
 
 *Solicitação:*
-${validatedData.solicitacao}
+${validatedData.solicitacao}`;
 
+      if (anexosUrls.length > 0) {
+        message += `\n\n📎 *Arquivos Anexados (${anexosUrls.length}):*\n`;
+        anexosUrls.forEach((url, index) => {
+          message += `${index + 1}. ${url}\n`;
+        });
+      }
 
-
-⚠️ *Guarde este código para acompanhar sua solicitação.*`;
+      message += `\n\n⚠️ *Guarde este código para acompanhar sua solicitação.*`;
 
       openWhatsApp(message, "+553132953474");
 
@@ -222,6 +280,7 @@ ${validatedData.solicitacao}
         prazoRetorno: "",
         solicitacao: ""
       });
+      setSelectedFiles([]);
       setErrors({});
       setValidatedFields(new Set());
       localStorage.removeItem('balcao-controladoria-draft');
@@ -361,6 +420,31 @@ ${validatedData.solicitacao}
             success={validatedFields.has('solicitacao')}
           />
 
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Paperclip className="h-4 w-4" />
+              Anexar Arquivos (Opcional)
+            </label>
+            <FileUpload
+              files={selectedFiles}
+              onFilesChange={setSelectedFiles}
+              maxFiles={5}
+              maxSize={10 * 1024 * 1024}
+              acceptedTypes={[
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'image/jpeg',
+                'image/png',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+              ]}
+            />
+            <p className="text-xs text-muted-foreground">
+              Máximo 5 arquivos, 10MB cada. Formatos: PDF, DOC, DOCX, JPG, PNG, XLS, XLSX
+            </p>
+          </div>
+
 
           {showPreview && (
             <div className="space-y-4 animate-scale-in">
@@ -390,13 +474,18 @@ ${validatedData.solicitacao}
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <LoadingButton
                 onClick={() => handleSubmit()}
-                loading={loading}
-                loadingText="Enviando para WhatsApp..."
+                loading={loading || uploadingFiles}
+                loadingText={uploadingFiles ? "Enviando arquivos..." : "Enviando para WhatsApp..."}
                 className="flex-1 hero-gradient hover:bg-primary-hover text-primary-foreground"
                 size="lg"
               >
                 <MessageCircle className="h-5 w-5 mr-2" />
                 Enviar para WhatsApp
+                {selectedFiles.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 bg-primary-foreground/20 rounded-full text-xs">
+                    {selectedFiles.length} arquivo(s)
+                  </span>
+                )}
               </LoadingButton>
               
             </div>
