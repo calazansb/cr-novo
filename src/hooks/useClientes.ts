@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 export const CLIENTES_PADRAO = [
   "Affiance Life",
-  "Bioimagem NDI",
   "Casu - UFMG",
   "Cemig Saúde",
   "Confiança LTDA",
