@@ -417,7 +417,7 @@ export const CustomizableDashboard = () => {
               ) : (
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
-                  <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] gap-3 px-4 py-2 bg-muted/50 border-b font-medium text-xs text-muted-foreground">
+                  <div className="grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1.2fr] gap-3 px-4 py-3 bg-muted/30 rounded-t-lg font-semibold text-xs text-muted-foreground border-b border-border/50">
                     <div>Código</div>
                     <div>Solicitante</div>
                     <div>Cliente</div>
@@ -432,72 +432,72 @@ export const CustomizableDashboard = () => {
                   {requestsFiltradas.map((req, index) => (
                     <div 
                       key={req.id} 
-                      className={`grid grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr_0.8fr_0.8fr_0.8fr] gap-3 px-4 py-3 items-center hover:bg-muted/30 transition-colors ${
-                        index !== requestsFiltradas.length - 1 ? 'border-b' : ''
+                      className={`grid grid-cols-[2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr_1.2fr] gap-3 px-4 py-3 items-start hover:bg-accent/50 transition-colors border-b border-border/30 ${
+                        index === requestsFiltradas.length - 1 ? 'border-b-0' : ''
                       }`}
                     >
                       {/* Coluna 1: Código + Objeto */}
                       <div>
-                        <div className="font-medium text-xs">{req.codigo_unico}</div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">{req.objeto_solicitacao}</div>
+                        <div className="font-semibold text-primary text-sm">{req.codigo_unico}</div>
+                        <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.objeto_solicitacao || 'Sem descrição'}</div>
                       </div>
                       
                       {/* Coluna 2: Solicitante */}
-                      <div className="text-xs truncate">
+                      <div className="text-sm truncate pt-1">
                         {req.nome_solicitante}
                       </div>
                       
                       {/* Coluna 3: Cliente */}
-                      <div className="text-xs truncate">
+                      <div className="text-sm truncate pt-1">
                         {req.cliente}
                       </div>
                       
                       {/* Coluna 4: Processo */}
-                      <div className="text-xs text-muted-foreground truncate">
-                        {req.numero_processo || 'N/A'}
+                      <div className="text-sm truncate pt-1">
+                        {req.numero_processo || '-'}
                       </div>
                       
                       {/* Coluna 5: Data */}
-                      <div className="text-[10px] text-muted-foreground">
-                        {format(new Date(req.data_criacao), 'dd/MM/yy', { locale: ptBR })}
+                      <div className="text-xs text-muted-foreground pt-1">
+                        {format(new Date(req.data_criacao), 'dd/MM/yyyy', { locale: ptBR })}
                       </div>
                       
                       {/* Coluna 6: Prazo */}
-                      <div className="text-[10px] text-muted-foreground">
-                        {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yy', { locale: ptBR }) : 'N/A'}
+                      <div className="text-xs text-muted-foreground pt-1">
+                        {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yyyy', { locale: ptBR }) : '-'}
                       </div>
                       
                       {/* Coluna 7: Status */}
-                      <div>
+                      <div className="pt-1">
                         <Badge 
-                          className={`text-[10px] px-1.5 py-0 ${
-                            req.status === 'concluida' 
-                              ? 'bg-green-600 hover:bg-green-700 text-white' 
-                              : req.status === 'pendente' 
-                              ? 'bg-red-600 hover:bg-red-700 text-white' 
-                              : 'bg-gray-600 hover:bg-gray-700 text-white'
-                          }`}
+                          variant={
+                            req.status === 'concluido' ? 'success' : 
+                            req.status === 'cancelado' ? 'destructive' : 
+                            'warning'
+                          }
+                          className="text-xs"
                         >
-                          {req.status === 'pendente' ? 'Pend.' : req.status === 'concluida' ? 'Conc.' : 'Canc.'}
+                          {req.status === 'pendente' ? 'Pendente' : 
+                           req.status === 'concluido' ? 'Concluído' : 'Cancelado'}
                         </Badge>
                       </div>
                       
                       {/* Coluna 8: Ações */}
-                      <div>
-                        <div className="flex gap-1 justify-end items-center mb-0.5">
+                      <div className="flex flex-col gap-2 items-end">
+                        <div className="flex gap-1">
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-primary/10"
+                            size="sm"
+                            className="h-8 px-2 hover:bg-primary/10"
                             onClick={() => setSolicitacaoVisualizando(req)}
                             title="Ver detalhes"
                           >
-                            <Eye className="h-3 w-3" />
+                            <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 hover:bg-primary/10"
+                            size="sm"
+                            className="h-8 px-2 hover:bg-primary/10"
                             onClick={() => {
                               setSolicitacaoEditando(req);
                               setNovoStatus(req.status);
@@ -505,24 +505,17 @@ export const CustomizableDashboard = () => {
                             }}
                             title="Editar"
                           >
-                            <Edit className="h-3 w-3" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </div>
                         
                         {/* Anexos abaixo dos botões */}
-                        <div className="flex gap-1.5 justify-end items-center text-[10px]">
-                          {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                            <span className="flex items-center gap-0.5 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
-                              <Paperclip className="h-3 w-3" />
-                              {req.anexos.length}
-                            </span>
-                          )}
-                          {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                            <span className="flex items-center gap-0.5 text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
-                              <Upload className="h-3 w-3" />
-                              {req.anexos_resposta.length}
-                            </span>
-                          )}
+                        <div className="flex gap-2 items-center text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Paperclip className="h-3 w-3" />
+                            <span>{req.anexos && Array.isArray(req.anexos) ? req.anexos.length : 0}</span>
+                          </div>
+                          <Upload className="h-3 w-3" />
                         </div>
                       </div>
                     </div>
