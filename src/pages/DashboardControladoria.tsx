@@ -663,13 +663,13 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               >
                 {/* Coluna 1: Código + Processo + Descrição Completa */}
                 <div className="pr-4 border-r">
-                  <div className="font-semibold text-sm mb-1 break-words">{formatCodigo(solicitacao.codigo_unico)}</div>
+                  <div className="font-semibold text-sm mb-1 break-words text-black">{formatCodigo(solicitacao.codigo_unico)}</div>
                   {solicitacao.numero_processo && (
-                    <div className="text-xs text-muted-foreground font-medium mb-1 break-words">
+                    <div className="text-xs text-black font-medium mb-1 break-words">
                       Processo: {solicitacao.numero_processo}
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-black">
                     <div className="font-medium mb-0.5 break-words">Objeto: {solicitacao.objeto_solicitacao}</div>
                     <div className="break-words whitespace-normal">{solicitacao.descricao_detalhada}</div>
                   </div>
@@ -677,21 +677,21 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 
                 {/* Coluna 2: Solicitante */}
                 <div className="text-sm px-4 border-r text-center flex items-start justify-center">
-                  <span className="break-words">{solicitacao.nome_solicitante}</span>
+                  <span className="break-words text-black">{solicitacao.nome_solicitante}</span>
                 </div>
                 
                 {/* Coluna 3: Cliente */}
                 <div className="text-sm px-4 border-r text-center flex items-start justify-center">
-                  <span className="break-words">{solicitacao.cliente}</span>
+                  <span className="break-words text-black">{solicitacao.cliente}</span>
                 </div>
                 
                 {/* Coluna 4: Data */}
-                <div className="text-sm text-muted-foreground px-4 border-r text-center flex items-start justify-center">
+                <div className="text-sm text-black px-4 border-r text-center flex items-start justify-center">
                   {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
                 </div>
                 
                 {/* Coluna 5: Prazo */}
-                <div className="text-sm text-muted-foreground px-4 border-r text-center flex items-start justify-center">
+                <div className="text-sm text-black px-4 border-r text-center flex items-start justify-center">
                   {solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
                 </div>
                 
