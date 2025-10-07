@@ -351,88 +351,6 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
 
         {/* Gráficos e Filtros lado a lado */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {/* Gráfico de Status */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2 pt-3">
-              <CardTitle className="text-sm">Distribuição por Status</CardTitle>
-              <CardDescription className="text-xs">Percentual por situação</CardDescription>
-            </CardHeader>
-            <CardContent className="pb-3">
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
-                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
-                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
-                    ].filter(item => item.value > 0)}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={70}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {[
-                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
-                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
-                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
-                    ].filter(item => item.value > 0).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: '12px' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Gráfico de Pendentes por Tempo */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2 pt-3">
-              <CardTitle className="text-sm">Pendentes por Tempo</CardTitle>
-              <CardDescription className="text-xs">Distribuição por dias</CardDescription>
-            </CardHeader>
-            <CardContent className="pb-3">
-              {estatisticas.pendentes === 0 ? (
-                <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground">
-                  Nenhuma solicitação pendente
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
-                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
-                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
-                      ].filter(item => item.value > 0)}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={70}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {[
-                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
-                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
-                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
-                      ].filter(item => item.value > 0).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Filtros */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2 pt-3">
@@ -512,6 +430,88 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   Limpar Filtros
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Gráfico de Status */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2 pt-3">
+              <CardTitle className="text-sm">Distribuição por Status</CardTitle>
+              <CardDescription className="text-xs">Percentual por situação</CardDescription>
+            </CardHeader>
+            <CardContent className="pb-3">
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
+                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
+                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
+                    ].filter(item => item.value > 0)}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={70}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {[
+                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
+                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
+                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
+                    ].filter(item => item.value > 0).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Gráfico de Pendentes por Tempo */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2 pt-3">
+              <CardTitle className="text-sm">Pendentes por Tempo</CardTitle>
+              <CardDescription className="text-xs">Distribuição por dias</CardDescription>
+            </CardHeader>
+            <CardContent className="pb-3">
+              {estatisticas.pendentes === 0 ? (
+                <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground">
+                  Nenhuma solicitação pendente
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
+                      ].filter(item => item.value > 0)}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={70}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {[
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
+                      ].filter(item => item.value > 0).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
         </div>
