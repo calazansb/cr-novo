@@ -83,18 +83,18 @@ const ModernSidebar = ({
       {!isCollapsed && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsCollapsed(true)} />}
       
       {/* Sidebar */}
-      <aside className={cn("fixed top-0 left-0 h-screen bg-sidebar bg-gradient-to-br from-primary-light/25 via-sidebar to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 border-r border-sidebar-border shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl flex flex-col", isCollapsed ? "w-16" : "w-72", "lg:translate-x-0", !isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
+      <aside className={cn("fixed top-0 left-0 h-screen bg-gradient-to-br from-slate-900 via-[#1e3a5f] to-slate-950 border-r border-slate-700/30 shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl flex flex-col", isCollapsed ? "w-16" : "w-72", "lg:translate-x-0", !isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
         {/* Header da Sidebar */}
-        <div className={cn("flex items-center justify-between p-4 border-b border-sidebar-border bg-primary-soft/40 dark:bg-slate-900/40", isCollapsed && "justify-center")}> 
+        <div className={cn("flex items-center justify-between p-4 border-b border-slate-700/30 bg-slate-900/40 backdrop-blur-sm", isCollapsed && "justify-center")}> 
           {!isCollapsed && <div className="flex items-center space-x-3">
               
               <div>
-                <h1 className="font-display font-extrabold text-base text-foreground">Sistema CRA</h1>
-                <p className="text-xs font-semibold text-muted-foreground">Comunicação Jurídica</p>
+                <h1 className="font-display font-extrabold text-base text-white">Sistema CRA</h1>
+                <p className="text-xs font-semibold text-slate-300">Comunicação Jurídica</p>
               </div>
             </div>}
           
-          <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8 hover:bg-primary-soft/60 text-foreground/80 hover:text-foreground">
+          <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8 hover:bg-blue-500/20 text-slate-300 hover:text-white transition-colors">
             {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </Button>
         </div>
@@ -109,29 +109,29 @@ const ModernSidebar = ({
         //   }
         //   return true;
         // })
-        .map((item, index) => <Button key={item.id} variant="ghost" className={cn("w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden rounded-xl", isCollapsed ? "px-3" : "px-4", activeSection === item.id ? "bg-primary-light/30 text-foreground border-l-4 border-primary shadow-lg" : "text-foreground/80 hover:bg-primary-soft/60 hover:text-foreground", item.bgHover)} style={{
+        .map((item, index) => <Button key={item.id} variant="ghost" className={cn("w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden rounded-xl", isCollapsed ? "px-3" : "px-4", activeSection === item.id ? "bg-blue-600/25 text-white border-l-4 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "text-slate-300 hover:bg-blue-500/15 hover:text-white", item.bgHover)} style={{
           animationDelay: `${index * 50}ms`
         }} onClick={() => onSectionChange(item.id)}>
               <item.icon className={cn("w-5 h-5 flex-shrink-0 transition-all duration-200", activeSection === item.id ? item.color : item.color, !isCollapsed && "mr-3", "drop-shadow-[0_0_8px_currentColor]")} />
               
               {!isCollapsed && <>
-                  <span className="font-medium text-sm truncate flex-1 text-left">
+                  <span className="font-semibold text-sm truncate flex-1 text-left">
                     {item.title}
                   </span>
-                  {activeSection === item.id && <ChevronRight className="w-4 h-4 opacity-60 animate-pulse" />}
+                  {activeSection === item.id && <ChevronRight className="w-4 h-4 opacity-80" />}
                 </>}
             </Button>)}
         </nav>
 
         {/* Footer da Sidebar */}
-        {!isCollapsed && <div className="p-4 border-t border-sidebar-border bg-primary-soft/40 dark:bg-slate-900/40">
+        {!isCollapsed && <div className="p-4 border-t border-slate-700/30 bg-slate-900/40 backdrop-blur-sm">
             <div className="text-center">
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-slate-400 leading-relaxed font-medium">
                 Sistema Profissional de<br />
                 Comunicação Jurídica
               </p>
-              <div className="mt-2 px-3 py-1 bg-primary-soft/70 border border-primary-light rounded-full inline-block">
-                <span className="text-xs font-semibold text-foreground">v2.0 Premium</span>
+              <div className="mt-2 px-3 py-1 bg-blue-500/15 border border-blue-500/30 rounded-full inline-block">
+                <span className="text-xs font-semibold text-blue-400">v2.0 Premium</span>
               </div>
             </div>
           </div>}
