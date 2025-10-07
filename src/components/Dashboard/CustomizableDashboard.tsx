@@ -250,9 +250,12 @@ export const CustomizableDashboard = () => {
       if (dcStr !== dfStr) return false;
     }
     
-    if (filtroPrazo) {
-      const prazoStr = req.prazo_retorno ? String(req.prazo_retorno) : null;
-      if (!prazoStr || prazoStr !== filtroPrazo) return false;
+    if (filtroPrazo && req.prazo_retorno) {
+      const pr = new Date(req.prazo_retorno);
+      const prStr = `${pr.getFullYear()}-${String(pr.getMonth() + 1).padStart(2, '0')}-${String(pr.getDate()).padStart(2, '0')}`;
+      const [pfy, pfm, pfd] = filtroPrazo.split('-').map(Number);
+      const pfStr = `${pfy}-${String(pfm).padStart(2, '0')}-${String(pfd).padStart(2, '0')}`;
+      if (prStr !== pfStr) return false;
     }
     
     return true;
@@ -601,8 +604,8 @@ export const CustomizableDashboard = () => {
                       </div>
                       
                       {/* Coluna 7: Ações */}
-                      <div className="px-4 flex items-start justify-center">
-                        <div className="flex gap-1 justify-center items-start mb-1">
+                      <div className="px-4 flex flex-col items-center justify-start">
+                        <div className="flex gap-1 justify-center items-center mb-2">
                           <Button
                             variant="ghost"
                             size="icon"
@@ -630,14 +633,14 @@ export const CustomizableDashboard = () => {
                         {/* Anexos abaixo dos botões */}
                         <div className="flex gap-2 justify-center items-center text-xs">
                           {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                            <span className="flex items-center gap-1 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
-                              <Paperclip className="h-3 w-3" />
+                            <span className="flex items-center gap-0.5 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
+                              <Paperclip className="h-3.5 w-3.5" />
                               {req.anexos.length}
                             </span>
                           )}
                           {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                            <span className="flex items-center gap-1 text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
-                              <Upload className="h-3 w-3" />
+                            <span className="flex items-center gap-0.5 text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
+                              <Upload className="h-3.5 w-3.5" />
                               {req.anexos_resposta.length}
                             </span>
                           )}
