@@ -46,7 +46,6 @@ const BalcaoControladoriaForm = () => {
   const [usuarios, setUsuarios] = useState<{ id: string; nome: string }[]>([]);
   const [clientes] = useState<string[]>([
     "Affiance Life",
-    "Bioimagem NDI",
     "Casu - UFMG",
     "Cemig Saúde",
     "Confiança LTDA",
