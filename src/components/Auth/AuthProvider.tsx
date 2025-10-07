@@ -55,25 +55,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          nome,
-          perfil
+          nome
         }
       }
     });
 
-    // Criar perfil do usuário
+    // Criar perfil e role do usuário
     if (data.user && !error) {
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           id: data.user.id,
+          user_id: data.user.id,
           nome,
-          email,
-          perfil
+          email
         });
       
       if (profileError) {
         console.error('Erro ao criar perfil:', profileError);
+      }
+
+      // Criar role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: data.user.id,
+          role: perfil
+        });
+
+      if (roleError) {
+        console.error('Erro ao criar role:', roleError);
       }
     }
 

@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados';
+type ActiveSection = 'home' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'audiencias' | 'sugestoes' | 'erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'banco-dados' | 'admin-usuarios';
 
 interface ModernSidebarProps {
   activeSection: ActiveSection;
@@ -99,19 +99,13 @@ const ModernSidebar = ({ activeSection, onSectionChange }: ModernSidebarProps) =
       title: "Assistência Técnica",
       icon: Settings,
       color: "text-accent-foreground"
+    },
+    {
+      id: 'admin-usuarios' as ActiveSection,
+      title: "Gerenciar Usuários",
+      icon: Users,
+      color: "text-violet-500"
     }
-    // {
-    //   id: 'treinamentos' as ActiveSection,
-    //   title: "Treinamentos",
-    //   icon: GraduationCap,
-    //   color: "text-blue-500"
-    // },
-    // {
-    //   id: 'admin-usuarios' as ActiveSection,
-    //   title: "Gerenciar Usuários",
-    //   icon: Users,
-    //   color: "text-violet-500"
-    // }
   ];
 
   return (

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -9,18 +8,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Edit, Shield, Mail, Calendar, Key, Trash2 } from 'lucide-react';
+import { Users, Edit, Shield, Mail, Calendar, Key, Trash2, UserPlus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+
+interface UserRole {
+  id: string;
+  user_id: string;
+  role: 'admin' | 'advogado';
+}
 
 interface Profile {
   id: string;
   user_id: string;
   nome: string;
   email: string;
-  perfil: 'admin' | 'advogado';
   created_at: string;
   updated_at: string;
+  roles?: UserRole[];
 }
 
 const UserManagement = () => {
@@ -29,9 +34,11 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [selectedUserForPassword, setSelectedUserForPassword] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [newUser, setNewUser] = useState({ nome: '', email: '', password: '', role: 'advogado' as 'admin' | 'advogado' });
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -46,16 +53,28 @@ const UserManagement = () => {
         throw new Error('Acesso negado: Apenas administradores podem gerenciar usuários');
       }
 
-      const { data, error } = await supabase
+      // Buscar profiles com roles
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (profilesError) throw profilesError;
 
-      setUsers((data || []) as Profile[]);
+      // Buscar roles para cada usuário
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
+
+      if (rolesError) throw rolesError;
+
+      // Combinar dados
+      const usersWithRoles = (profilesData || []).map(profile => ({
+        ...profile,
+        roles: (rolesData || []).filter(role => role.user_id === profile.user_id)
+      }));
+
+      setUsers(usersWithRoles as Profile[]);
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
       toast({
@@ -81,16 +100,31 @@ const UserManagement = () => {
     if (!editingUser) return;
 
     try {
-      const { error } = await supabase
+      // Atualizar nome no profile
+      const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          nome: editingUser.nome,
-          perfil: editingUser.perfil
-        })
+        .update({ nome: editingUser.nome })
         .eq('id', editingUser.id);
 
-      if (error) {
-        throw error;
+      if (profileError) throw profileError;
+
+      // Atualizar role
+      const currentRole = editingUser.roles?.[0]?.role || 'advogado';
+      const newRole = (editingUser as any).newRole || currentRole;
+
+      if (newRole !== currentRole) {
+        // Deletar role antiga
+        await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', editingUser.user_id);
+
+        // Inserir nova role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: editingUser.user_id, role: newRole });
+
+        if (roleError) throw roleError;
       }
 
       toast({
@@ -198,12 +232,81 @@ const UserManagement = () => {
     setIsPasswordDialogOpen(true);
   };
 
-  const getRoleBadgeVariant = (perfil: string) => {
-    return perfil === 'admin' ? 'destructive' : 'secondary';
+  const handleCreateUser = async () => {
+    if (!newUser.nome || !newUser.email || !newUser.password) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Criar usuário via auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          data: {
+            nome: newUser.nome
+          }
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Erro ao criar usuário');
+
+      // Criar profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authData.user.id,
+          user_id: authData.user.id,
+          nome: newUser.nome,
+          email: newUser.email
+        });
+
+      if (profileError) throw profileError;
+
+      // Criar role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: authData.user.id,
+          role: newUser.role
+        });
+
+      if (roleError) throw roleError;
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário criado com sucesso.",
+      });
+
+      setIsCreateDialogOpen(false);
+      setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+      fetchUsers();
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error);
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Não foi possível criar o usuário.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const getRoleIcon = (perfil: string) => {
-    return perfil === 'admin' ? Shield : Users;
+  const getUserRole = (user: Profile): 'admin' | 'advogado' => {
+    return user.roles?.[0]?.role || 'advogado';
+  };
+
+  const getRoleBadgeVariant = (role: string) => {
+    return role === 'admin' ? 'destructive' : 'secondary';
+  };
+
+  const getRoleIcon = (role: string) => {
+    return role === 'admin' ? Shield : Users;
   };
 
   if (loading) {
@@ -235,10 +338,92 @@ const UserManagement = () => {
           <h2 className="text-3xl font-bold text-foreground">Gerenciamento de Usuários</h2>
           <p className="text-muted-foreground">Gerencie usuários e suas permissões no sistema</p>
         </div>
-        <Badge variant="outline" className="flex items-center gap-2">
-          <Users className="w-4 h-4" />
-          {users.length} usuários
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            {users.length} usuários
+          </Badge>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Novo Usuário
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Criar Novo Usuário</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-nome">Nome</Label>
+                  <Input
+                    id="new-nome"
+                    value={newUser.nome}
+                    onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })}
+                    placeholder="Nome completo"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-email">Email</Label>
+                  <Input
+                    id="new-email"
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Senha</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    placeholder="Mínimo 6 caracteres"
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-role">Perfil</Label>
+                  <Select
+                    value={newUser.role}
+                    onValueChange={(value: 'admin' | 'advogado') => 
+                      setNewUser({ ...newUser, role: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="advogado">Advogado</SelectItem>
+                      <SelectItem value="admin">Administrador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsCreateDialogOpen(false);
+                      setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+                    }}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleCreateUser}
+                    className="flex-1"
+                  >
+                    Criar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {users.length === 0 ? (
@@ -251,7 +436,8 @@ const UserManagement = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {users.map((user) => {
-            const RoleIcon = getRoleIcon(user.perfil);
+            const userRole = getUserRole(user);
+            const RoleIcon = getRoleIcon(userRole);
             return (
               <Card key={user.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-4">
@@ -265,9 +451,9 @@ const UserManagement = () => {
                         {user.email}
                       </div>
                     </div>
-                    <Badge variant={getRoleBadgeVariant(user.perfil)} className="flex items-center gap-1">
+                    <Badge variant={getRoleBadgeVariant(userRole)} className="flex items-center gap-1">
                       <RoleIcon className="w-3 h-3" />
-                      {user.perfil === 'admin' ? 'Admin' : 'Advogado'}
+                      {userRole === 'admin' ? 'Admin' : 'Advogado'}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -328,12 +514,12 @@ const UserManagement = () => {
                             <div className="space-y-2">
                               <Label htmlFor="perfil">Perfil</Label>
                               <Select
-                                value={editingUser.perfil}
+                                value={(editingUser as any).newRole || getUserRole(editingUser)}
                                 onValueChange={(value: 'admin' | 'advogado') => 
                                   setEditingUser({
                                     ...editingUser,
-                                    perfil: value
-                                  })
+                                    newRole: value
+                                  } as any)
                                 }
                               >
                                 <SelectTrigger>
