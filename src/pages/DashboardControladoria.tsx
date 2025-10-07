@@ -349,8 +349,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           </Card>
         </div>
 
-        {/* Gráficos compactos lado a lado */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {/* Gráficos e Filtros lado a lado */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Gráfico de Status */}
           <Card className="shadow-sm">
             <CardHeader className="pb-2 pt-3">
@@ -432,108 +432,112 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               )}
             </CardContent>
           </Card>
+
+          {/* Filtros */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2 pt-3">
+              <CardTitle className="text-sm">Filtros</CardTitle>
+              <CardDescription className="text-xs">Refine sua busca</CardDescription>
+            </CardHeader>
+            <CardContent className="pb-3">
+              <div className="space-y-3">
+                {/* Filtro por Status */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Status</label>
+                  <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Filtrar por status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="pendente">Pendentes</SelectItem>
+                      <SelectItem value="concluida">Concluídas</SelectItem>
+                      <SelectItem value="cancelada">Canceladas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Filtro por Nome (Dropdown) */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Solicitante</label>
+                  <Select value={filtroNome} onValueChange={setFiltroNome}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      {solicitantesUnicos.map((nome) => (
+                        <SelectItem key={nome} value={nome}>
+                          {nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Filtro por Data Início */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Data Início</label>
+                  <Input
+                    type="date"
+                    className="h-9"
+                    value={filtroDataInicio}
+                    onChange={(e) => setFiltroDataInicio(e.target.value)}
+                  />
+                </div>
+
+                {/* Filtro por Data Fim */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">Data Fim</label>
+                  <Input
+                    type="date"
+                    className="h-9"
+                    value={filtroDataFim}
+                    onChange={(e) => setFiltroDataFim(e.target.value)}
+                  />
+                </div>
+
+                {/* Botão Limpar Filtros */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-9"
+                  onClick={() => {
+                    setFiltroStatus('todos');
+                    setFiltroNome('todos');
+                    setFiltroDataInicio('');
+                    setFiltroDataFim('');
+                  }}
+                >
+                  Limpar Filtros
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* Filtros Avançados */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-lg">Filtros</CardTitle>
-          <CardDescription>Refine sua busca por solicitações</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Filtro por Status */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filtrar por status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="pendente">Pendentes</SelectItem>
-                  <SelectItem value="concluida">Concluídas</SelectItem>
-                  <SelectItem value="cancelada">Canceladas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
-            {/* Filtro por Nome (Dropdown) */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Nome do Solicitante</label>
-              <Select value={filtroNome} onValueChange={setFiltroNome}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o solicitante" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos os Solicitantes</SelectItem>
-                  {solicitantesUnicos.map((nome) => (
-                    <SelectItem key={nome} value={nome}>
-                      {nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Filtro por Data Início */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Data Início</label>
-              <Input
-                type="date"
-                value={filtroDataInicio}
-                onChange={(e) => setFiltroDataInicio(e.target.value)}
-              />
-            </div>
-
-            {/* Filtro por Data Fim */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Data Fim</label>
-              <Input
-                type="date"
-                value={filtroDataFim}
-                onChange={(e) => setFiltroDataFim(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Botões de Ação */}
-          <div className="flex justify-between items-center mt-4 pt-4 border-t">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setFiltroStatus('todos');
-                setFiltroNome('todos');
-                setFiltroDataInicio('');
-                setFiltroDataFim('');
-              }}
-            >
-              Limpar Filtros
+      {/* Barra de Ações */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm text-muted-foreground">
+          Exibindo {solicitacoesFiltradas.length} de {solicitacoes.length} solicitações
+        </div>
+        <div className="flex gap-2">
+          {supabase && tabelaExiste && (
+            <Button variant="outline" size="sm" onClick={carregarSolicitacoes}>
+              🔄 Recarregar
             </Button>
-            
-            <div className="flex gap-2">
-              {supabase && tabelaExiste && (
-                <Button variant="outline" onClick={carregarSolicitacoes}>
-                  🔄 Recarregar
-                </Button>
-              )}
-              <Button onClick={exportarParaCSV} variant="outline" className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                Exportar CSV
-              </Button>
-              <Button onClick={exportarParaExcel} className="flex items-center gap-2">
-                <Download className="h-4 w-4" />
-                Exportar Excel
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Contador de Resultados */}
-      <div className="mb-4 text-sm text-muted-foreground">
-        Exibindo {solicitacoesFiltradas.length} de {solicitacoes.length} solicitações
+          )}
+          <Button onClick={exportarParaCSV} variant="outline" size="sm" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            CSV
+          </Button>
+          <Button onClick={exportarParaExcel} size="sm" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Excel
+          </Button>
+        </div>
       </div>
 
       {/* Lista de Solicitações */}
