@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/Auth/AuthProvider";
-import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, Home, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
+import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-type ActiveSection = 'home' | 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -18,12 +18,6 @@ const ModernSidebar = ({
     user
   } = useAuth();
   const navigationItems = [{
-    id: 'home' as ActiveSection,
-    title: "Início",
-    icon: Home,
-    color: "text-blue-500",
-    bgHover: "hover:bg-blue-500/10"
-  }, {
     id: 'custom-dashboard' as ActiveSection,
     title: "Meu Dashboard",
     icon: LayoutDashboard,
