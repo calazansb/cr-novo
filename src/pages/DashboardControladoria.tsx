@@ -312,53 +312,53 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
         </Card>}
 
       {/* Estatísticas e Gráficos */}
-      <div className="grid grid-cols-1 gap-6 mb-6">
-        {/* Estatísticas */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
+      <div className="space-y-4 mb-6">
+        {/* Estatísticas compactas */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card className="shadow-sm">
+            <CardHeader className="pb-1 pt-3">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Total</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{estatisticas.total}</div>
+            <CardContent className="pb-3">
+              <div className="text-xl font-bold">{estatisticas.total}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-1 pt-3">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Pendentes</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{estatisticas.pendentes}</div>
+            <CardContent className="pb-3">
+              <div className="text-xl font-bold text-red-600">{estatisticas.pendentes}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-1 pt-3">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Concluídas</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{estatisticas.concluidas}</div>
+            <CardContent className="pb-3">
+              <div className="text-xl font-bold text-blue-600">{estatisticas.concluidas}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Canceladas</CardTitle>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-1 pt-3">
+              <CardTitle className="text-xs font-medium text-muted-foreground">Canceladas</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{estatisticas.canceladas}</div>
+            <CardContent className="pb-3">
+              <div className="text-xl font-bold text-yellow-600">{estatisticas.canceladas}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Gráficos lado a lado */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Gráficos compactos lado a lado */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Gráfico de Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribuição por Status</CardTitle>
-              <CardDescription>Percentual de solicitações por situação</CardDescription>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2 pt-3">
+              <CardTitle className="text-sm">Distribuição por Status</CardTitle>
+              <CardDescription className="text-xs">Percentual por situação</CardDescription>
             </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+            <CardContent className="pb-3">
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
                     data={[
@@ -369,8 +369,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                    outerRadius={80}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={70}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -383,50 +383,50 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
           {/* Gráfico de Pendentes por Tempo */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Pendentes por Tempo</CardTitle>
-              <CardDescription>Distribuição de solicitações pendentes por dias</CardDescription>
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2 pt-3">
+              <CardTitle className="text-sm">Pendentes por Tempo</CardTitle>
+              <CardDescription className="text-xs">Distribuição por dias</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pb-3">
               {estatisticas.pendentes === 0 ? (
-                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground">
                   Nenhuma solicitação pendente
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={220}>
                   <PieChart>
                     <Pie
                       data={[
-                        { name: 'Menos de 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
-                        { name: 'Mais de 3 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
-                        { name: 'Mais de 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
                       ].filter(item => item.value > 0)}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                      outerRadius={80}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={70}
                       fill="#8884d8"
                       dataKey="value"
                     >
                       {[
-                        { name: 'Menos de 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
-                        { name: 'Mais de 3 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
-                        { name: 'Mais de 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
                       ].filter(item => item.value > 0).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
