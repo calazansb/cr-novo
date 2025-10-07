@@ -541,52 +541,56 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       </div>
 
       {/* Lista de Solicitações */}
-      {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="grid gap-4">
+      {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-base">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
-                      <Badge className={statusColors[solicitacao.status]}>
+              <CardHeader className="pb-2 pt-3">
+                <div className="flex justify-between items-start gap-3">
+                  <div className="flex-1 space-y-1.5 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-sm truncate">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
+                      <Badge className={`${statusColors[solicitacao.status]} flex-shrink-0 text-xs`}>
                         {statusLabels[solicitacao.status]}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                      <div><span className="text-muted-foreground">Processo:</span> <span className="font-medium">{solicitacao.numero_processo || 'N/A'}</span></div>
-                      <div><span className="text-muted-foreground">Cliente:</span> <span className="font-medium">{solicitacao.cliente}</span></div>
-                      <div><span className="text-muted-foreground">Prazo:</span> <span className="font-medium">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
-                      <div><span className="text-muted-foreground">Solicitante:</span> <span className="font-medium">{solicitacao.nome_solicitante}</span></div>
+                    <div className="space-y-0.5 text-xs">
+                      <div className="flex gap-4">
+                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Processo:</span> <span className="font-medium truncate">{solicitacao.numero_processo || 'N/A'}</span></div>
+                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Prazo:</span> <span className="font-medium">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
+                      </div>
+                      <div className="flex gap-4">
+                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Cliente:</span> <span className="font-medium truncate">{solicitacao.cliente}</span></div>
+                        <div className="flex-1 min-w-0"><span className="text-muted-foreground">Solicitante:</span> <span className="font-medium truncate">{solicitacao.nome_solicitante}</span></div>
+                      </div>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-1">{solicitacao.objeto_solicitacao}</p>
                     {(solicitacao as any).ultima_modificacao_em && (
                       <p className="text-xs text-muted-foreground italic">
-                        Última modificação: {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR')}
-                        {(solicitacao as any).modificador?.nome && ` por ${(solicitacao as any).modificador.nome}`}
+                        Última modificação: {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5">
                       {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-blue-600 border-blue-300">
+                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-blue-600 border-blue-300 px-1.5 py-0">
                           <Paperclip className="h-3 w-3" />
                           {solicitacao.anexos.length}
                         </Badge>
                       )}
                       {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1 text-green-600 border-green-300">
+                        <Badge variant="outline" className="flex items-center gap-1 text-xs text-green-600 border-green-300 px-1.5 py-0">
                           <Upload className="h-3 w-3" />
                           {(solicitacao as any).anexos_resposta.length}
                         </Badge>
                       )}
                     </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
+                    <div className="flex gap-1">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
                             <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
@@ -648,7 +652,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                             </label>
                             {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 ? (
                               <div className="space-y-2 mt-3">
-                                {(solicitacao as any).anexos_resposta.map((url: string, idx: number) => (
+                                {(solicitacao as any).anexos_resposta.map((url: any, idx: number) => (
                                   <a
                                     key={idx}
                                     href={url}
@@ -657,7 +661,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                                     className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline hover:text-green-800 dark:hover:text-green-300 font-medium"
                                   >
                                     <ExternalLink className="h-4 w-4" />
-                                    Abrir Resposta {idx + 1}
+                                    Abrir Arquivo de Resposta {idx + 1}
                                   </a>
                                 ))}
                               </div>
@@ -679,13 +683,13 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     </Dialog>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => {
+                        <Button variant="outline" size="sm" className="h-7 w-7 p-0" onClick={() => {
                     setSolicitacaoEditando(solicitacao);
                     setNovoStatus(solicitacao.status);
                     setObservacoes(solicitacao.observacoes || '');
                     setArquivosResposta([]);
                   }}>
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-3.5 w-3.5" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -739,8 +743,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     {isAdmin && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="outline" size="sm" className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50">
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -761,17 +765,10 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                         </AlertDialogContent>
                       </AlertDialog>
                     )}
+                    </div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-2">
-                  <strong>Objeto:</strong> {solicitacao.objeto_solicitacao}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Criado em: {new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}
-                </p>
-              </CardContent>
             </Card>)}
           
           {solicitacoesFiltradas.length === 0 && <Card>
