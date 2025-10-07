@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   LayoutDashboard, 
   Plus, 
@@ -18,12 +20,16 @@ import {
   Users,
   CheckCircle2,
   Eye,
-  Edit
+  Edit,
+  Paperclip,
+  ExternalLink,
+  Upload
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
+import { formatCodigo } from '@/lib/utils';
 
 // Tipos de widgets disponíveis
 type WidgetType = 
@@ -117,6 +123,12 @@ export const CustomizableDashboard = () => {
   const [filtroNome, setFiltroNome] = useState('todos');
   const [filtroDataInicio, setFiltroDataInicio] = useState('');
   const [filtroDataFim, setFiltroDataFim] = useState('');
+  
+  // Dialogs de Ver e Editar
+  const [solicitacaoVisualizando, setSolicitacaoVisualizando] = useState<any | null>(null);
+  const [solicitacaoEditando, setSolicitacaoEditando] = useState<any | null>(null);
+  const [novoStatus, setNovoStatus] = useState<string>('');
+  const [observacoes, setObservacoes] = useState('');
 
   // Carregar widgets salvos
   useEffect(() => {
@@ -192,6 +204,42 @@ export const CustomizableDashboard = () => {
     
     return true;
   }).slice(0, 5); // Mostra apenas os 5 primeiros após filtrar
+  
+  const handleAtualizarStatus = async () => {
+    if (solicitacaoEditando && novoStatus) {
+      try {
+        const { error } = await supabase
+          .from('solicitacoes_controladoria')
+          .update({ 
+            status: novoStatus,
+            observacoes: observacoes
+          })
+          .eq('id', solicitacaoEditando.id);
+
+        if (error) throw error;
+        
+        toast({
+          title: 'Status atualizado',
+          description: 'O status da solicitação foi atualizado com sucesso.'
+        });
+        
+        setSolicitacaoEditando(null);
+        setNovoStatus('');
+        setObservacoes('');
+        
+        // Recarregar dados
+        fetchRecentRequests();
+        fetchStats();
+      } catch (error) {
+        console.error('Erro ao atualizar status:', error);
+        toast({
+          title: 'Erro ao atualizar',
+          description: 'Não foi possível atualizar o status da solicitação.',
+          variant: 'destructive'
+        });
+      }
+    }
+  };
 
   const addWidget = (template: WidgetTemplate) => {
     const newWidget: Widget = {
@@ -406,9 +454,7 @@ export const CustomizableDashboard = () => {
                           variant="outline" 
                           size="sm" 
                           className="flex-1 h-7 text-xs"
-                          onClick={() => {
-                            window.dispatchEvent(new CustomEvent('view-request', { detail: req.id }));
-                          }}
+                          onClick={() => setSolicitacaoVisualizando(req)}
                         >
                           <Eye className="mr-1 h-3 w-3" />
                           Ver
@@ -418,7 +464,9 @@ export const CustomizableDashboard = () => {
                           size="sm"
                           className="flex-1 h-7 text-xs"
                           onClick={() => {
-                            window.dispatchEvent(new CustomEvent('edit-request', { detail: req.id }));
+                            setSolicitacaoEditando(req);
+                            setNovoStatus(req.status);
+                            setObservacoes(req.observacoes || '');
                           }}
                         >
                           <Edit className="mr-1 h-3 w-3" />
@@ -620,6 +668,152 @@ export const CustomizableDashboard = () => {
         <GripVertical className="h-4 w-4" />
         <span>Arraste os widgets para reorganizá-los</span>
       </div>
+      
+      {/* Dialog de Visualização */}
+      {solicitacaoVisualizando && (
+        <Dialog open={!!solicitacaoVisualizando} onOpenChange={(open) => !open && setSolicitacaoVisualizando(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacaoVisualizando.codigo_unico)}</DialogTitle>
+              <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[600px] pr-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="font-semibold">Solicitante:</label>
+                  <p>{solicitacaoVisualizando.nome_solicitante}</p>
+                </div>
+                <div>
+                  <label className="font-semibold">Cliente:</label>
+                  <p>{solicitacaoVisualizando.cliente}</p>
+                </div>
+                <div>
+                  <label className="font-semibold">Processo:</label>
+                  <p>{solicitacaoVisualizando.numero_processo || 'Não informado'}</p>
+                </div>
+                <div>
+                  <label className="font-semibold">Objeto:</label>
+                  <p>{solicitacaoVisualizando.objeto_solicitacao}</p>
+                </div>
+                <div>
+                  <label className="font-semibold">Descrição:</label>
+                  <p className="whitespace-pre-wrap">{solicitacaoVisualizando.descricao_detalhada}</p>
+                </div>
+                
+                {/* Arquivos Anexados */}
+                <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <label className="font-semibold flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                    <Paperclip className="h-4 w-4" />
+                    Arquivos Anexados
+                  </label>
+                  {solicitacaoVisualizando.anexos && Array.isArray(solicitacaoVisualizando.anexos) && solicitacaoVisualizando.anexos.length > 0 ? (
+                    <ul className="mt-2 space-y-1">
+                      {solicitacaoVisualizando.anexos.map((url: string, i: number) => (
+                        <li key={i}>
+                          <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Arquivo {i + 1}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo anexado</p>
+                  )}
+                </div>
+                
+                {/* Arquivos de Resposta */}
+                {solicitacaoVisualizando.anexos_resposta && Array.isArray(solicitacaoVisualizando.anexos_resposta) && solicitacaoVisualizando.anexos_resposta.length > 0 && (
+                  <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                    <label className="font-semibold flex items-center gap-2 text-green-700 dark:text-green-400">
+                      <Upload className="h-4 w-4" />
+                      Arquivos de Resposta da Controladoria
+                    </label>
+                    <ul className="mt-2 space-y-1">
+                      {solicitacaoVisualizando.anexos_resposta.map((url: string, i: number) => (
+                        <li key={i}>
+                          <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-green-600 hover:text-green-800 flex items-center gap-1"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Resposta {i + 1}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="font-semibold">Data de Criação:</label>
+                  <p>{new Date(solicitacaoVisualizando.data_criacao).toLocaleString('pt-BR')}</p>
+                </div>
+                {solicitacaoVisualizando.observacoes && (
+                  <div>
+                    <label className="font-semibold">Observações:</label>
+                    <p className="whitespace-pre-wrap">{solicitacaoVisualizando.observacoes}</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Dialog de Edição */}
+      {solicitacaoEditando && (
+        <Dialog open={!!solicitacaoEditando} onOpenChange={(open) => {
+          if (!open) {
+            setSolicitacaoEditando(null);
+            setNovoStatus('');
+            setObservacoes('');
+          }
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Status - {solicitacaoEditando.codigo_unico}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Status:</label>
+                <Select value={novoStatus} onValueChange={setNovoStatus}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="concluida">Concluída</SelectItem>
+                    <SelectItem value="cancelada">Cancelada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Observações:</label>
+                <Textarea 
+                  value={observacoes} 
+                  onChange={e => setObservacoes(e.target.value)} 
+                  placeholder="Adicione observações sobre o status..." 
+                  rows={4}
+                />
+              </div>
+              <Button 
+                onClick={handleAtualizarStatus} 
+                className="w-full"
+              >
+                Atualizar Status
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

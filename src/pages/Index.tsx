@@ -38,26 +38,10 @@ const Index = () => {
       setActiveSection(e.detail as ActiveSection);
     };
     
-    const handleViewRequest = (e: CustomEvent) => {
-      // Armazena o ID da solicitação e navega para o dashboard da controladoria
-      sessionStorage.setItem('view-request-id', e.detail);
-      setActiveSection('dashboard-controladoria');
-    };
-    
-    const handleEditRequest = (e: CustomEvent) => {
-      // Armazena o ID da solicitação e navega para o dashboard da controladoria
-      sessionStorage.setItem('edit-request-id', e.detail);
-      setActiveSection('dashboard-controladoria');
-    };
-    
     window.addEventListener('navigate-to' as any, handleNavigate);
-    window.addEventListener('view-request' as any, handleViewRequest);
-    window.addEventListener('edit-request' as any, handleEditRequest);
     
     return () => {
       window.removeEventListener('navigate-to' as any, handleNavigate);
-      window.removeEventListener('view-request' as any, handleViewRequest);
-      window.removeEventListener('edit-request' as any, handleEditRequest);
     };
   }, []);
 
