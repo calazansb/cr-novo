@@ -63,7 +63,7 @@ const availableWidgets: WidgetTemplate[] = [
     title: 'Visão Geral de Estatísticas',
     description: 'Resumo de solicitações pendentes, concluídas e em andamento',
     icon: BarChart3,
-    defaultSize: 'large'
+    defaultSize: 'medium'
   },
   {
     type: 'recent-requests',
@@ -84,7 +84,7 @@ const availableWidgets: WidgetTemplate[] = [
     title: 'Ações Rápidas',
     description: 'Atalhos para funcionalidades principais',
     icon: AlertCircle,
-    defaultSize: 'small'
+    defaultSize: 'medium'
   },
   {
     type: 'calendar-preview',
@@ -142,11 +142,11 @@ export const CustomizableDashboard = () => {
     if (saved) {
       setWidgets(JSON.parse(saved));
     } else {
-      // Widgets padrão
+      // Widgets padrão: lado a lado
       const defaultWidgets: Widget[] = [
-        { id: '1', type: 'stats-overview', title: 'Visão Geral de Estatísticas', position: 0, size: 'large' },
-        { id: '2', type: 'recent-requests', title: 'Solicitações Recentes', position: 1, size: 'medium' },
-        { id: '3', type: 'quick-actions', title: 'Ações Rápidas', position: 2, size: 'small' }
+        { id: '1', type: 'stats-overview', title: 'Visão Geral de Estatísticas', position: 0, size: 'medium' },
+        { id: '2', type: 'quick-actions', title: 'Ações Rápidas', position: 1, size: 'medium' },
+        { id: '3', type: 'recent-requests', title: 'Solicitações Recentes', position: 2, size: 'large' }
       ];
       setWidgets(defaultWidgets);
       saveWidgets(defaultWidgets);
@@ -320,7 +320,7 @@ export const CustomizableDashboard = () => {
         onDragOver={(e) => handleDragOver(e, widget.id)}
         onDragEnd={handleDragEnd}
       >
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2 pt-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
@@ -336,7 +336,7 @@ export const CustomizableDashboard = () => {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-3">
           {renderWidgetContent(widget.type)}
         </CardContent>
       </Card>
@@ -347,18 +347,18 @@ export const CustomizableDashboard = () => {
     switch (type) {
       case 'stats-overview':
         return (
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-3xl font-bold text-warning">{stats.pending}</div>
-              <div className="text-sm text-muted-foreground">Pendentes</div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold text-warning">{stats.pending}</div>
+              <div className="text-xs text-muted-foreground">Pendentes</div>
             </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-3xl font-bold text-success">{stats.completed}</div>
-              <div className="text-sm text-muted-foreground">Concluídas</div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold text-success">{stats.completed}</div>
+              <div className="text-xs text-muted-foreground">Concluídas</div>
             </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-3xl font-bold text-primary">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total</div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <div className="text-2xl font-bold text-primary">{stats.total}</div>
+              <div className="text-xs text-muted-foreground">Total</div>
             </div>
           </div>
         );
@@ -483,10 +483,10 @@ export const CustomizableDashboard = () => {
 
       case 'quick-actions':
         return (
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2">
             <Button 
               variant="outline" 
-              className="w-full justify-start" 
+              className="w-full justify-start h-9" 
               size="sm"
               onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'balcao' }))}
             >
@@ -495,7 +495,7 @@ export const CustomizableDashboard = () => {
             </Button>
             <Button 
               variant="outline" 
-              className="w-full justify-start" 
+              className="w-full justify-start h-9" 
               size="sm"
               onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'dashboard-controladoria' }))}
             >
@@ -504,7 +504,7 @@ export const CustomizableDashboard = () => {
             </Button>
             <Button 
               variant="outline" 
-              className="w-full justify-start" 
+              className="w-full justify-start h-9" 
               size="sm"
               onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'admin-usuarios' }))}
             >
