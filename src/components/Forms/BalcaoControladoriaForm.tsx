@@ -173,35 +173,44 @@ ${formData.solicitacao}
     const uploadedUrls: string[] = [];
 
     try {
+      console.log('📤 Iniciando upload de', selectedFiles.length, 'arquivo(s)...');
+      
       for (const file of selectedFiles) {
         const fileName = `${codigoUnico}/${Date.now()}-${file.name}`;
         
-        const { error: uploadError } = await supabase.storage
+        console.log('📁 Fazendo upload do arquivo:', fileName);
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('solicitacoes-anexos')
           .upload(fileName, file);
 
         if (uploadError) {
-          console.error('Erro ao fazer upload:', uploadError);
+          console.error('❌ Erro ao fazer upload:', uploadError);
           toast({
             title: "Erro no upload",
-            description: `Não foi possível enviar o arquivo ${file.name}`,
+            description: `Não foi possível enviar o arquivo ${file.name}: ${uploadError.message}`,
             variant: "destructive"
           });
           continue;
         }
 
+        console.log('✅ Upload concluído:', uploadData);
+
+        // Obter URL pública do arquivo
         const { data: urlData } = await supabase.storage
           .from('solicitacoes-anexos')
-          .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 dias
+          .getPublicUrl(fileName);
 
-        if (urlData?.signedUrl) {
-          uploadedUrls.push(urlData.signedUrl);
+        if (urlData?.publicUrl) {
+          console.log('🔗 URL pública gerada:', urlData.publicUrl);
+          uploadedUrls.push(urlData.publicUrl);
         }
       }
 
+      console.log('✅ Upload finalizado. Total de URLs:', uploadedUrls.length);
       return uploadedUrls;
     } catch (error) {
-      console.error('Erro durante upload:', error);
+      console.error('❌ Erro durante upload:', error);
       return uploadedUrls;
     } finally {
       setUploadingFiles(false);
@@ -219,6 +228,12 @@ ${formData.solicitacao}
 
       // Upload dos arquivos primeiro
       const anexosUrls = await uploadArquivos(codigoUnico);
+      
+      console.log('📋 Dados da solicitação antes de salvar:', {
+        codigo: codigoUnico,
+        anexos: anexosUrls,
+        totalAnexos: anexosUrls.length
+      });
 
       const solicitacaoData: NovasolicitacaoControladoria = {
         nome_solicitante: validatedData.nomeSolicitante,
@@ -227,7 +242,7 @@ ${formData.solicitacao}
         objeto_solicitacao: validatedData.tribunalOrgao,
         descricao_detalhada: validatedData.solicitacao,
         user_id: user?.id || '',
-        anexos: anexosUrls.length > 0 ? anexosUrls : undefined
+        anexos: anexosUrls.length > 0 ? anexosUrls : []
       };
       
       const codigoSalvo = await criarSolicitacao(solicitacaoData);

@@ -292,10 +292,12 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
           {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id}>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="space-y-1">
                     <CardTitle className="text-lg">{solicitacao.codigo_unico}</CardTitle>
-                    <CardDescription>
-                      {solicitacao.nome_solicitante} • {solicitacao.cliente}
+                    <CardDescription className="space-y-0.5">
+                      <div><strong>Solicitante:</strong> {solicitacao.nome_solicitante}</div>
+                      <div><strong>Cliente:</strong> {solicitacao.cliente}</div>
+                      <div><strong>Data:</strong> {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}</div>
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
@@ -340,50 +342,59 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                             <label className="font-semibold">Descrição:</label>
                             <p className="whitespace-pre-wrap">{solicitacao.descricao_detalhada}</p>
                           </div>
-                          {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                            <div>
-                              <label className="font-semibold flex items-center gap-2">
-                                <Paperclip className="h-4 w-4" />
-                                Arquivos Anexados ({solicitacao.anexos.length}):
-                              </label>
-                              <div className="space-y-2 mt-2">
+                          
+                          {/* Seção de Arquivos Anexados pelo Advogado */}
+                          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <label className="font-semibold flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                              <Paperclip className="h-4 w-4" />
+                              Arquivos Anexados
+                            </label>
+                            {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 ? (
+                              <div className="space-y-2 mt-3">
                                 {solicitacao.anexos.map((url: any, idx: number) => (
                                   <a
                                     key={idx}
                                     href={url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                                    className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                                   >
-                                    <ExternalLink className="h-3 w-3" />
-                                    Arquivo {idx + 1}
+                                    <ExternalLink className="h-4 w-4" />
+                                    Abrir Arquivo {idx + 1}
                                   </a>
                                 ))}
                               </div>
-                            </div>
-                          )}
-                          {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
-                            <div>
-                              <label className="font-semibold flex items-center gap-2">
-                                <Upload className="h-4 w-4" />
-                                Arquivos de Resposta ({(solicitacao as any).anexos_resposta.length}):
-                              </label>
-                              <div className="space-y-2 mt-2">
+                            ) : (
+                              <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo anexado</p>
+                            )}
+                          </div>
+
+                          {/* Seção de Arquivos de Resposta da Controladoria */}
+                          <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                            <label className="font-semibold flex items-center gap-2 text-green-700 dark:text-green-400">
+                              <Upload className="h-4 w-4" />
+                              Arquivos de Resposta
+                            </label>
+                            {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 ? (
+                              <div className="space-y-2 mt-3">
                                 {(solicitacao as any).anexos_resposta.map((url: string, idx: number) => (
                                   <a
                                     key={idx}
                                     href={url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-sm text-green-600 hover:underline"
+                                    className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline hover:text-green-800 dark:hover:text-green-300 font-medium"
                                   >
-                                    <ExternalLink className="h-3 w-3" />
-                                    Resposta {idx + 1}
+                                    <ExternalLink className="h-4 w-4" />
+                                    Abrir Resposta {idx + 1}
                                   </a>
                                 ))}
                               </div>
-                            </div>
-                          )}
+                            ) : (
+                              <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo de resposta anexado</p>
+                            )}
+                          </div>
+
                           <div>
                             <label className="font-semibold">Data de Criação:</label>
                             <p>{new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}</p>
