@@ -86,15 +86,31 @@ const ModernSidebar = ({
       <aside className={cn("fixed top-0 left-0 h-screen bg-gradient-to-br from-slate-900 via-[#1e3a5f] to-slate-950 border-r border-slate-700/30 shadow-2xl z-50 transition-all duration-300 ease-in-out backdrop-blur-xl flex flex-col", isCollapsed ? "w-16" : "w-72", "lg:translate-x-0", !isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
         {/* Header da Sidebar */}
         <div className={cn("flex items-center justify-between p-4 border-b border-slate-700/30 bg-slate-900/40 backdrop-blur-sm", isCollapsed && "justify-center")}> 
-          {!isCollapsed && <div className="flex items-center space-x-3">
-              
-              <div>
-                <h1 className="font-display font-extrabold text-base text-white">Sistema CRA</h1>
-                <p className="text-xs font-semibold text-slate-300">Comunicação Jurídica</p>
-              </div>
+          {!isCollapsed && <div className="flex items-center justify-center w-full px-2">
+              <img 
+                src="/marca-branca-horizontal.png" 
+                alt="Calazans Rossi Advogados" 
+                className="h-8 w-auto object-contain"
+                onError={(e) => {
+                  console.error('Erro ao carregar logo');
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
             </div>}
           
-          <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className="h-8 w-8 hover:bg-blue-500/20 text-slate-300 hover:text-white transition-colors">
+          {isCollapsed && <div className="flex items-center justify-center">
+              <img 
+                src="/calazans-rossi-logo.png" 
+                alt="CR" 
+                className="h-6 w-auto object-contain"
+                onError={(e) => {
+                  console.error('Erro ao carregar logo');
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>}
+          
+          <Button variant="ghost" size="icon" onClick={() => setIsCollapsed(!isCollapsed)} className={cn("h-8 w-8 hover:bg-blue-500/20 text-slate-300 hover:text-white transition-colors", isCollapsed && "absolute top-4 right-2")}>
             {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </Button>
         </div>
