@@ -542,26 +542,26 @@ export const CustomizableDashboard = () => {
               ) : (
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
-                  <div className="grid grid-cols-[3fr_1.5fr_1.5fr_1fr_1fr_1fr_0.8fr] gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-                    <div>Código / Processo / Objeto</div>
-                    <div>Solicitante</div>
-                    <div>Cliente</div>
-                    <div>Data</div>
-                    <div>Prazo</div>
-                    <div>Status</div>
-                    <div className="text-right">Ações</div>
+                  <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+                    <div className="pr-4 border-r">Código / Processo / Objeto</div>
+                    <div className="px-4 border-r text-center">Solicitante</div>
+                    <div className="px-4 border-r text-center">Cliente</div>
+                    <div className="px-4 border-r text-center">Data</div>
+                    <div className="px-4 border-r text-center">Prazo</div>
+                    <div className="px-4 border-r text-center">Status</div>
+                    <div className="pl-4 text-right">Ações</div>
                   </div>
                   
                   {/* Linhas da Tabela */}
                   {requestsFiltradas.map((req, index) => (
                     <div 
                       key={req.id} 
-                      className={`grid grid-cols-[3fr_1.5fr_1.5fr_1fr_1fr_1fr_0.8fr] gap-4 px-6 py-4 items-start hover:bg-muted/30 transition-colors ${
+                      className={`grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-4 items-start hover:bg-muted/30 transition-colors ${
                         index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                       }`}
                     >
                       {/* Coluna 1: Código + Processo + Descrição Completa */}
-                      <div className="max-w-md">
+                      <div className="pr-4 border-r">
                         <div className="font-semibold text-sm mb-1 break-words">{formatCodigo(req.codigo_unico)}</div>
                         {req.numero_processo && (
                           <div className="text-xs text-muted-foreground font-medium mb-1 break-words">
@@ -575,27 +575,27 @@ export const CustomizableDashboard = () => {
                       </div>
                       
                       {/* Coluna 2: Solicitante */}
-                      <div className="text-sm">
-                        {req.nome_solicitante}
+                      <div className="text-sm px-4 border-r text-center flex items-start justify-center">
+                        <span className="break-words">{req.nome_solicitante}</span>
                       </div>
                       
                       {/* Coluna 3: Cliente */}
-                      <div className="text-sm">
-                        {req.cliente}
+                      <div className="text-sm px-4 border-r text-center flex items-start justify-center">
+                        <span className="break-words">{req.cliente}</span>
                       </div>
                       
                       {/* Coluna 4: Data */}
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground px-4 border-r text-center flex items-start justify-center">
                         {new Date(req.data_criacao).toLocaleDateString('pt-BR')}
                       </div>
                       
                       {/* Coluna 5: Prazo */}
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground px-4 border-r text-center flex items-start justify-center">
                         {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}
                       </div>
                       
                       {/* Coluna 6: Status */}
-                      <div>
+                      <div className="px-4 border-r flex items-start justify-center">
                         <Badge 
                           className={`text-xs px-2.5 py-0.5 ${
                             req.status === 'concluida' 
@@ -610,7 +610,7 @@ export const CustomizableDashboard = () => {
                       </div>
                       
                       {/* Coluna 7: Ações */}
-                      <div>
+                      <div className="pl-4">
                         <div className="flex gap-1 justify-end items-center mb-1">
                           <Button
                             variant="ghost"
