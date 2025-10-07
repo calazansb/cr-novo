@@ -390,7 +390,7 @@ const BalcaoControladoriaForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
             {/* Nome do Solicitante - Select */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">
+              <label className="text-xs font-medium text-foreground h-4">
                 Nome do Solicitante <span className="text-destructive">*</span>
               </label>
               <Select 
@@ -408,9 +408,11 @@ const BalcaoControladoriaForm = () => {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.nomeSolicitante && (
-                <p className="text-xs text-destructive">{errors.nomeSolicitante}</p>
-              )}
+              <div className="h-4">
+                {errors.nomeSolicitante && (
+                  <p className="text-xs text-destructive">{errors.nomeSolicitante}</p>
+                )}
+              </div>
             </div>
 
             <FormField
@@ -427,7 +429,7 @@ const BalcaoControladoriaForm = () => {
 
             {/* Cliente - Select com opção Outros */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">
+              <label className="text-xs font-medium text-foreground h-4">
                 Cliente <span className="text-destructive">*</span>
               </label>
               <Select 
@@ -454,9 +456,11 @@ const BalcaoControladoriaForm = () => {
                   className="mt-2 h-9"
                 />
               )}
-              {errors.cliente && (
-                <p className="text-xs text-destructive">{errors.cliente}</p>
-              )}
+              <div className="h-4">
+                {errors.cliente && (
+                  <p className="text-xs text-destructive">{errors.cliente}</p>
+                )}
+              </div>
             </div>
 
             <FormField

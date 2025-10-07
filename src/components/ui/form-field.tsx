@@ -112,7 +112,7 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
       <Label 
         htmlFor={id} 
         className={`
-          text-xs font-medium transition-colors flex items-center gap-1.5
+          text-xs font-medium transition-colors flex items-center gap-1.5 h-4
           ${error ? 'text-destructive' : success ? 'text-success' : 'text-foreground'}
         `}
       >
@@ -123,12 +123,14 @@ export const FormField: React.FC<FormFieldProps> = (props) => {
       
       {renderField()}
 
-      {error && (
-        <div className="flex items-center gap-1.5 text-xs text-destructive">
-          <AlertCircle className="h-3.5 w-3.5" />
-          <span>{error}</span>
-        </div>
-      )}
+      <div className="h-4">
+        {error && (
+          <div className="flex items-center gap-1.5 text-xs text-destructive">
+            <AlertCircle className="h-3.5 w-3.5" />
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

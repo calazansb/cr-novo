@@ -135,7 +135,7 @@ export const DateField: React.FC<DateFieldProps> = ({
       <Label 
         htmlFor={id} 
         className={`
-          text-xs font-medium transition-colors flex items-center gap-1.5
+          text-xs font-medium transition-colors flex items-center gap-1.5 h-4
           ${error ? 'text-destructive' : success ? 'text-success' : 'text-foreground'}
         `}
       >
@@ -157,12 +157,12 @@ export const DateField: React.FC<DateFieldProps> = ({
                 onBlur={handleInputBlur}
                 onClick={handleButtonClick}
                 maxLength={10}
-                  className={cn(
-                    "w-full h-9 bg-background pr-10",
-                    error ? 'border-destructive focus:ring-destructive/20' : '',
-                    success ? 'border-success focus:ring-success/20' : '',
-                    !error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''
-                  )}
+                className={cn(
+                  "w-full h-9 bg-background pr-10",
+                  error ? 'border-destructive focus:ring-destructive/20' : '',
+                  success ? 'border-success focus:ring-success/20' : '',
+                  !error && !success ? 'hover:border-primary/50 focus:ring-primary/20' : ''
+                )}
               />
               <CalendarIcon 
                 className={cn(
@@ -187,11 +187,13 @@ export const DateField: React.FC<DateFieldProps> = ({
         </Popover>
       </div>
 
-      {error && (
-        <div className="flex items-center gap-1.5 text-xs text-destructive">
-          <span>{error}</span>
-        </div>
-      )}
+      <div className="h-4">
+        {error && (
+          <div className="flex items-center gap-1.5 text-xs text-destructive">
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
