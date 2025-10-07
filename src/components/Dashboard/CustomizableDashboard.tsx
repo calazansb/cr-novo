@@ -415,24 +415,11 @@ export const CustomizableDashboard = () => {
                   </p>
                 ) : (
                   requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-4 border-2 rounded-lg hover:shadow-md transition-all space-y-3 bg-card shadow-md">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <p className="font-bold text-lg">{req.codigo_unico}</p>
-                            <Badge 
-                              variant={req.status === 'pendente' ? 'destructive' : req.status === 'concluida' ? 'default' : 'secondary'} 
-                              className={`text-sm px-3 py-1 font-semibold ${
-                                req.status === 'concluida' 
-                                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                                  : req.status === 'pendente' 
-                                  ? 'bg-red-600 hover:bg-red-700 text-white' 
-                                  : ''
-                              }`}
-                            >
-                              {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
-                            </Badge>
-                          </div>
+                    <div key={req.id} className="p-4 border-2 rounded-lg hover:shadow-md transition-all bg-card shadow-md relative">
+                      <div className="flex items-start gap-3">
+                        {/* Coluna esquerda: Informações principais */}
+                        <div className="flex-1 space-y-3 pr-32">
+                          <p className="font-bold text-lg">{req.codigo_unico}</p>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-base">
                             <p><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{req.numero_processo || 'N/A'}</span></p>
                             <p><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{req.cliente}</span></p>
@@ -446,43 +433,60 @@ export const CustomizableDashboard = () => {
                             </p>
                           )}
                         </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex gap-2 pt-2 border-t-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1 h-9 text-sm font-medium"
-                            onClick={() => setSolicitacaoVisualizando(req)}
+
+                        {/* Coluna direita: Status + Botões + Badges */}
+                        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
+                          {/* Badge de status */}
+                          <Badge 
+                            variant={req.status === 'pendente' ? 'destructive' : req.status === 'concluida' ? 'default' : 'secondary'} 
+                            className={`text-xs px-2 py-0.5 font-semibold ${
+                              req.status === 'concluida' 
+                                ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                : req.status === 'pendente' 
+                                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                                : ''
+                            }`}
                           >
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="flex-1 h-9 text-sm font-medium"
-                            onClick={() => {
-                              setSolicitacaoEditando(req);
-                              setNovoStatus(req.status);
-                              setObservacoes(req.observacoes || '');
-                            }}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar
-                          </Button>
-                        </div>
-                        <div className="flex gap-2 justify-center">
-                          {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 text-blue-600 border-blue-400 font-medium">
-                              📎 {req.anexos.length}
-                            </Badge>
-                          )}
-                          {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 text-green-600 border-green-400 font-medium">
-                              📤 {req.anexos_resposta.length}
-                            </Badge>
-                          )}
+                            {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                          </Badge>
+
+                          {/* Botões de ação */}
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-6 px-2 text-xs"
+                              onClick={() => setSolicitacaoVisualizando(req)}
+                            >
+                              Ver
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              onClick={() => {
+                                setSolicitacaoEditando(req);
+                                setNovoStatus(req.status);
+                                setObservacoes(req.observacoes || '');
+                              }}
+                            >
+                              Editar
+                            </Button>
+                          </div>
+
+                          {/* Badges de anexos */}
+                          <div className="flex flex-col gap-1 items-end">
+                            {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-400">
+                                📎 {req.anexos.length}
+                              </Badge>
+                            )}
+                            {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-400">
+                                📤 {req.anexos_resposta.length}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
