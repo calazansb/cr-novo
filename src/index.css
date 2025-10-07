@@ -44,6 +44,9 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
     --destructive-light: 0 84% 92%;
+    --info: 213 94% 50%;
+    --info-foreground: 0 0% 100%;
+    --info-light: 213 94% 92%;
     
     /* Roxo suave para Decisão Judicial */
     --purple: 263 70% 60%;
@@ -124,6 +127,8 @@
     --warning-foreground: 0 0% 100%;
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 98%;
+    --info: 213 94% 60%;
+    --info-foreground: 0 0% 100%;
     
     --purple: 263 70% 70%;
     --purple-foreground: 0 0% 100%;

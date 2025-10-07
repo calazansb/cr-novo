@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Bell, Search, User, Settings, LogOut } from 'lucide-react';
+import { Moon, Sun, Search, User, Settings, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { ChangePasswordForm } from "@/components/Auth/ChangePasswordForm";
+import NotificationBell from "@/components/Notifications/NotificationBell";
 import { cn } from "@/lib/utils";
 
 interface ModernHeaderProps {
@@ -84,12 +85,7 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
           </div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative hover:bg-accent/50">
-            <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full flex items-center justify-center">
-              <span className="text-[10px] text-destructive-foreground font-bold">3</span>
-            </span>
-          </Button>
+          <NotificationBell />
 
           {/* Theme Toggle */}
           <Button 
