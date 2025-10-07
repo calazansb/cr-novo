@@ -84,8 +84,8 @@ const ModernHeader = ({ className }: ModernHeaderProps) => {
             </div>
           </div>
 
-          {/* Notifications */}
-          <NotificationBell />
+          {/* Notifications - Temporariamente desabilitado até migration ser aprovada */}
+          {/* <NotificationBell /> */}
 
           {/* Theme Toggle */}
           <Button 
