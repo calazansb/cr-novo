@@ -56,6 +56,11 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [tabelaExiste, setTabelaExiste] = useState<boolean | null>(null);
   const [arquivosResposta, setArquivosResposta] = useState<File[]>([]);
   const [uploadingResposta, setUploadingResposta] = useState(false);
+  
+  // Novos estados para filtros avançados
+  const [filtroNome, setFiltroNome] = useState('');
+  const [filtroDataInicio, setFiltroDataInicio] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
 
   // Verificar se tabela existe
   const verificarTabela = async () => {
@@ -89,7 +94,31 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       verificarTabela();
     }
   }, []);
-  const solicitacoesFiltradas = filtroStatus === 'todos' ? solicitacoes : solicitacoes.filter(s => s.status === filtroStatus);
+  // Aplicar todos os filtros
+  const solicitacoesFiltradas = solicitacoes.filter(s => {
+    // Filtro por status
+    if (filtroStatus !== 'todos' && s.status !== filtroStatus) return false;
+    
+    // Filtro por nome do solicitante
+    if (filtroNome && !s.nome_solicitante.toLowerCase().includes(filtroNome.toLowerCase())) return false;
+    
+    // Filtro por data de início
+    if (filtroDataInicio) {
+      const dataCriacao = new Date(s.data_criacao);
+      const dataInicio = new Date(filtroDataInicio);
+      if (dataCriacao < dataInicio) return false;
+    }
+    
+    // Filtro por data de fim
+    if (filtroDataFim) {
+      const dataCriacao = new Date(s.data_criacao);
+      const dataFim = new Date(filtroDataFim);
+      dataFim.setHours(23, 59, 59, 999); // Incluir todo o dia
+      if (dataCriacao > dataFim) return false;
+    }
+    
+    return true;
+  });
   const estatisticas = {
     total: solicitacoes.length,
     pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
@@ -271,32 +300,94 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
         </Card>
       </div>
 
-      {/* Filtros e Exportação */}
-      <div className="flex justify-between items-center mb-6">
-        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filtrar por status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="pendente">Pendentes</SelectItem>
-            <SelectItem value="em_andamento">Em Andamento</SelectItem>
-            <SelectItem value="concluida">Concluídas</SelectItem>
-            <SelectItem value="cancelada">Canceladas</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Filtros Avançados */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Filtros</CardTitle>
+          <CardDescription>Refine sua busca por solicitações</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Filtro por Status */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filtrar por status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="pendente">Pendentes</SelectItem>
+                  <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                  <SelectItem value="concluida">Concluídas</SelectItem>
+                  <SelectItem value="cancelada">Canceladas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <Button onClick={exportarParaCSV} className="flex items-center gap-2">
-          <Download className="h-4 w-5" />
-          Exportar CSV
-        </Button>
-        
-        {supabase && tabelaExiste && <Button variant="outline" onClick={() => {
-        console.log('🔍 Testando conexão Supabase...');
-        carregarSolicitacoes();
-      }}>
-            🔄 Recarregar
-          </Button>}
+            {/* Filtro por Nome */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nome do Solicitante</label>
+              <Input
+                placeholder="Buscar por nome..."
+                value={filtroNome}
+                onChange={(e) => setFiltroNome(e.target.value)}
+              />
+            </div>
+
+            {/* Filtro por Data Início */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Início</label>
+              <Input
+                type="date"
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+              />
+            </div>
+
+            {/* Filtro por Data Fim */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Fim</label>
+              <Input
+                type="date"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="flex justify-between items-center mt-4 pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setFiltroStatus('todos');
+                setFiltroNome('');
+                setFiltroDataInicio('');
+                setFiltroDataFim('');
+              }}
+            >
+              Limpar Filtros
+            </Button>
+            
+            <div className="flex gap-2">
+              {supabase && tabelaExiste && (
+                <Button variant="outline" onClick={carregarSolicitacoes}>
+                  🔄 Recarregar
+                </Button>
+              )}
+              <Button onClick={exportarParaCSV} className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Exportar CSV
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contador de Resultados */}
+      <div className="mb-4 text-sm text-muted-foreground">
+        Exibindo {solicitacoesFiltradas.length} de {solicitacoes.length} solicitações
       </div>
 
       {/* Lista de Solicitações */}
