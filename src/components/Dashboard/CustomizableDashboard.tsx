@@ -111,6 +111,12 @@ export const CustomizableDashboard = () => {
   const [draggedWidget, setDraggedWidget] = useState<string | null>(null);
   const [stats, setStats] = useState({ pending: 0, completed: 0, total: 0 });
   const [recentRequests, setRecentRequests] = useState<any[]>([]);
+  
+  // Filtros
+  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
+  const [filtroNome, setFiltroNome] = useState('todos');
+  const [filtroDataInicio, setFiltroDataInicio] = useState('');
+  const [filtroDataFim, setFiltroDataFim] = useState('');
 
   // Carregar widgets salvos
   useEffect(() => {
@@ -156,12 +162,36 @@ export const CustomizableDashboard = () => {
       .from('solicitacoes_controladoria')
       .select('*')
       .order('data_criacao', { ascending: false })
-      .limit(5);
+      .limit(100); // Carrega mais para filtrar
 
     if (!error && data) {
       setRecentRequests(data);
     }
   };
+  
+  // Lista de solicitantes únicos
+  const solicitantesUnicos = Array.from(new Set(recentRequests.map(s => s.nome_solicitante))).sort();
+  
+  // Aplicar filtros
+  const requestsFiltradas = recentRequests.filter(req => {
+    if (filtroStatus !== 'todos' && req.status !== filtroStatus) return false;
+    if (filtroNome !== 'todos' && req.nome_solicitante !== filtroNome) return false;
+    
+    if (filtroDataInicio) {
+      const dataCriacao = new Date(req.data_criacao);
+      const dataInicio = new Date(filtroDataInicio);
+      if (dataCriacao < dataInicio) return false;
+    }
+    
+    if (filtroDataFim) {
+      const dataCriacao = new Date(req.data_criacao);
+      const dataFim = new Date(filtroDataFim);
+      dataFim.setHours(23, 59, 59, 999);
+      if (dataCriacao > dataFim) return false;
+    }
+    
+    return true;
+  }).slice(0, 5); // Mostra apenas os 5 primeiros após filtrar
 
   const addWidget = (template: WidgetTemplate) => {
     const newWidget: Widget = {
@@ -287,77 +317,120 @@ export const CustomizableDashboard = () => {
 
       case 'recent-requests':
         return (
-          <ScrollArea className="h-64">
-            <div className="space-y-2">
-              {recentRequests.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Nenhuma solicitação encontrada
-                </p>
-              ) : (
-                recentRequests.map((req) => (
-                  <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <p className="font-semibold text-sm">{req.codigo_unico}</p>
-                          <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
-                            {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-                          <p><span className="font-medium">Processo:</span> {req.numero_processo || 'N/A'}</p>
-                          <p><span className="font-medium">Cliente:</span> {req.cliente}</p>
-                          <p><span className="font-medium">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
-                          <div className="flex gap-1">
-                            {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
-                                📎 {req.anexos.length}
-                              </Badge>
-                            )}
-                            {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
-                                📤 {req.anexos_resposta.length}
-                              </Badge>
-                            )}
+          <div className="space-y-3">
+            {/* Filtros */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <select 
+                className="text-xs border rounded px-2 py-1 bg-background"
+                value={filtroStatus}
+                onChange={(e) => setFiltroStatus(e.target.value)}
+              >
+                <option value="todos">Todos Status</option>
+                <option value="pendente">Pendente</option>
+                <option value="concluida">Concluída</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
+              
+              <select 
+                className="text-xs border rounded px-2 py-1 bg-background"
+                value={filtroNome}
+                onChange={(e) => setFiltroNome(e.target.value)}
+              >
+                <option value="todos">Todos Solicitantes</option>
+                {solicitantesUnicos.map(nome => (
+                  <option key={nome} value={nome}>{nome}</option>
+                ))}
+              </select>
+              
+              <input
+                type="date"
+                className="text-xs border rounded px-2 py-1 bg-background"
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                placeholder="Data início"
+              />
+              
+              <input
+                type="date"
+                className="text-xs border rounded px-2 py-1 bg-background"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+                placeholder="Data fim"
+              />
+            </div>
+            
+            <ScrollArea className="h-56">
+              <div className="space-y-2">
+                {requestsFiltradas.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhuma solicitação encontrada
+                  </p>
+                ) : (
+                  requestsFiltradas.map((req) => (
+                    <div key={req.id} className="p-2 border rounded-lg hover:bg-muted/50 transition-colors space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold text-sm">{req.codigo_unico}</p>
+                            <Badge variant={req.status === 'pendente' ? 'secondary' : req.status === 'concluida' ? 'default' : 'destructive'} className="text-xs">
+                              {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                            </Badge>
                           </div>
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                            <p><span className="font-medium">Processo:</span> {req.numero_processo || 'N/A'}</p>
+                            <p><span className="font-medium">Cliente:</span> {req.cliente}</p>
+                            <p><span className="font-medium">Prazo:</span> {req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</p>
+                            <div className="flex gap-1">
+                              {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-blue-600 border-blue-300">
+                                  📎 {req.anexos.length}
+                                </Badge>
+                              )}
+                              {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                                <Badge variant="outline" className="text-xs px-1 py-0 h-4 text-green-600 border-green-300">
+                                  📤 {req.anexos_resposta.length}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
+                          {req.ultima_modificacao_em && (
+                            <p className="text-xs text-muted-foreground italic">
+                              Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{req.objeto_solicitacao}</p>
-                        {req.ultima_modificacao_em && (
-                          <p className="text-xs text-muted-foreground italic">
-                            Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 h-7 text-xs"
+                          onClick={() => {
+                            window.dispatchEvent(new CustomEvent('view-request', { detail: req.id }));
+                          }}
+                        >
+                          <Eye className="mr-1 h-3 w-3" />
+                          Ver
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="flex-1 h-7 text-xs"
+                          onClick={() => {
+                            window.dispatchEvent(new CustomEvent('edit-request', { detail: req.id }));
+                          }}
+                        >
+                          <Edit className="mr-1 h-3 w-3" />
+                          Editar
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1 h-7 text-xs"
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent('view-request', { detail: req.id }));
-                        }}
-                      >
-                        <Eye className="mr-1 h-3 w-3" />
-                        Ver
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="flex-1 h-7 text-xs"
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent('edit-request', { detail: req.id }));
-                        }}
-                      >
-                        <Edit className="mr-1 h-3 w-3" />
-                        Editar
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </ScrollArea>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         );
 
       case 'quick-actions':
