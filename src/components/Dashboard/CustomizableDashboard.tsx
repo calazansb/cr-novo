@@ -30,6 +30,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { formatCodigo } from '@/lib/utils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 // Tipos de widgets disponíveis
 type WidgetType = 
@@ -408,93 +410,100 @@ export const CustomizableDashboard = () => {
             </div>
             
             <ScrollArea className="h-56">
-              <div className="space-y-4">
-                {requestsFiltradas.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Nenhuma solicitação encontrada
-                  </p>
-                ) : (
-                  requestsFiltradas.map((req) => (
-                    <div key={req.id} className="p-3 border-2 rounded-lg hover:shadow-md transition-all bg-card shadow-md relative">
-                      <div className="flex items-start gap-3">
-                        {/* Coluna esquerda: Informações principais */}
-                        <div className="flex-1 space-y-0.5 pr-32">
-                          <p className="font-bold text-lg">{req.codigo_unico}</p>
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-base">
-                            <p><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{req.numero_processo || 'N/A'}</span></p>
-                            <p><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{req.cliente}</span></p>
-                            <p><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{req.prazo_retorno ? new Date(req.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></p>
-                            <p><span className="font-bold text-foreground">Solicitante:</span> <span className="text-foreground">{req.nome_solicitante}</span></p>
+              {requestsFiltradas.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Nenhuma solicitação encontrada
+                </p>
+              ) : (
+                <div className="border rounded-lg overflow-hidden bg-background">
+                  {/* Header da Tabela */}
+                  <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-muted/50 border-b font-medium text-xs text-muted-foreground">
+                    <div className="col-span-3">Código</div>
+                    <div className="col-span-3">Cliente</div>
+                    <div className="col-span-2">Status</div>
+                    <div className="col-span-2">Prazo</div>
+                    <div className="col-span-2 text-right">Ações</div>
+                  </div>
+                  
+                  {/* Linhas da Tabela */}
+                  {requestsFiltradas.map((req, index) => (
+                    <div 
+                      key={req.id} 
+                      className={`grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-muted/30 transition-colors ${
+                        index !== requestsFiltradas.length - 1 ? 'border-b' : ''
+                      }`}
+                    >
+                      {/* Código */}
+                      <div className="col-span-3 font-medium text-sm">
+                        {req.codigo_unico}
+                      </div>
+                      
+                      {/* Cliente */}
+                      <div className="col-span-3 text-sm text-muted-foreground truncate">
+                        {req.cliente}
+                      </div>
+                      
+                      {/* Status */}
+                      <div className="col-span-2">
+                        <Badge 
+                          className={`text-xs px-2 py-0.5 ${
+                            req.status === 'concluida' 
+                              ? 'bg-green-600 hover:bg-green-700 text-white' 
+                              : req.status === 'pendente' 
+                              ? 'bg-red-600 hover:bg-red-700 text-white' 
+                              : 'bg-gray-600 hover:bg-gray-700 text-white'
+                          }`}
+                        >
+                          {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
+                        </Badge>
+                      </div>
+                      
+                      {/* Prazo */}
+                      <div className="col-span-2 text-sm text-muted-foreground">
+                        {req.prazo_retorno ? format(new Date(req.prazo_retorno), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
+                      </div>
+                      
+                      {/* Ações */}
+                      <div className="col-span-2 flex gap-1 justify-end items-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => setSolicitacaoVisualizando(req)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => {
+                            setSolicitacaoEditando(req);
+                            setNovoStatus(req.status);
+                            setObservacoes(req.observacoes || '');
+                          }}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                          <div className="flex items-center gap-0.5 text-xs text-blue-600" title={`${req.anexos.length} anexo(s)`}>
+                            <Paperclip className="h-3.5 w-3.5" />
+                            <span>{req.anexos.length}</span>
                           </div>
-                          <p className="text-sm text-muted-foreground line-clamp-1 font-medium pt-0.5">{req.objeto_solicitacao}</p>
-                          {req.ultima_modificacao_em && (
-                            <p className="text-xs text-muted-foreground italic pt-0.5">
-                              Modificado: {new Date(req.ultima_modificacao_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Coluna direita: Status + Botões + Badges */}
-                        <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                          {/* Badge de status */}
-                          <Badge 
-                            variant={req.status === 'pendente' ? 'destructive' : req.status === 'concluida' ? 'default' : 'secondary'} 
-                            className={`text-sm px-2.5 py-0.5 h-6 font-semibold ${
-                              req.status === 'concluida' 
-                                ? 'bg-green-600 hover:bg-green-700 text-white' 
-                                : req.status === 'pendente' 
-                                ? 'bg-red-600 hover:bg-red-700 text-white' 
-                                : ''
-                            }`}
-                          >
-                            {req.status === 'pendente' ? 'Pendente' : req.status === 'concluida' ? 'Concluída' : 'Cancelada'}
-                          </Badge>
-
-                          {/* Botões de ação */}
-                          <div className="flex gap-1">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-7 px-3 text-sm"
-                              onClick={() => setSolicitacaoVisualizando(req)}
-                            >
-                              Ver
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="h-7 px-3 text-sm"
-                              onClick={() => {
-                                setSolicitacaoEditando(req);
-                                setNovoStatus(req.status);
-                                setObservacoes(req.observacoes || '');
-                              }}
-                            >
-                              Editar
-                            </Button>
+                        )}
+                        {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                          <div className="flex items-center gap-0.5 text-xs text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
+                            <Upload className="h-3.5 w-3.5" />
+                            <span>{req.anexos_resposta.length}</span>
                           </div>
-
-                          {/* Badges de anexos */}
-                          <div className="flex flex-col gap-1 items-end">
-                            {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-400 flex items-center gap-1">
-                                <Paperclip className="h-3 w-3" />
-                                {req.anexos.length}
-                              </Badge>
-                            )}
-                            {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-400 flex items-center gap-1">
-                                <Upload className="h-3 w-3" />
-                                {req.anexos_resposta.length}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </ScrollArea>
           </div>
         );

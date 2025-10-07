@@ -554,257 +554,294 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
         </div>
       </div>
 
-      {/* Lista de Solicitações */}
-      {loading ? <div className="text-center py-8">Carregando solicitações...</div> : <div className="space-y-4">
-          {solicitacoesFiltradas.map(solicitacao => <Card key={solicitacao.id} className="hover:shadow-lg transition-all shadow-md border-2 relative">
-              <CardHeader className="pb-2 pt-3">
-                <div className="flex items-start gap-3">
-                  {/* Coluna esquerda: Informações principais */}
-                  <div className="flex-1 space-y-0.5 pr-32">
-                    <CardTitle className="text-lg font-bold">{formatCodigo(solicitacao.codigo_unico)}</CardTitle>
-                    <div className="space-y-0.5 text-base">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                        <div className="min-w-0"><span className="font-bold text-foreground">Processo:</span> <span className="text-foreground">{solicitacao.numero_processo || 'N/A'}</span></div>
-                        <div className="min-w-0"><span className="font-bold text-foreground">Prazo:</span> <span className="text-foreground">{solicitacao.prazo_retorno ? new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR') : 'N/A'}</span></div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                        <div className="min-w-0"><span className="font-bold text-foreground">Cliente:</span> <span className="text-foreground">{solicitacao.cliente}</span></div>
-                        <div className="min-w-0"><span className="font-bold text-foreground">Solicitante:</span> <span className="text-foreground">{solicitacao.nome_solicitante}</span></div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1 font-medium pt-0.5">{solicitacao.objeto_solicitacao}</p>
-                    {(solicitacao as any).ultima_modificacao_em && (
-                      <p className="text-xs text-muted-foreground italic pt-0.5">
-                        <span className="font-semibold">Modificado:</span> {new Date((solicitacao as any).ultima_modificacao_em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
-                      </p>
+      {/* Lista de Solicitações em Formato de Tabela */}
+      {loading ? (
+        <div className="text-center py-8">Carregando solicitações...</div>
+      ) : (
+        <div className="border rounded-lg overflow-hidden bg-background">
+          {/* Header da Tabela */}
+          <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
+            <div className="col-span-2">Código</div>
+            <div className="col-span-2">Cliente</div>
+            <div className="col-span-2">Processo</div>
+            <div className="col-span-2">Status</div>
+            <div className="col-span-2">Data</div>
+            <div className="col-span-2 text-right">Ações</div>
+          </div>
+          
+          {/* Linhas da Tabela */}
+          {solicitacoesFiltradas.length === 0 ? (
+            <div className="px-6 py-12 text-center text-muted-foreground">
+              Nenhuma solicitação encontrada
+            </div>
+          ) : (
+            solicitacoesFiltradas.map((solicitacao, index) => (
+              <div 
+                key={solicitacao.id} 
+                className={`grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors ${
+                  index !== solicitacoesFiltradas.length - 1 ? 'border-b' : ''
+                }`}
+              >
+                {/* Código */}
+                <div className="col-span-2">
+                  <div className="font-semibold text-sm">{formatCodigo(solicitacao.codigo_unico)}</div>
+                  <div className="text-xs text-muted-foreground">{solicitacao.nome_solicitante}</div>
+                </div>
+                
+                {/* Cliente */}
+                <div className="col-span-2">
+                  <div className="text-sm">{solicitacao.cliente}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1">
+                    {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                      <span className="flex items-center gap-0.5 text-blue-600" title={`${solicitacao.anexos.length} anexo(s)`}>
+                        <Paperclip className="h-3 w-3" />
+                        {solicitacao.anexos.length}
+                      </span>
+                    )}
+                    {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
+                      <span className="flex items-center gap-0.5 text-green-600" title={`${(solicitacao as any).anexos_resposta.length} resposta(s)`}>
+                        <Upload className="h-3 w-3" />
+                        {(solicitacao as any).anexos_resposta.length}
+                      </span>
                     )}
                   </div>
-
-                  {/* Coluna direita: Status + Botões + Badges */}
-                  <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                    {/* Badge de status */}
-                    <Badge 
-                      className={`text-sm px-2.5 py-0.5 h-6 font-semibold ${
-                        solicitacao.status === 'concluida' 
-                          ? 'bg-green-600 hover:bg-green-700 text-white' 
-                          : solicitacao.status === 'pendente' 
-                          ? 'bg-red-600 hover:bg-red-700 text-white' 
-                          : 'bg-gray-600 hover:bg-gray-700 text-white'
-                      }`}
-                    >
-                      {statusLabels[solicitacao.status]}
-                    </Badge>
-
-                    {/* Botões de ação */}
-                    <div className="flex gap-1 flex-wrap justify-end">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-7 px-3 text-sm">
-                            Ver
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
-                            <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="font-semibold">Solicitante:</label>
-                              <p>{solicitacao.nome_solicitante}</p>
-                            </div>
-                            <div>
-                              <label className="font-semibold">Cliente:</label>
-                              <p>{solicitacao.cliente}</p>
-                            </div>
-                            <div>
-                              <label className="font-semibold">Processo:</label>
-                              <p>{solicitacao.numero_processo || 'Não informado'}</p>
-                            </div>
-                            <div>
-                              <label className="font-semibold">Objeto:</label>
-                              <p>{solicitacao.objeto_solicitacao}</p>
-                            </div>
-                            <div>
-                              <label className="font-semibold">Descrição:</label>
-                              <p className="whitespace-pre-wrap">{solicitacao.descricao_detalhada}</p>
-                            </div>
-                            
-                            {/* Seção de Arquivos Anexados pelo Advogado */}
-                            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                              <label className="font-semibold flex items-center gap-2 text-blue-700 dark:text-blue-400">
-                                <Paperclip className="h-4 w-4" />
-                                Arquivos Anexados
-                              </label>
-                              {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 ? (
-                                <div className="space-y-2 mt-3">
-                                  {solicitacao.anexos.map((url: any, idx: number) => (
-                                    <a
-                                      key={idx}
-                                      href={url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-800 dark:hover:text-blue-300 font-medium"
-                                    >
-                                      <ExternalLink className="h-4 w-4" />
-                                      Abrir Arquivo {idx + 1}
-                                    </a>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo anexado</p>
-                              )}
-                            </div>
-
-                            {/* Seção de Arquivos de Resposta da Controladoria */}
-                            <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-                              <label className="font-semibold flex items-center gap-2 text-green-700 dark:text-green-400">
-                                <Upload className="h-4 w-4" />
-                                Arquivos de Resposta
-                              </label>
-                              {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 ? (
-                                <div className="space-y-2 mt-3">
-                                  {(solicitacao as any).anexos_resposta.map((url: any, idx: number) => (
-                                    <a
-                                      key={idx}
-                                      href={url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline hover:text-green-800 dark:hover:text-green-300 font-medium"
-                                    >
-                                      <ExternalLink className="h-4 w-4" />
-                                      Abrir Arquivo de Resposta {idx + 1}
-                                    </a>
-                                  ))}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo de resposta anexado</p>
-                              )}
-                            </div>
-
-                            <div>
-                              <label className="font-semibold">Data de Criação:</label>
-                              <p>{new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}</p>
-                            </div>
-                            {solicitacao.observacoes && <div>
-                                <label className="font-semibold">Observações:</label>
-                                <p className="whitespace-pre-wrap">{solicitacao.observacoes}</p>
-                              </div>}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-7 px-3 text-sm" onClick={() => {
-                      setSolicitacaoEditando(solicitacao);
-                      setNovoStatus(solicitacao.status);
-                      setObservacoes(solicitacao.observacoes || '');
-                      setArquivosResposta([]);
-                    }}>
-                            Editar
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Editar Status - {solicitacao.codigo_unico}</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <label className="block text-sm font-medium mb-2">Status:</label>
-                              <Select value={novoStatus} onValueChange={setNovoStatus}>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                 <SelectContent>
-                                  <SelectItem value="pendente">Pendente</SelectItem>
-                                  <SelectItem value="concluida">Concluída</SelectItem>
-                                  <SelectItem value="cancelada">Cancelada</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium mb-2">Observações:</label>
-                              <Textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Adicione observações sobre o status..." />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                                <Paperclip className="h-4 w-4" />
-                                Anexar Arquivos de Resposta (Opcional)
-                              </label>
-                              <FileUpload
-                                files={arquivosResposta}
-                                onFilesChange={setArquivosResposta}
-                                maxFiles={5}
-                                maxSize={10}
-                                acceptedTypes={['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.xls', '.xlsx']}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Máximo 5 arquivos, 10MB cada
-                              </p>
-                            </div>
-                            <Button 
-                              onClick={handleAtualizarStatus} 
-                              className="w-full"
-                              disabled={uploadingResposta}
-                            >
-                              {uploadingResposta ? 'Enviando arquivos...' : 'Atualizar Status'}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                      {isAdmin && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
-                              Excluir
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Tem certeza que deseja excluir a solicitação <strong>{solicitacao.codigo_unico}</strong>?
-                                <br />
-                                Esta ação não pode ser desfeita.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => deletarSolicitacao(solicitacao.id)} className="bg-red-600 hover:bg-red-700">
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-
-                    {/* Badges de anexos */}
-                    <div className="flex flex-col gap-1 items-end">
-                      {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-blue-600 border-blue-400 flex items-center gap-1">
-                          <Paperclip className="h-3 w-3" />
-                          {solicitacao.anexos.length}
-                        </Badge>
-                      )}
-                      {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 text-green-600 border-green-400 flex items-center gap-1">
-                          <Upload className="h-3 w-3" />
-                          {(solicitacao as any).anexos_resposta.length}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
                 </div>
-              </CardHeader>
-            </Card>)}
-          
-          {solicitacoesFiltradas.length === 0 && <Card>
-              <CardContent className="text-center py-8">
-                <p className="text-muted-foreground">Nenhuma solicitação encontrada.</p>
-              </CardContent>
-            </Card>}
-        </div>}
+                
+                {/* Processo */}
+                <div className="col-span-2 text-sm text-muted-foreground truncate">
+                  {solicitacao.numero_processo || 'N/A'}
+                </div>
+                
+                {/* Status */}
+                <div className="col-span-2">
+                  <Badge 
+                    className={`text-xs px-2.5 py-0.5 ${
+                      solicitacao.status === 'concluida' 
+                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        : solicitacao.status === 'pendente' 
+                        ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : 'bg-gray-600 hover:bg-gray-700 text-white'
+                    }`}
+                  >
+                    {statusLabels[solicitacao.status]}
+                  </Badge>
+                </div>
+                
+                {/* Data */}
+                <div className="col-span-2 text-sm text-muted-foreground">
+                  {new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}
+                </div>
+                
+                {/* Ações */}
+                <div className="col-span-2 flex gap-1 justify-end items-center">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-primary/10"
+                        title="Ver detalhes"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Detalhes da Solicitação {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
+                        <DialogDescription>Informações completas da solicitação e anexos.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="font-semibold">Solicitante:</label>
+                          <p>{solicitacao.nome_solicitante}</p>
+                        </div>
+                        <div>
+                          <label className="font-semibold">Cliente:</label>
+                          <p>{solicitacao.cliente}</p>
+                        </div>
+                        <div>
+                          <label className="font-semibold">Processo:</label>
+                          <p>{solicitacao.numero_processo || 'Não informado'}</p>
+                        </div>
+                        <div>
+                          <label className="font-semibold">Objeto:</label>
+                          <p>{solicitacao.objeto_solicitacao}</p>
+                        </div>
+                        <div>
+                          <label className="font-semibold">Descrição:</label>
+                          <p className="whitespace-pre-wrap">{solicitacao.descricao_detalhada}</p>
+                        </div>
+                        
+                        {/* Seção de Arquivos Anexados pelo Advogado */}
+                        <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <label className="font-semibold flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                            <Paperclip className="h-4 w-4" />
+                            Arquivos Anexados
+                          </label>
+                          {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 ? (
+                            <div className="space-y-2 mt-3">
+                              {solicitacao.anexos.map((url: any, idx: number) => (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  Abrir Arquivo {idx + 1}
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo anexado</p>
+                          )}
+                        </div>
+
+                        {/* Seção de Arquivos de Resposta da Controladoria */}
+                        <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                          <label className="font-semibold flex items-center gap-2 text-green-700 dark:text-green-400">
+                            <Upload className="h-4 w-4" />
+                            Arquivos de Resposta
+                          </label>
+                          {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 ? (
+                            <div className="space-y-2 mt-3">
+                              {(solicitacao as any).anexos_resposta.map((url: any, idx: number) => (
+                                <a
+                                  key={idx}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 hover:underline hover:text-green-800 dark:hover:text-green-300 font-medium"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  Abrir Arquivo de Resposta {idx + 1}
+                                </a>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground mt-2">Nenhum arquivo de resposta anexado</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="font-semibold">Data de Criação:</label>
+                          <p>{new Date(solicitacao.data_criacao).toLocaleString('pt-BR')}</p>
+                        </div>
+                        {solicitacao.observacoes && (
+                          <div>
+                            <label className="font-semibold">Observações:</label>
+                            <p className="whitespace-pre-wrap">{solicitacao.observacoes}</p>
+                          </div>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-primary/10"
+                        onClick={() => {
+                          setSolicitacaoEditando(solicitacao);
+                          setNovoStatus(solicitacao.status);
+                          setObservacoes(solicitacao.observacoes || '');
+                          setArquivosResposta([]);
+                        }}
+                        title="Editar"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Editar Status - {solicitacao.codigo_unico}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Status:</label>
+                          <Select value={novoStatus} onValueChange={setNovoStatus}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pendente">Pendente</SelectItem>
+                              <SelectItem value="concluida">Concluída</SelectItem>
+                              <SelectItem value="cancelada">Cancelada</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Observações:</label>
+                          <Textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Adicione observações sobre o status..." />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                            <Paperclip className="h-4 w-4" />
+                            Anexar Arquivos de Resposta (Opcional)
+                          </label>
+                          <FileUpload
+                            files={arquivosResposta}
+                            onFilesChange={setArquivosResposta}
+                            maxFiles={5}
+                            maxSize={10}
+                            acceptedTypes={['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.xls', '.xlsx']}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Máximo 5 arquivos, 10MB cada
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={handleAtualizarStatus} 
+                          className="w-full"
+                          disabled={uploadingResposta}
+                        >
+                          {uploadingResposta ? 'Enviando arquivos...' : 'Atualizar Status'}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  {isAdmin && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir a solicitação <strong>{solicitacao.codigo_unico}</strong>?
+                            <br />
+                            Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deletarSolicitacao(solicitacao.id)} className="bg-red-600 hover:bg-red-700">
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Dialog de Edição Controlado */}
       
       {/* Dialog de Edição Controlado */}
       {solicitacaoEditando && (
