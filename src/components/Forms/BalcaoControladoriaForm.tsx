@@ -387,7 +387,7 @@ const BalcaoControladoriaForm = () => {
           )}
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
             {/* Nome do Solicitante - Select */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-foreground">
@@ -472,20 +472,17 @@ const BalcaoControladoriaForm = () => {
             />
 
             {/* Prazo Para Retorno */}
-            <div className="md:col-span-1">
-            </div>
+            <DateField
+              label="Prazo Para Retorno"
+              id="prazoRetorno"
+              value={formData.prazoRetorno}
+              onChange={(value) => handleInputChange('prazoRetorno', value)}
+              placeholder="Selecione o prazo para retorno"
+              required
+              error={errors.prazoRetorno}
+              success={validatedFields.has('prazoRetorno')}
+            />
           </div>
-
-          <DateField
-            label="Prazo Para Retorno"
-            id="prazoRetorno"
-            value={formData.prazoRetorno}
-            onChange={(value) => handleInputChange('prazoRetorno', value)}
-            placeholder="Selecione o prazo para retorno"
-            required
-            error={errors.prazoRetorno}
-            success={validatedFields.has('prazoRetorno')}
-          />
 
           <FormField
             type="textarea"
