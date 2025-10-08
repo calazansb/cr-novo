@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Lightbulb } from 'lucide-react';
 import { useAuth } from '@/components/Auth/AuthProvider';
@@ -10,12 +10,13 @@ interface Frase {
   autor: string;
 }
 
-const TWELVE_HOURS = 12 * 60 * 60 * 1000; // 12 horas em milissegundos
+const SIX_HOURS = 6 * 60 * 60 * 1000; // 6 horas em milissegundos
 
 export const WelcomeQuote = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentQuote, setCurrentQuote] = useState<Frase | null>(null);
   const { user } = useAuth();
+  const hasShownOnLogin = useRef(false);
 
   const getRandomQuote = (excludeId?: number): { quote: Frase; id: number } => {
     const frases: Frase[] = frasesData;
@@ -29,12 +30,12 @@ export const WelcomeQuote = () => {
     return { quote: frases[randomIndex], id: randomIndex };
   };
 
-  const shouldUpdateQuote = (): boolean => {
-    const lastUpdate = localStorage.getItem('quote_last_update');
-    if (!lastUpdate) return true;
+  const shouldShowQuote = (): boolean => {
+    const lastShown = localStorage.getItem('quote_last_shown');
+    if (!lastShown) return true;
 
-    const timeSinceUpdate = Date.now() - parseInt(lastUpdate);
-    return timeSinceUpdate >= TWELVE_HOURS;
+    const timeSinceLastShown = Date.now() - parseInt(lastShown);
+    return timeSinceLastShown >= SIX_HOURS;
   };
 
   const updateQuote = () => {
@@ -52,24 +53,23 @@ export const WelcomeQuote = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      // Verificar se passou 12 horas ou se é um novo login
-      const lastLoginTime = localStorage.getItem('last_login_time');
-      const currentLoginTime = Date.now().toString();
-      const isNewLogin = lastLoginTime !== currentLoginTime;
-
-      if (shouldUpdateQuote() || isNewLogin) {
+    // Detectar login: user passou de null para não-null
+    if (user && !hasShownOnLogin.current) {
+      hasShownOnLogin.current = true;
+      
+      // Verificar se deve mostrar (novo login ou passou 6 horas)
+      if (shouldShowQuote()) {
         const newQuote = updateQuote();
         setCurrentQuote(newQuote);
         setIsOpen(true);
         
-        // Atualizar timestamp do login
-        localStorage.setItem('last_login_time', currentLoginTime);
+        // Atualizar timestamp da última exibição
+        localStorage.setItem('quote_last_shown', Date.now().toString());
         
         // Fechar automaticamente após 9 segundos
         setTimeout(() => setIsOpen(false), 9000);
       } else {
-        // Carregar frase atual
+        // Carregar frase atual sem mostrar
         const stored = localStorage.getItem('current_quote');
         if (stored) {
           setCurrentQuote(JSON.parse(stored));
@@ -78,16 +78,19 @@ export const WelcomeQuote = () => {
         }
       }
     }
+    
+    // Resetar flag quando user fizer logout
+    if (!user) {
+      hasShownOnLogin.current = false;
+    }
   }, [user]);
 
   if (!currentQuote) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent 
         className="sm:max-w-[600px] border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-[#1e3a5f] to-slate-950 backdrop-blur-xl"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="relative py-8 px-6 text-center animate-fade-in">
           {/* Ícone de Inspiração */}
