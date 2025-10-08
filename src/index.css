@@ -65,12 +65,12 @@
     --input: 220 14% 96%;
     --ring: 213 69% 17%;
 
-    /* Chart Colors - Visualização de dados */
-    --chart-1: 213 69% 17%;
-    --chart-2: 142 76% 36%;
-    --chart-3: 263 70% 60%;
-    --chart-4: 45 93% 47%;
-    --chart-5: 0 84% 60%;
+    /* Chart Colors - Visualização de dados (tons institucionais) */
+    --chart-1: 215 25% 45%; /* Azul acinzentado */
+    --chart-2: 215 20% 55%; /* Azul claro neutro */
+    --chart-3: 210 15% 50%; /* Cinza azulado */
+    --chart-4: 220 15% 40%; /* Cinza escuro azulado */
+    --chart-5: 200 20% 48%; /* Azul petróleo */
 
     /* Radius - Sistema de arredondamento */
     --radius: 0.75rem;

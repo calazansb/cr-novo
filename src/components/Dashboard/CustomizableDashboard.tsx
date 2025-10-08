@@ -714,8 +714,11 @@ export const CustomizableDashboard = () => {
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-warning transition-all"
-                  style={{ width: `${stats.total ? (stats.pending / stats.total) * 100 : 0}%` }}
+                  className="h-full transition-all"
+                  style={{ 
+                    width: `${stats.total ? (stats.pending / stats.total) * 100 : 0}%`,
+                    backgroundColor: 'hsl(var(--chart-1))'
+                  }}
                 />
               </div>
             </div>
@@ -726,8 +729,11 @@ export const CustomizableDashboard = () => {
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-success transition-all"
-                  style={{ width: `${stats.total ? (stats.completed / stats.total) * 100 : 0}%` }}
+                  className="h-full transition-all"
+                  style={{ 
+                    width: `${stats.total ? (stats.completed / stats.total) * 100 : 0}%`,
+                    backgroundColor: 'hsl(var(--chart-2))'
+                  }}
                 />
               </div>
             </div>
