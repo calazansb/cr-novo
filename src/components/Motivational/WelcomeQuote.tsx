@@ -84,11 +84,11 @@ export const WelcomeQuote = () => {
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="sm:max-w-[600px] border-0 shadow-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+        className="sm:max-w-[1000px] max-w-[95vw] border-0 shadow-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className="relative py-8 px-6 text-center animate-fade-in">
+        <div className="relative py-12 px-10 text-center animate-fade-in">
           {/* Ícone de Inspiração */}
           <div className="flex justify-center mb-6 animate-scale-in">
             <div className="bg-gradient-to-br from-amber-400 to-amber-600 p-4 rounded-full shadow-lg">
@@ -97,24 +97,14 @@ export const WelcomeQuote = () => {
           </div>
 
           {/* Frase Principal */}
-          <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-2xl md:text-3xl font-serif leading-relaxed text-gray-800 dark:text-gray-200 font-medium">
+          <div className="space-y-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <p className="text-5xl md:text-6xl font-serif leading-relaxed text-gray-800 dark:text-gray-200 font-medium">
               "{currentQuote.texto}"
             </p>
 
             {/* Autor */}
-            <p className="text-lg italic text-gray-600 dark:text-gray-400 mt-4">
+            <p className="text-3xl md:text-4xl italic text-gray-600 dark:text-gray-400 mt-8">
               — {currentQuote.autor}
-            </p>
-          </div>
-
-          {/* Mensagem de Boas-Vindas */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 tracking-wide uppercase">
-              Bem-Vindo(a) ao Sistema do Calazans Rossi
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              Excelência · Ética · Alta Performance
             </p>
           </div>
         </div>
