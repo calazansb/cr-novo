@@ -531,9 +531,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 <PieChart>
                   <Pie
                     data={[
-                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
-                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
-                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
+                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#991b1b' },
+                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#1e3a8a' },
+                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#854d0e' }
                     ].filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
@@ -544,9 +544,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                     dataKey="value"
                   >
                     {[
-                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#ef4444' },
-                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#2563eb' },
-                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#eab308' }
+                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#991b1b' },
+                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#1e3a8a' },
+                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#854d0e' }
                     ].filter(item => item.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -587,9 +587,9 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       dataKey="value"
                     >
                       {[
-                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
-                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
-                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#166534' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#92400e' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#991b1b' }
                       ].filter(item => item.value > 0).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
