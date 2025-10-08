@@ -66,11 +66,11 @@
     --ring: 213 69% 17%;
 
     /* Chart Colors - Visualização de dados (tons institucionais) */
-    --chart-1: 215 25% 45%; /* Azul acinzentado */
-    --chart-2: 215 20% 55%; /* Azul claro neutro */
-    --chart-3: 210 15% 50%; /* Cinza azulado */
-    --chart-4: 220 15% 40%; /* Cinza escuro azulado */
-    --chart-5: 200 20% 48%; /* Azul petróleo */
+    --chart-1: 215 15% 50%; /* Cinza azulado neutro */
+    --chart-2: 210 12% 58%; /* Cinza claro azulado */
+    --chart-3: 220 10% 45%; /* Cinza médio */
+    --chart-4: 215 8% 38%; /* Cinza escuro */
+    --chart-5: 200 10% 52%; /* Cinza azul suave */
 
     /* Radius - Sistema de arredondamento */
     --radius: 0.75rem;
@@ -105,6 +105,13 @@
     --shadow-inner: inset 0 2px 4px 0 hsl(213 69% 17% / 0.05);
     --shadow-glow: 0 0 20px hsl(213 69% 35% / 0.3);
     --shadow-glow-lg: 0 0 40px hsl(213 69% 35% / 0.4);
+    
+    /* 3D Effects - Profundidade e dimensionalidade */
+    --shadow-3d: 0 2px 4px hsl(213 69% 17% / 0.1), 0 8px 16px hsl(213 69% 17% / 0.1);
+    --shadow-3d-lg: 0 4px 8px hsl(213 69% 17% / 0.12), 0 12px 24px hsl(213 69% 17% / 0.15);
+    --shadow-3d-inset: inset 0 2px 4px hsl(213 69% 17% / 0.1), inset 0 -2px 4px hsl(0 0% 100% / 0.1);
+    --shadow-raised: 0 1px 3px hsl(213 69% 17% / 0.12), 0 1px 2px hsl(213 69% 17% / 0.24);
+    --shadow-floating: 0 12px 28px hsl(213 69% 17% / 0.12), 0 2px 4px hsl(213 69% 17% / 0.05);
 
     /* Transitions - Interações suaves */
     --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
