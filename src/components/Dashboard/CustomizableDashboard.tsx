@@ -619,51 +619,52 @@ export const CustomizableDashboard = () => {
                       </div>
                       
                       {/* Coluna 7: Ações */}
-                      <div className="px-4 flex flex-col items-center justify-start">
-                        <div className="flex gap-1 justify-center items-center mb-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 hover:bg-primary/10"
-                            onClick={() => setSolicitacaoVisualizando(req)}
-                            title="Ver detalhes"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 hover:bg-primary/10"
-                            onClick={() => {
-                              setSolicitacaoEditando(req);
-                              setNovoStatus(req.status);
-                              setObservacoes(req.observacoes || '');
-                            }}
-                            title="Editar"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      <div className="px-4 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="flex gap-1 justify-center items-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-primary/10"
+                              onClick={() => setSolicitacaoVisualizando(req)}
+                              title="Ver detalhes"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-primary/10"
+                              onClick={() => {
+                                setSolicitacaoEditando(req);
+                                setNovoStatus(req.status);
+                                setObservacoes(req.observacoes || '');
+                              }}
+                              title="Editar"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
                         
-                        {/* Anexos abaixo dos botões */}
-                        <div className="flex gap-2 justify-center items-center text-xs">
-                          {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
-                            <span className="flex items-center gap-0.5 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
-                              <Paperclip className="h-3.5 w-3.5" />
-                              {req.anexos.length}
-                            </span>
-                          )}
-                          {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
-                            <span className="flex items-center gap-0.5 text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
-                              <Upload className="h-3.5 w-3.5" />
-                              {req.anexos_resposta.length}
-                            </span>
-                          )}
+                          {/* Anexos abaixo dos botões */}
+                          <div className="flex gap-2 justify-center items-center text-xs mt-2">
+                            {req.anexos && Array.isArray(req.anexos) && req.anexos.length > 0 && (
+                              <span className="flex items-center gap-0.5 text-blue-600" title={`${req.anexos.length} anexo(s)`}>
+                                <Paperclip className="h-3.5 w-3.5" />
+                                {req.anexos.length}
+                              </span>
+                            )}
+                            {req.anexos_resposta && Array.isArray(req.anexos_resposta) && req.anexos_resposta.length > 0 && (
+                              <span className="flex items-center gap-0.5 text-green-600" title={`${req.anexos_resposta.length} resposta(s)`}>
+                                <Upload className="h-3.5 w-3.5" />
+                                {req.anexos_resposta.length}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  ))
-                }
+                  ))}
                 </div>
               )}
             </ScrollArea>
@@ -1033,51 +1034,53 @@ export const CustomizableDashboard = () => {
                   </div>
                   
                   {/* Coluna 7: Ações */}
-                  <div className="px-4 flex flex-col items-center justify-start">
-                    <div className="flex gap-1 justify-center items-center mb-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-primary/10"
-                        onClick={() => setSolicitacaoVisualizando(solicitacao)}
-                        title="Ver detalhes"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-primary/10"
-                        onClick={() => {
-                          setSolicitacaoEditando(solicitacao);
-                          setNovoStatus(solicitacao.status);
-                          setObservacoes(solicitacao.observacoes || '');
-                        }}
-                        title="Editar"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
+                  <div className="px-4 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex gap-1 justify-center items-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => setSolicitacaoVisualizando(solicitacao)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-primary/10"
+                          onClick={() => {
+                            setSolicitacaoEditando(solicitacao);
+                            setNovoStatus(solicitacao.status);
+                            setObservacoes(solicitacao.observacoes || '');
+                          }}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
                     
-                    {/* Anexos abaixo dos botões */}
-                    <div className="flex gap-2 justify-center items-center text-xs">
-                      {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
-                        <span className="flex items-center gap-0.5 text-blue-600" title={`${solicitacao.anexos.length} anexo(s)`}>
-                          <Paperclip className="h-3.5 w-3.5" />
-                          {solicitacao.anexos.length}
-                        </span>
-                      )}
-                      {solicitacao.anexos_resposta && Array.isArray(solicitacao.anexos_resposta) && solicitacao.anexos_resposta.length > 0 && (
-                        <span className="flex items-center gap-0.5 text-green-600" title={`${solicitacao.anexos_resposta.length} resposta(s)`}>
-                          <Upload className="h-3.5 w-3.5" />
-                          {solicitacao.anexos_resposta.length}
-                        </span>
-                      )}
+                      {/* Anexos abaixo dos botões */}
+                      <div className="flex gap-2 justify-center items-center text-xs mt-2">
+                        {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                          <span className="flex items-center gap-0.5 text-blue-600" title={`${solicitacao.anexos.length} anexo(s)`}>
+                            <Paperclip className="h-3.5 w-3.5" />
+                            {solicitacao.anexos.length}
+                          </span>
+                        )}
+                        {solicitacao.anexos_resposta && Array.isArray(solicitacao.anexos_resposta) && solicitacao.anexos_resposta.length > 0 && (
+                          <span className="flex items-center gap-0.5 text-green-600" title={`${solicitacao.anexos_resposta.length} resposta(s)`}>
+                            <Upload className="h-3.5 w-3.5" />
+                            {solicitacao.anexos_resposta.length}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
-              </div>
+            </div>
             )}
           </div>
         </CardContent>
