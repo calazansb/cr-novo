@@ -1096,14 +1096,50 @@ export const CustomizableDashboard = () => {
               </div>
             ) : (
             <div className="border rounded-lg overflow-hidden bg-background">
-              {/* Header da Tabela - igual ao DashboardControladoria */}
+              {/* Header da Tabela - CLICÁVEL para ordenar */}
               <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-                <div className="pr-4 border-r">Código / Processo / Objeto</div>
-                <div className="px-4 border-r text-center">Solicitante</div>
-                <div className="px-4 border-r text-center">Cliente</div>
-                <div className="px-4 border-r text-center">Data</div>
-                <div className="px-4 border-r text-center">Prazo</div>
-                <div className="px-4 border-r text-center">Status</div>
+                <button 
+                  className="pr-4 border-r text-left hover:text-foreground transition-colors flex items-center"
+                  onClick={() => handleSort('codigo')}
+                >
+                  Código / Processo / Objeto
+                  {renderSortIcon('codigo')}
+                </button>
+                <button 
+                  className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+                  onClick={() => handleSort('solicitante')}
+                >
+                  Solicitante
+                  {renderSortIcon('solicitante')}
+                </button>
+                <button 
+                  className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+                  onClick={() => handleSort('cliente')}
+                >
+                  Cliente
+                  {renderSortIcon('cliente')}
+                </button>
+                <button 
+                  className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+                  onClick={() => handleSort('data')}
+                >
+                  Data
+                  {renderSortIcon('data')}
+                </button>
+                <button 
+                  className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+                  onClick={() => handleSort('prazo')}
+                >
+                  Prazo
+                  {renderSortIcon('prazo')}
+                </button>
+                <button 
+                  className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                  {renderSortIcon('status')}
+                </button>
                 <div className="px-4 text-center">Ações</div>
               </div>
 
