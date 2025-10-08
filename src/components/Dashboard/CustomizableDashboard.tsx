@@ -24,7 +24,10 @@ import {
   Edit,
   Paperclip,
   ExternalLink,
-  Upload
+  Upload,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -127,6 +130,10 @@ export const CustomizableDashboard = () => {
   const [tempFiltroCliente, setTempFiltroCliente] = useState('todos');
   const [tempFiltroData, setTempFiltroData] = useState('');
   const [tempFiltroPrazo, setTempFiltroPrazo] = useState('');
+  
+  // Estado de ordenação
+  const [sortField, setSortField] = useState<'codigo' | 'solicitante' | 'cliente' | 'data' | 'prazo' | 'status' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
   // Dados para dropdowns
   const [advogados, setAdvogados] = useState<Array<{id: string, nome: string}>>([]);
@@ -258,6 +265,28 @@ export const CustomizableDashboard = () => {
   const solicitantesUnicos = Array.from(new Set(recentRequests.map(s => s.nome_solicitante))).sort();
   const clientesUnicos = Array.from(new Set(recentRequests.map(s => s.cliente))).sort();
   
+  // Função para ordenar solicitações
+  const handleSort = (field: 'codigo' | 'solicitante' | 'cliente' | 'data' | 'prazo' | 'status') => {
+    if (sortField === field) {
+      // Se já está ordenando por este campo, inverte a direção
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Novo campo, começa com ascendente
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Renderizar ícone de ordenação
+  const renderSortIcon = (field: 'codigo' | 'solicitante' | 'cliente' | 'data' | 'prazo' | 'status') => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-3.5 w-3.5 ml-1" /> 
+      : <ArrowDown className="h-3.5 w-3.5 ml-1" />;
+  };
+  
   // Aplicar filtros com dados das tabelas
   const requestsFiltradas = recentRequests.filter(req => {
     if (filtroStatus !== 'todos' && req.status !== filtroStatus) return false;
@@ -293,7 +322,50 @@ export const CustomizableDashboard = () => {
     }
     
     return true;
-  }).slice(0, 10);
+  })
+  // Aplicar ordenação
+  .sort((a, b) => {
+    if (!sortField) return 0;
+    
+    let aValue: any;
+    let bValue: any;
+    
+    switch (sortField) {
+      case 'codigo':
+        aValue = a.codigo_unico || '';
+        bValue = b.codigo_unico || '';
+        break;
+      case 'solicitante':
+        aValue = a.nome_solicitante || '';
+        bValue = b.nome_solicitante || '';
+        break;
+      case 'cliente':
+        aValue = a.cliente || '';
+        bValue = b.cliente || '';
+        break;
+      case 'data':
+        aValue = new Date(a.data_criacao).getTime();
+        bValue = new Date(b.data_criacao).getTime();
+        break;
+      case 'prazo':
+        aValue = a.prazo_retorno ? new Date(a.prazo_retorno).getTime() : 0;
+        bValue = b.prazo_retorno ? new Date(b.prazo_retorno).getTime() : 0;
+        break;
+      case 'status':
+        aValue = a.status || '';
+        bValue = b.status || '';
+        break;
+      default:
+        return 0;
+    }
+    
+    if (sortDirection === 'asc') {
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+    } else {
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    }
+  })
+  .slice(0, 10);
   
   // Funções de filtro
   const aplicarFiltros = () => {
@@ -571,12 +643,48 @@ export const CustomizableDashboard = () => {
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
                   <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-semibold text-sm text-muted-foreground shadow-[0_2px_4px_hsl(var(--primary)/0.08)]">
-                    <div className="pr-4 border-r drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Código / Processo / Objeto</div>
-                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Solicitante</div>
-                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Cliente</div>
-                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Data</div>
-                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Prazo</div>
-                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Status</div>
+                    <button 
+                      onClick={() => handleSort('codigo')}
+                      className="pr-4 border-r drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)] hover:text-foreground transition-colors flex items-center cursor-pointer text-left"
+                    >
+                      Código / Processo / Objeto
+                      {renderSortIcon('codigo')}
+                    </button>
+                    <button 
+                      onClick={() => handleSort('solicitante')}
+                      className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)] hover:text-foreground transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      Solicitante
+                      {renderSortIcon('solicitante')}
+                    </button>
+                    <button 
+                      onClick={() => handleSort('cliente')}
+                      className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)] hover:text-foreground transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      Cliente
+                      {renderSortIcon('cliente')}
+                    </button>
+                    <button 
+                      onClick={() => handleSort('data')}
+                      className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)] hover:text-foreground transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      Data
+                      {renderSortIcon('data')}
+                    </button>
+                    <button 
+                      onClick={() => handleSort('prazo')}
+                      className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)] hover:text-foreground transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      Prazo
+                      {renderSortIcon('prazo')}
+                    </button>
+                    <button 
+                      onClick={() => handleSort('status')}
+                      className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)] hover:text-foreground transition-colors flex items-center justify-center cursor-pointer"
+                    >
+                      Status
+                      {renderSortIcon('status')}
+                    </button>
                     <div className="px-4 text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Ações</div>
                   </div>
                   
