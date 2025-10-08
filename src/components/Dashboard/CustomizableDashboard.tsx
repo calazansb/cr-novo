@@ -206,13 +206,19 @@ export const CustomizableDashboard = () => {
   };
 
   const fetchStats = async () => {
+    // Buscar apenas estatísticas do usuário logado
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (!currentUser) return;
+    
     const { data, error } = await supabase
       .from('solicitacoes_controladoria')
-      .select('status');
+      .select('status')
+      .eq('user_id', currentUser.id); // Filtrar apenas do usuário logado
 
     if (!error && data) {
       const pending = data.filter(s => s.status === 'pendente').length;
-      const completed = data.filter(s => s.status === 'concluido').length;
+      const completed = data.filter(s => s.status === 'concluida').length;
       setStats({ pending, completed, total: data.length });
     }
   };
