@@ -215,7 +215,7 @@ export const CustomizableDashboard = () => {
 
     const { data, error } = await supabase
       .from('solicitacoes_controladoria')
-      .select('status')
+      .select('status, nome_solicitante')
       .eq('user_id', user.id);
 
     if (error) {
@@ -224,10 +224,15 @@ export const CustomizableDashboard = () => {
     }
 
     if (data) {
-      const pending = data.filter((s: any) => s.status === 'pendente').length;
-      const completed = data.filter((s: any) => s.status === 'concluida' || s.status === 'concluido').length;
-      console.info('📊 Stats do usuário', { userId: user.id, pending, completed, total: data.length });
-      setStats({ pending, completed, total: data.length });
+      const userName = (user.user_metadata?.nome || '').trim().toLowerCase();
+      const mine = data.filter((s: any) =>
+        (s.nome_solicitante || '').trim().toLowerCase() === userName
+      );
+
+      const pending = mine.filter((s: any) => s.status === 'pendente').length;
+      const completed = mine.filter((s: any) => s.status === 'concluida' || s.status === 'concluido').length;
+      console.info('📊 Stats do usuário (filtradas por nome_solicitante)', { userId: user.id, userName, pending, completed, total: mine.length });
+      setStats({ pending, completed, total: mine.length });
     }
   };
 
