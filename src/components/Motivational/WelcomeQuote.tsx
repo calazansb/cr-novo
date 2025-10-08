@@ -82,8 +82,12 @@ export const WelcomeQuote = () => {
   if (!currentQuote) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[600px] border-0 shadow-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent 
+        className="sm:max-w-[600px] border-0 shadow-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <div className="relative py-8 px-6 text-center animate-fade-in">
           {/* Ícone de Inspiração */}
           <div className="flex justify-center mb-6 animate-scale-in">
