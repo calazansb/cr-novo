@@ -65,8 +65,8 @@ export const WelcomeQuote = () => {
         // Atualizar timestamp do login
         localStorage.setItem('last_login_time', currentLoginTime);
         
-        // Fechar automaticamente após 6 segundos
-        setTimeout(() => setIsOpen(false), 6000);
+        // Fechar automaticamente após 9 segundos
+        setTimeout(() => setIsOpen(false), 9000);
       } else {
         // Carregar frase atual
         const stored = localStorage.getItem('current_quote');
