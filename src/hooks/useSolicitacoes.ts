@@ -9,6 +9,7 @@ export type NovasolicitacaoControladoria = {
   nome_solicitante: string;
   numero_processo?: string;
   cliente: string;
+  tipo_solicitacao?: string;
   objeto_solicitacao: string;
   descricao_detalhada: string;
   user_id: string;

@@ -62,6 +62,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroCliente, setFiltroCliente] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroData, setFiltroData] = useState('');
   const [filtroPrazo, setFiltroPrazo] = useState('');
   
@@ -69,6 +70,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const [tempFiltroStatus, setTempFiltroStatus] = useState('todos');
   const [tempFiltroNome, setTempFiltroNome] = useState('');
   const [tempFiltroCliente, setTempFiltroCliente] = useState('');
+  const [tempFiltroTipo, setTempFiltroTipo] = useState('');
   const [tempFiltroData, setTempFiltroData] = useState('');
   const [tempFiltroPrazo, setTempFiltroPrazo] = useState('');
   
@@ -211,6 +213,11 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       }
     }
     
+    // Filtro por tipo de solicitação
+    if (filtroTipo && filtroTipo !== 'todos' && s.tipo_solicitacao !== filtroTipo) {
+      return false;
+    }
+    
     // Filtro por data (data_criacao)
     if (filtroData) {
       const dc = new Date(s.data_criacao);
@@ -279,6 +286,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     setFiltroStatus(tempFiltroStatus);
     setFiltroNome(tempFiltroNome);
     setFiltroCliente(tempFiltroCliente);
+    setFiltroTipo(tempFiltroTipo);
     setFiltroData(tempFiltroData);
     setFiltroPrazo(tempFiltroPrazo);
   };
@@ -288,11 +296,13 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     setFiltroStatus('todos');
     setFiltroNome('');
     setFiltroCliente('');
+    setFiltroTipo('');
     setFiltroData('');
     setFiltroPrazo('');
     setTempFiltroStatus('todos');
     setTempFiltroNome('');
     setTempFiltroCliente('');
+    setTempFiltroTipo('');
     setTempFiltroData('');
     setTempFiltroPrazo('');
   };
@@ -611,7 +621,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
         
         {/* Filtros - Mesmo layout do Meu Dashboard */}
         <div className="space-y-2 mb-4 p-3 bg-muted/30 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Status</label>
               <select 
@@ -651,6 +661,25 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 {clientes.map(cli => (
                   <option key={cli.id} value={cli.id}>{cli.nome}</option>
                 ))}
+              </select>
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Tipo de Solicitação</label>
+              <select 
+                className="w-full text-xs border rounded px-2 py-1.5 bg-background"
+                value={tempFiltroTipo}
+                onChange={(e) => setTempFiltroTipo(e.target.value)}
+              >
+                <option value="todos">Todos os Tipos</option>
+                <option value="Documentação">Documentação</option>
+                <option value="Consulta Jurídica">Consulta Jurídica</option>
+                <option value="Revisão de Contrato">Revisão de Contrato</option>
+                <option value="Petição">Petição</option>
+                <option value="Recurso">Recurso</option>
+                <option value="Certidões">Certidões</option>
+                <option value="Análise de Processo">Análise de Processo</option>
+                <option value="Outros">Outros</option>
               </select>
             </div>
             

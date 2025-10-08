@@ -96,6 +96,7 @@ export type Database = {
           observacoes: string | null
           prazo_retorno: string | null
           status: string | null
+          tipo_solicitacao: string | null
           ultima_modificacao_em: string | null
           ultima_modificacao_por: string | null
           user_id: string | null
@@ -115,6 +116,7 @@ export type Database = {
           observacoes?: string | null
           prazo_retorno?: string | null
           status?: string | null
+          tipo_solicitacao?: string | null
           ultima_modificacao_em?: string | null
           ultima_modificacao_por?: string | null
           user_id?: string | null
@@ -134,6 +136,7 @@ export type Database = {
           observacoes?: string | null
           prazo_retorno?: string | null
           status?: string | null
+          tipo_solicitacao?: string | null
           ultima_modificacao_em?: string | null
           ultima_modificacao_por?: string | null
           user_id?: string | null

@@ -20,6 +20,7 @@ const balcaoSchema = z.object({
   nomeSolicitante: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
   numeroProcesso: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   cliente: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  tipoSolicitacao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   tribunalOrgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   prazoRetorno: z.string().min(1, "Campo obrigatório"),
   solicitacao: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres")
@@ -33,6 +34,7 @@ const BalcaoControladoriaForm = () => {
     nomeSolicitante: "",
     numeroProcesso: "",
     cliente: "",
+    tipoSolicitacao: "",
     tribunalOrgao: "",
     prazoRetorno: "",
     solicitacao: ""
@@ -122,6 +124,9 @@ const BalcaoControladoriaForm = () => {
       case 'cliente':
         if (!value.trim()) error = 'Cliente é obrigatório';
         break;
+      case 'tipoSolicitacao':
+        if (!value.trim()) error = 'Tipo de solicitação é obrigatório';
+        break;
       case 'tribunalOrgao':
         if (!value.trim()) error = 'Tribunal/Órgão é obrigatório';
         break;
@@ -171,7 +176,7 @@ const BalcaoControladoriaForm = () => {
 
   const validateAllFields = () => {
     const requiredFields = [
-      'nomeSolicitante', 'numeroProcesso', 'cliente', 
+      'nomeSolicitante', 'numeroProcesso', 'cliente', 'tipoSolicitacao',
       'tribunalOrgao', 'prazoRetorno', 'solicitacao'
     ];
 
@@ -284,6 +289,7 @@ const BalcaoControladoriaForm = () => {
         nome_solicitante: validatedData.nomeSolicitante,
         numero_processo: validatedData.numeroProcesso || '',
         cliente: clienteFinal,
+        tipo_solicitacao: validatedData.tipoSolicitacao,
         objeto_solicitacao: validatedData.tribunalOrgao,
         descricao_detalhada: validatedData.solicitacao,
         user_id: user?.id || '',
@@ -315,6 +321,7 @@ const BalcaoControladoriaForm = () => {
         nomeSolicitante: "",
         numeroProcesso: "",
         cliente: "",
+        tipoSolicitacao: "",
         tribunalOrgao: "",
         prazoRetorno: "",
         solicitacao: ""
@@ -353,7 +360,7 @@ const BalcaoControladoriaForm = () => {
         <div>
           <h2 className="text-2xl font-bold text-foreground">Balcão da Controladoria</h2>
           <p className="text-muted-foreground">
-            {validatedFields.size > 0 && `${validatedFields.size} de 6 campos validados`}
+            {validatedFields.size > 0 && `${validatedFields.size} de 7 campos validados`}
           </p>
         </div>
         
@@ -457,6 +464,36 @@ const BalcaoControladoriaForm = () => {
               <div className="h-4">
                 {errors.cliente && (
                   <p className="text-xs text-destructive">{errors.cliente}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Tipo de Solicitação */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Tipo de Solicitação <span className="text-destructive">*</span>
+              </label>
+              <Select 
+                value={formData.tipoSolicitacao} 
+                onValueChange={(value) => handleInputChange('tipoSolicitacao', value)}
+              >
+                <SelectTrigger className={`${errors.tipoSolicitacao ? "border-destructive" : validatedFields.has('tipoSolicitacao') ? "border-success" : ""}`}>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
+                  <SelectItem value="Documentação">Documentação</SelectItem>
+                  <SelectItem value="Consulta Jurídica">Consulta Jurídica</SelectItem>
+                  <SelectItem value="Revisão de Contrato">Revisão de Contrato</SelectItem>
+                  <SelectItem value="Petição">Petição</SelectItem>
+                  <SelectItem value="Recurso">Recurso</SelectItem>
+                  <SelectItem value="Certidões">Certidões</SelectItem>
+                  <SelectItem value="Análise de Processo">Análise de Processo</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="h-4">
+                {errors.tipoSolicitacao && (
+                  <p className="text-xs text-destructive">{errors.tipoSolicitacao}</p>
                 )}
               </div>
             </div>
