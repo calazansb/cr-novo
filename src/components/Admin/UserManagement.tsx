@@ -273,12 +273,32 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (user: Profile) => {
     try {
-      const { error } = await supabase
+      // Primeiro deletar roles do usuário
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (roleError) console.error('Erro ao deletar roles:', roleError);
+
+      // Deletar profile
+      const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Deletar usuário do auth usando admin API
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+        
+        if (authError) {
+          console.error('Erro ao deletar do auth:', authError);
+        }
+      }
 
       toast({
         title: "Sucesso",
