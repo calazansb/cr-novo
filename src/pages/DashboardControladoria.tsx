@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSolicitacoes } from '@/hooks/useSolicitacoes';
-import { ArrowLeft, Download, Eye, Edit, AlertCircle, Trash2, Paperclip, ExternalLink, Upload } from 'lucide-react';
+import { ArrowLeft, Download, Eye, Edit, AlertCircle, Trash2, Paperclip, ExternalLink, Upload, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { FileUpload } from '@/components/ui/file-upload';
@@ -75,6 +75,10 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   // Dados para os dropdowns
   const [advogados, setAdvogados] = useState<Array<{id: string, nome: string}>>([]);
   const [clientes, setClientes] = useState<Array<{id: string, nome: string}>>([]);
+  
+  // Estado de ordenação
+  const [sortField, setSortField] = useState<'codigo' | 'solicitante' | 'cliente' | 'data' | 'prazo' | 'status' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Verificar se tabela existe
   const verificarTabela = async () => {
@@ -163,6 +167,29 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     carregarAdvogados();
     carregarClientes();
   }, []);
+  
+  // Função para ordenar solicitações
+  const handleSort = (field: 'codigo' | 'solicitante' | 'cliente' | 'data' | 'prazo' | 'status') => {
+    if (sortField === field) {
+      // Se já está ordenando por este campo, inverte a direção
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Novo campo, começa com ascendente
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+  
+  // Renderizar ícone de ordenação
+  const renderSortIcon = (field: 'codigo' | 'solicitante' | 'cliente' | 'data' | 'prazo' | 'status') => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="h-3.5 w-3.5 ml-1" /> 
+      : <ArrowDown className="h-3.5 w-3.5 ml-1" />;
+  };
+  
   // Aplicar todos os filtros
   const solicitacoesFiltradas = solicitacoes.filter(s => {
     // Filtro por status
@@ -203,6 +230,48 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
     }
     
     return true;
+  })
+  // Aplicar ordenação
+  .sort((a, b) => {
+    if (!sortField) return 0;
+    
+    let aValue: any;
+    let bValue: any;
+    
+    switch (sortField) {
+      case 'codigo':
+        aValue = a.codigo_unico || '';
+        bValue = b.codigo_unico || '';
+        break;
+      case 'solicitante':
+        aValue = a.nome_solicitante || '';
+        bValue = b.nome_solicitante || '';
+        break;
+      case 'cliente':
+        aValue = a.cliente || '';
+        bValue = b.cliente || '';
+        break;
+      case 'data':
+        aValue = new Date(a.data_criacao).getTime();
+        bValue = new Date(b.data_criacao).getTime();
+        break;
+      case 'prazo':
+        aValue = a.prazo_retorno ? new Date(a.prazo_retorno).getTime() : 0;
+        bValue = b.prazo_retorno ? new Date(b.prazo_retorno).getTime() : 0;
+        break;
+      case 'status':
+        aValue = a.status || '';
+        bValue = b.status || '';
+        break;
+      default:
+        return 0;
+    }
+    
+    if (sortDirection === 'asc') {
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+    } else {
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    }
   });
   
   // Função para aplicar os filtros
@@ -637,14 +706,50 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
         <div className="text-center py-8">Carregando solicitações...</div>
       ) : (
         <div className="border rounded-lg overflow-hidden bg-background">
-          {/* Header da Tabela */}
+          {/* Header da Tabela - CLICÁVEL para ordenar */}
           <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-            <div className="pr-4 border-r">Código / Processo / Objeto</div>
-            <div className="px-4 border-r text-center">Solicitante</div>
-            <div className="px-4 border-r text-center">Cliente</div>
-            <div className="px-4 border-r text-center">Data</div>
-            <div className="px-4 border-r text-center">Prazo</div>
-            <div className="px-4 border-r text-center">Status</div>
+            <button 
+              className="pr-4 border-r text-left hover:text-foreground transition-colors flex items-center"
+              onClick={() => handleSort('codigo')}
+            >
+              Código / Processo / Objeto
+              {renderSortIcon('codigo')}
+            </button>
+            <button 
+              className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+              onClick={() => handleSort('solicitante')}
+            >
+              Solicitante
+              {renderSortIcon('solicitante')}
+            </button>
+            <button 
+              className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+              onClick={() => handleSort('cliente')}
+            >
+              Cliente
+              {renderSortIcon('cliente')}
+            </button>
+            <button 
+              className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+              onClick={() => handleSort('data')}
+            >
+              Data
+              {renderSortIcon('data')}
+            </button>
+            <button 
+              className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+              onClick={() => handleSort('prazo')}
+            >
+              Prazo
+              {renderSortIcon('prazo')}
+            </button>
+            <button 
+              className="px-4 border-r text-center hover:text-foreground transition-colors flex items-center justify-center"
+              onClick={() => handleSort('status')}
+            >
+              Status
+              {renderSortIcon('status')}
+            </button>
             <div className="px-4 text-center">Ações</div>
           </div>
           
