@@ -734,7 +734,7 @@ const UserManagement = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Data de Criação</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -756,8 +756,8 @@ const UserManagement = () => {
                       </TableCell>
                       <TableCell>{getRoleBadge(item)}</TableCell>
                       <TableCell>{new Date(item.created_at).toLocaleDateString('pt-BR')}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
                           {item.tipo === 'usuario' ? (
                             <>
                               <Button

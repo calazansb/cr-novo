@@ -783,7 +783,7 @@ const TreinamentosAdmin: React.FC<TreinamentosAdminProps> = ({ onBack, onRefresh
                       <TableHead>Tempo Gasto</TableHead>
                       <TableHead>Iniciado em</TableHead>
                       <TableHead>Concluído em</TableHead>
-                      <TableHead>Ações</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                 <TableBody>
@@ -831,7 +831,7 @@ const TreinamentosAdmin: React.FC<TreinamentosAdminProps> = ({ onBack, onRefresh
                                   : '-'
                                 }
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="text-center">
                                 <Button
                                   variant="outline"
                                   size="sm"
