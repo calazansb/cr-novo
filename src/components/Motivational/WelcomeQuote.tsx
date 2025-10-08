@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Lightbulb } from 'lucide-react';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import frasesData from '@/data/frases-motivacionais.json';
+import logoBlue from '@/assets/calazans-rossi-logo-blue.png';
 
 interface Frase {
   texto: string;
@@ -84,35 +85,40 @@ export const WelcomeQuote = () => {
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="sm:max-w-[600px] border-0 shadow-2xl bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+        className="sm:max-w-[600px] border-0 shadow-2xl bg-gradient-to-br from-slate-900 via-[#1e3a5f] to-slate-950 backdrop-blur-xl"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="relative py-8 px-6 text-center animate-fade-in">
           {/* Ícone de Inspiração */}
           <div className="flex justify-center mb-6 animate-scale-in">
-            <div className="bg-gradient-to-br from-amber-400 to-amber-600 p-4 rounded-full shadow-lg">
-              <Lightbulb className="w-8 h-8 text-white" />
+            <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/30 p-4 rounded-full shadow-glow border border-blue-500/30">
+              <Lightbulb className="w-8 h-8 text-blue-400 drop-shadow-[0_0_8px_currentColor]" />
             </div>
           </div>
 
           {/* Frase Principal */}
           <div className="space-y-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <p className="text-2xl md:text-3xl font-serif leading-relaxed text-gray-800 dark:text-gray-200 font-medium">
+            <p className="text-2xl md:text-3xl font-serif leading-relaxed text-slate-100 font-medium">
               "{currentQuote.texto}"
             </p>
 
             {/* Autor */}
-            <p className="text-lg italic text-gray-600 dark:text-gray-400 mt-4">
+            <p className="text-lg italic text-slate-300 mt-4">
               — {currentQuote.autor}
             </p>
           </div>
 
-          {/* Mensagem de Boas-Vindas */}
-          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <p className="text-xl font-semibold text-gray-600 dark:text-gray-400 tracking-wide uppercase">
-              Bem-Vindo(a) ao Sistema do Calazans Rossi
+          {/* Mensagem de Boas-Vindas com Logo */}
+          <div className="mt-8 pt-6 border-t border-slate-700/30 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <p className="text-xl font-semibold text-slate-300 tracking-wide uppercase mb-4">
+              Bem-Vindo(a) ao Sistema do
             </p>
+            <img 
+              src={logoBlue} 
+              alt="Calazans Rossi Advogados" 
+              className="h-16 w-auto object-contain mx-auto filter brightness-0 invert opacity-90"
+            />
           </div>
         </div>
       </DialogContent>
