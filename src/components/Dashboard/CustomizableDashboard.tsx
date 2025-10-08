@@ -441,17 +441,17 @@ export const CustomizableDashboard = () => {
       case 'stats-overview':
         return (
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-warning">{stats.pending}</div>
-              <div className="text-xs text-muted-foreground">Pendentes</div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg shadow-[inset_0_2px_4px_hsl(var(--primary)/0.05),0_2px_8px_hsl(var(--primary)/0.08)] hover:shadow-[inset_0_2px_4px_hsl(var(--primary)/0.08),0_4px_12px_hsl(var(--primary)/0.12)] transition-all duration-300">
+              <div className="text-2xl font-bold drop-shadow-[0_2px_4px_hsl(var(--primary)/0.2)]" style={{ color: 'hsl(var(--chart-1))' }}>{stats.pending}</div>
+              <div className="text-xs text-muted-foreground font-medium">Pendentes</div>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-success">{stats.completed}</div>
-              <div className="text-xs text-muted-foreground">Concluídas</div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg shadow-[inset_0_2px_4px_hsl(var(--primary)/0.05),0_2px_8px_hsl(var(--primary)/0.08)] hover:shadow-[inset_0_2px_4px_hsl(var(--primary)/0.08),0_4px_12px_hsl(var(--primary)/0.12)] transition-all duration-300">
+              <div className="text-2xl font-bold drop-shadow-[0_2px_4px_hsl(var(--primary)/0.2)]" style={{ color: 'hsl(var(--chart-2))' }}>{stats.completed}</div>
+              <div className="text-xs text-muted-foreground font-medium">Concluídas</div>
             </div>
-            <div className="text-center p-3 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-primary">{stats.total}</div>
-              <div className="text-xs text-muted-foreground">Total</div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg shadow-[inset_0_2px_4px_hsl(var(--primary)/0.05),0_2px_8px_hsl(var(--primary)/0.08)] hover:shadow-[inset_0_2px_4px_hsl(var(--primary)/0.08),0_4px_12px_hsl(var(--primary)/0.12)] transition-all duration-300">
+              <div className="text-2xl font-bold text-primary drop-shadow-[0_2px_4px_hsl(var(--primary)/0.2)]">{stats.total}</div>
+              <div className="text-xs text-muted-foreground font-medium">Total</div>
             </div>
           </div>
         );
@@ -551,21 +551,21 @@ export const CustomizableDashboard = () => {
               ) : (
                 <div className="border rounded-lg overflow-hidden bg-background">
                   {/* Header da Tabela */}
-                  <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
-                    <div className="pr-4 border-r">Código / Processo / Objeto</div>
-                    <div className="px-4 border-r text-center">Solicitante</div>
-                    <div className="px-4 border-r text-center">Cliente</div>
-                    <div className="px-4 border-r text-center">Data</div>
-                    <div className="px-4 border-r text-center">Prazo</div>
-                    <div className="px-4 border-r text-center">Status</div>
-                    <div className="px-4 text-center">Ações</div>
+                  <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-semibold text-sm text-muted-foreground shadow-[0_2px_4px_hsl(var(--primary)/0.08)]">
+                    <div className="pr-4 border-r drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Código / Processo / Objeto</div>
+                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Solicitante</div>
+                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Cliente</div>
+                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Data</div>
+                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Prazo</div>
+                    <div className="px-4 border-r text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Status</div>
+                    <div className="px-4 text-center drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Ações</div>
                   </div>
                   
                   {/* Linhas da Tabela */}
                   {requestsFiltradas.map((req, index) => (
                     <div 
                       key={req.id} 
-                      className={`grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-4 items-start hover:bg-muted/30 transition-colors ${
+                      className={`grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-4 items-start hover:bg-muted/30 hover:shadow-[0_2px_6px_hsl(var(--primary)/0.08)] transition-all duration-200 ${
                         index !== requestsFiltradas.length - 1 ? 'border-b' : ''
                       }`}
                     >
@@ -708,13 +708,13 @@ export const CustomizableDashboard = () => {
         return (
           <div className="space-y-3">
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Pendentes</span>
-                <span className="font-medium">{stats.pending}</span>
+              <div className="flex justify-between text-sm font-medium">
+                <span className="drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Pendentes</span>
+                <span className="font-semibold drop-shadow-[0_1px_2px_hsl(var(--primary)/0.15)]">{stats.pending}</span>
               </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-muted rounded-full overflow-hidden shadow-[inset_0_2px_4px_hsl(var(--primary)/0.1)]">
                 <div 
-                  className="h-full transition-all"
+                  className="h-full transition-all duration-500 shadow-[0_0_8px_hsl(var(--chart-1)/0.5)]"
                   style={{ 
                     width: `${stats.total ? (stats.pending / stats.total) * 100 : 0}%`,
                     backgroundColor: 'hsl(var(--chart-1))'
@@ -723,13 +723,13 @@ export const CustomizableDashboard = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Concluídas</span>
-                <span className="font-medium">{stats.completed}</span>
+              <div className="flex justify-between text-sm font-medium">
+                <span className="drop-shadow-[0_1px_2px_hsl(var(--primary)/0.1)]">Concluídas</span>
+                <span className="font-semibold drop-shadow-[0_1px_2px_hsl(var(--primary)/0.15)]">{stats.completed}</span>
               </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-muted rounded-full overflow-hidden shadow-[inset_0_2px_4px_hsl(var(--primary)/0.1)]">
                 <div 
-                  className="h-full transition-all"
+                  className="h-full transition-all duration-500 shadow-[0_0_8px_hsl(var(--chart-2)/0.5)]"
                   style={{ 
                     width: `${stats.total ? (stats.completed / stats.total) * 100 : 0}%`,
                     backgroundColor: 'hsl(var(--chart-2))'
