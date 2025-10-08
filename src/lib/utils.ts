@@ -38,18 +38,72 @@ export function openEmail(subject: string, body: string, to?: string) {
   }
 }
 
-// Função para abrir WhatsApp
+// Função para abrir WhatsApp com fallback robusto (nativo -> web -> wa.me)
 export function openWhatsApp(message: string, phoneNumber?: string) {
   const encodedMessage = encodeURIComponent(message);
-  const cleanedPhone = phoneNumber?.replace(/[^\d]/g, "");
+  const cleanedPhone = (phoneNumber || '').replace(/[^\d]/g, "");
+  const hasPhone = !!cleanedPhone;
 
-  // URL usando wa.me (funciona tanto para web quanto para app nativo)
-  const whatsappUrl = cleanedPhone
+  const schemeUrl = hasPhone
+    ? `whatsapp://send?phone=${cleanedPhone}&text=${encodedMessage}`
+    : `whatsapp://send?text=${encodedMessage}`;
+
+  // Preferir WhatsApp Web no desktop para evitar bloqueios do api.whatsapp.com
+  const webUrl = hasPhone
+    ? `https://web.whatsapp.com/send?phone=${cleanedPhone}&text=${encodedMessage}`
+    : `https://web.whatsapp.com/send?text=${encodedMessage}`;
+
+  // Fallback final (pode redirecionar para api.whatsapp.com em alguns casos)
+  const waUrl = hasPhone
     ? `https://wa.me/${cleanedPhone}?text=${encodedMessage}`
     : `https://wa.me/?text=${encodedMessage}`;
 
-  // Abre em nova aba
-  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  const isMobile = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // Tenta abrir o app nativo primeiro; se não abrir, cai para wa.me
+    let opened = false;
+    let timer: number;
+
+    const cleanup = () => {
+      window.removeEventListener('blur', markOpened);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      if (timer) window.clearTimeout(timer);
+    };
+
+    const markOpened = () => { opened = true; cleanup(); };
+    const onVisibilityChange = () => { if (document.hidden) markOpened(); };
+
+    window.addEventListener('blur', markOpened);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    // Usa um link temporário para acionar o esquema nativo
+    const link = document.createElement('a');
+    link.href = schemeUrl;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    try {
+      link.click();
+    } finally {
+      if (link.parentNode) document.body.removeChild(link);
+    }
+
+    // Se continuar visível após um curto período, faz fallback
+    timer = window.setTimeout(() => {
+      if (!opened && !document.hidden) {
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
+      }
+      cleanup();
+    }, 1200);
+
+    return;
+  }
+
+  // Desktop: abre WhatsApp Web; se bloqueado, cai para wa.me
+  const win = window.open(webUrl, '_blank', 'noopener,noreferrer');
+  if (!win || win.closed) {
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+  }
 }
 
 // Formata código da solicitação para o padrão CTRL-DD-MM-YYYY-NNNN
