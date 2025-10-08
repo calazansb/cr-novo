@@ -11,6 +11,7 @@ import { DateField } from "@/components/ui/date-field";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectWithAdminEdit } from "@/components/Admin/SelectWithAdminEdit";
 import { formatCodigo } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
@@ -30,6 +31,25 @@ const BalcaoControladoriaForm = () => {
   const { toast } = useToast();
   const { criarSolicitacao } = useSolicitacoes();
   const { user } = useAuth();
+  
+  // Verificar se é admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+        
+        setIsAdmin(!error && !!data);
+      }
+    };
+    checkAdmin();
+  }, [user?.id]);
   const [formData, setFormData] = useState({
     nomeSolicitante: "",
     numeroProcesso: "",
@@ -468,29 +488,20 @@ const BalcaoControladoriaForm = () => {
               </div>
             </div>
 
-            {/* Tipo de Solicitação */}
+            {/* Tipo de Solicitação - COM GESTÃO ADMIN */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Tipo de Solicitação <span className="text-destructive">*</span>
               </label>
-              <Select 
-                value={formData.tipoSolicitacao} 
+              <SelectWithAdminEdit
+                optionSetKey="tipo_solicitacao"
+                value={formData.tipoSolicitacao}
                 onValueChange={(value) => handleInputChange('tipoSolicitacao', value)}
-              >
-                <SelectTrigger className={`${errors.tipoSolicitacao ? "border-destructive" : validatedFields.has('tipoSolicitacao') ? "border-success" : ""}`}>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
-                  <SelectItem value="Documentação">Documentação</SelectItem>
-                  <SelectItem value="Consulta Jurídica">Consulta Jurídica</SelectItem>
-                  <SelectItem value="Revisão de Contrato">Revisão de Contrato</SelectItem>
-                  <SelectItem value="Petição">Petição</SelectItem>
-                  <SelectItem value="Recurso">Recurso</SelectItem>
-                  <SelectItem value="Certidões">Certidões</SelectItem>
-                  <SelectItem value="Análise de Processo">Análise de Processo</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="Selecione o tipo"
+                isAdmin={isAdmin}
+                label="Tipo de Solicitação"
+                className={`${errors.tipoSolicitacao ? "border-destructive" : validatedFields.has('tipoSolicitacao') ? "border-success" : ""}`}
+              />
               <div className="h-4">
                 {errors.tipoSolicitacao && (
                   <p className="text-xs text-destructive">{errors.tipoSolicitacao}</p>

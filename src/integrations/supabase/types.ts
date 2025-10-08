@@ -50,6 +50,166 @@ export type Database = {
         }
         Relationships: []
       }
+      option_audit_logs: {
+        Row: {
+          action: Database["public"]["Enums"]["option_audit_action"]
+          actor_user_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          id: string
+          option_item_id: string | null
+          option_set_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["option_audit_action"]
+          actor_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          option_item_id?: string | null
+          option_set_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["option_audit_action"]
+          actor_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          id?: string
+          option_item_id?: string | null
+          option_set_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_audit_logs_option_item_id_fkey"
+            columns: ["option_item_id"]
+            isOneToOne: false
+            referencedRelation: "option_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "option_audit_logs_option_set_id_fkey"
+            columns: ["option_set_id"]
+            isOneToOne: false
+            referencedRelation: "option_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      option_items: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          label: string
+          meta: Json | null
+          option_set_id: string
+          order: number
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          label: string
+          meta?: Json | null
+          option_set_id: string
+          order?: number
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          label?: string
+          meta?: Json | null
+          option_set_id?: string
+          order?: number
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_items_option_set_id_fkey"
+            columns: ["option_set_id"]
+            isOneToOne: false
+            referencedRelation: "option_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      option_sets: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      option_versions: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          option_set_id: string
+          snapshot: Json
+          version: number
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          option_set_id: string
+          snapshot: Json
+          version: number
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          option_set_id?: string
+          snapshot?: Json
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "option_versions_option_set_id_fkey"
+            columns: ["option_set_id"]
+            isOneToOne: false
+            referencedRelation: "option_sets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -191,6 +351,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "advogado" | "cliente"
+      option_audit_action:
+        | "CREATE"
+        | "UPDATE"
+        | "DELETE"
+        | "RESTORE"
+        | "ACTIVATE"
+        | "DEACTIVATE"
+        | "REORDER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -319,6 +487,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "advogado", "cliente"],
+      option_audit_action: [
+        "CREATE",
+        "UPDATE",
+        "DELETE",
+        "RESTORE",
+        "ACTIVATE",
+        "DEACTIVATE",
+        "REORDER",
+      ],
     },
   },
 } as const

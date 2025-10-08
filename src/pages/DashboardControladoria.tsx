@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SelectWithAdminEdit } from '@/components/Admin/SelectWithAdminEdit';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -666,21 +667,15 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
             
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Tipo de Solicitação</label>
-              <select 
-                className="w-full text-xs border rounded px-2 py-1.5 bg-background"
-                value={tempFiltroTipo}
-                onChange={(e) => setTempFiltroTipo(e.target.value)}
-              >
-                <option value="todos">Todos os Tipos</option>
-                <option value="Documentação">Documentação</option>
-                <option value="Consulta Jurídica">Consulta Jurídica</option>
-                <option value="Revisão de Contrato">Revisão de Contrato</option>
-                <option value="Petição">Petição</option>
-                <option value="Recurso">Recurso</option>
-                <option value="Certidões">Certidões</option>
-                <option value="Análise de Processo">Análise de Processo</option>
-                <option value="Outros">Outros</option>
-              </select>
+              <SelectWithAdminEdit
+                optionSetKey="tipo_solicitacao"
+                value={tempFiltroTipo === 'todos' ? '' : tempFiltroTipo}
+                onValueChange={(value) => setTempFiltroTipo(value || 'todos')}
+                placeholder="Todos os Tipos"
+                isAdmin={isAdmin}
+                label="Tipo de Solicitação"
+                className="w-full text-xs h-8"
+              />
             </div>
             
             <div className="space-y-1">
