@@ -508,11 +508,11 @@ const BalcaoControladoriaForm = () => {
               files={selectedFiles}
               onFilesChange={setSelectedFiles}
               maxFiles={5}
-              maxSize={10}
+              maxSize={50}
               acceptedTypes={['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.xls', '.xlsx']}
             />
             <p className="text-xs text-muted-foreground">
-              Máximo 5 arquivos, 10MB cada
+              Máximo 5 arquivos, 50MB cada
             </p>
           </div>
 
