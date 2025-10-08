@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { Moon, Sun, Search, User, Settings, LogOut } from 'lucide-react';
+import { User, LogOut } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { ChangePasswordForm } from "@/components/Auth/ChangePasswordForm";
-import NotificationBell from "@/components/Notifications/NotificationBell";
 import { HeaderQuote } from "@/components/Motivational/HeaderQuote";
 import { cn } from "@/lib/utils";
 interface ModernHeaderProps {
@@ -14,24 +12,21 @@ interface ModernHeaderProps {
 const ModernHeader = ({
   className
 }: ModernHeaderProps) => {
-  const [isDark, setIsDark] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const {
     user,
     signOut
   } = useAuth();
+  
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
+  
   return <header className={cn("sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg", className)}>
       <div className="container flex h-20 items-center justify-between px-6">
-        {/* Logo - Aumentado 300% */}
-        <div className="flex items-center space-x-4">
+        {/* Logo */}
+        <div className="flex items-center space-x-4 flex-shrink-0">
           <div className="flex items-center">
             
           </div>
@@ -43,15 +38,15 @@ const ModernHeader = ({
           </div>
         </div>
 
-        {/* Frase Motivacional no Centro */}
-        <div className="flex items-center space-x-6 flex-1 justify-center px-4">
+        {/* Frase Motivacional no Centro - Mais espaço */}
+        <div className="flex items-center justify-center flex-1 px-8 max-w-3xl mx-auto">
           <HeaderQuote />
         </div>
 
-        {/* Right Side Actions */}
-        <div className="flex items-center space-x-3">
-          {/* Current Time */}
-          <div className="hidden sm:flex flex-col items-end mr-2">
+        {/* Right Side - Data/Hora e Usuário mais próximos */}
+        <div className="flex items-center space-x-4 flex-shrink-0">
+          {/* Current Time - Mais próximo do usuário */}
+          <div className="hidden sm:flex flex-col items-end">
             <div className="text-base font-bold text-foreground">
               {currentTime.toLocaleDateString('pt-BR', {
               weekday: 'short',
@@ -66,19 +61,6 @@ const ModernHeader = ({
             })}
             </div>
           </div>
-
-          {/* Notifications - Temporariamente desabilitado até migration ser aprovada */}
-          {/* <NotificationBell /> */}
-
-          {/* Theme Toggle */}
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </Button>
-
-          {/* Settings */}
-          <Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-            <Settings className="w-5 h-5" />
-          </Button>
 
           {/* User Profile */}
           <DropdownMenu>
@@ -103,7 +85,7 @@ const ModernHeader = ({
                 Perfil
               </DropdownMenuItem>
               <ChangePasswordForm trigger={<div className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <User className="mr-2 h-4 w-4" />
                     Alterar Senha
                   </div>} />
               <DropdownMenuSeparator />
