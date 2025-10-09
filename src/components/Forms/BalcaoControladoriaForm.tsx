@@ -3,8 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building, Paperclip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -13,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SelectWithAdminEdit } from "@/components/Admin/SelectWithAdminEdit";
+import { Combobox } from "@/components/ui/combobox";
 import { formatCodigo } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
+import { ORGAOS_LIST } from "@/data/orgaos";
 import { z } from "zod";
 
 const balcaoSchema = z.object({
@@ -23,6 +23,7 @@ const balcaoSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   cliente: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   tipoSolicitacao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  orgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   tribunalOrgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   prazoRetorno: z.string().min(1, "Campo obrigatório"),
   solicitacao: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres")
@@ -57,6 +58,7 @@ const BalcaoControladoriaForm = () => {
     numeroProcesso: "",
     cliente: "",
     tipoSolicitacao: "",
+    orgao: "",
     tribunalOrgao: "",
     prazoRetorno: "",
     solicitacao: ""
@@ -200,7 +202,7 @@ const BalcaoControladoriaForm = () => {
   const validateAllFields = () => {
     const requiredFields = [
       'nomeSolicitante', 'numeroProcesso', 'cliente', 'tipoSolicitacao',
-      'tribunalOrgao', 'prazoRetorno', 'solicitacao'
+      'orgao', 'tribunalOrgao', 'prazoRetorno', 'solicitacao'
     ];
 
     let isValid = true;
@@ -345,6 +347,7 @@ const BalcaoControladoriaForm = () => {
         numeroProcesso: "",
         cliente: "",
         tipoSolicitacao: "",
+        orgao: "",
         tribunalOrgao: "",
         prazoRetorno: "",
         solicitacao: ""
@@ -383,7 +386,7 @@ const BalcaoControladoriaForm = () => {
         <div>
           <h2 className="text-2xl font-bold text-foreground">Balcão da Controladoria</h2>
           <p className="text-muted-foreground">
-            {validatedFields.size > 0 && `${validatedFields.size} de 7 campos validados`}
+            {validatedFields.size > 0 && `${validatedFields.size} de 8 campos validados`}
           </p>
         </div>
         
@@ -522,6 +525,27 @@ const BalcaoControladoriaForm = () => {
               <div className="h-4">
                 {errors.tipoSolicitacao && (
                   <p className="text-xs text-destructive">{errors.tipoSolicitacao}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Órgão - Combobox com busca */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Órgão <span className="text-destructive">*</span>
+              </label>
+              <Combobox
+                options={ORGAOS_LIST.map(orgao => ({ value: orgao, label: orgao }))}
+                value={formData.orgao}
+                onValueChange={(value) => handleInputChange('orgao', value)}
+                placeholder="Selecione o órgão"
+                searchPlaceholder="Buscar órgão..."
+                emptyMessage="Nenhum órgão encontrado."
+                className={`${errors.orgao ? "border-destructive" : validatedFields.has('orgao') ? "border-success" : ""}`}
+              />
+              <div className="h-4">
+                {errors.orgao && (
+                  <p className="text-xs text-destructive">{errors.orgao}</p>
                 )}
               </div>
             </div>

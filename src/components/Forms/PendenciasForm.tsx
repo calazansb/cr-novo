@@ -6,15 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateField } from "@/components/ui/date-field";
+import { Combobox } from "@/components/ui/combobox";
 import { AlertTriangle, MessageCircle, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientes } from "@/hooks/useClientes";
-
+import { ORGAOS_LIST } from "@/data/orgaos";
 import { openWhatsAppGroup } from "@/lib/utils";
 import { z } from "zod";
 
 const pendenciaSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  orgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   tipoUrgencia: z.string().min(1, "Campo obrigatório"),
   prazoLimite: z.string().min(1, "Campo obrigatório"),
   responsavel: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
@@ -33,6 +35,7 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
+    orgao: "",
     tipoUrgencia: "",
     prazoLimite: "",
     responsavel: "",
@@ -81,6 +84,7 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
       const message = `*PENDÊNCIA/URGÊNCIA - CALAZANS ROSSI ADVOGADOS*
     
 *Processo:* ${validatedData.numeroProcesso}
+*Órgão:* ${validatedData.orgao}
 *Tipo de Urgência:* ${validatedData.tipoUrgencia}
 *Prazo Limite:* ${validatedData.prazoLimite}
 *Adv. Jurídico Interno:* ${validatedData.responsavel}
@@ -107,6 +111,7 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
 
       setFormData({
         numeroProcesso: "",
+        orgao: "",
         tipoUrgencia: "",
         prazoLimite: "",
         responsavel: "",
@@ -163,6 +168,20 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
                   className="bg-background"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="orgao" className="text-sm font-medium">
+                Órgão *
+              </Label>
+              <Combobox
+                options={ORGAOS_LIST.map(orgao => ({ value: orgao, label: orgao }))}
+                value={formData.orgao}
+                onValueChange={(value) => handleInputChange('orgao', value)}
+                placeholder="Selecione o órgão"
+                searchPlaceholder="Buscar órgão..."
+                emptyMessage="Nenhum órgão encontrado."
+              />
             </div>
 
             <div className="space-y-2">

@@ -8,13 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { useClientes } from "@/hooks/useClientes";
-
+import { ORGAOS_LIST } from "@/data/orgaos";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
 const decisaoSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Número do processo é obrigatório").max(100, "Máximo 100 caracteres"),
+  orgao: z.string().trim().min(1, "Órgão é obrigatório").max(100, "Máximo 100 caracteres"),
   varaTribunal: z.string().trim().min(1, "Vara/Tribunal é obrigatório").max(200, "Máximo 200 caracteres"),
   nomeCliente: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
   tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
@@ -30,6 +32,7 @@ const DecisaoJudicialForm = () => {
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
+    orgao: "",
     varaTribunal: "",
     nomeCliente: "",
     tipoDecisao: "",
@@ -126,7 +129,7 @@ const DecisaoJudicialForm = () => {
 
   const validateAllFields = () => {
     const requiredFields = [
-      'numeroProcesso', 'varaTribunal', 'nomeCliente', 
+      'numeroProcesso', 'orgao', 'varaTribunal', 'nomeCliente', 
       'tipoDecisao', 'advogadoInterno', 'adverso', 
       'procedimentoObjeto', 'resumoDecisao'
     ];
@@ -188,6 +191,7 @@ ${formData.resumoDecisao}
     
 *Cliente:* ${clienteFinal}
 *Processo:* ${validatedData.numeroProcesso}
+*Órgão:* ${validatedData.orgao}
 *Tipo de Decisão:* ${validatedData.tipoDecisao}
 *Vara/Tribunal:* ${validatedData.varaTribunal}
 *Advogado Responsável:* ${validatedData.advogadoInterno}
@@ -208,6 +212,7 @@ ${validatedData.resumoDecisao}
       
       setFormData({
         numeroProcesso: '',
+        orgao: '',
         varaTribunal: '',
         nomeCliente: '',
         tipoDecisao: '',
@@ -245,7 +250,7 @@ ${validatedData.resumoDecisao}
         <div>
           <h2 className="text-2xl font-bold text-foreground">Decisão Judicial</h2>
           <p className="text-muted-foreground">
-            {validatedFields.size > 0 && `${validatedFields.size} de 8 campos validados`}
+            {validatedFields.size > 0 && `${validatedFields.size} de 9 campos validados`}
           </p>
         </div>
         
@@ -297,6 +302,27 @@ ${validatedData.resumoDecisao}
                 <p className="text-xs text-destructive">{errors.numeroProcesso}</p>
               )}
               {validatedFields.has('numeroProcesso') && !errors.numeroProcesso && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="orgao">
+                Órgão <span className="text-destructive">*</span>
+              </Label>
+              <Combobox
+                options={ORGAOS_LIST.map(orgao => ({ value: orgao, label: orgao }))}
+                value={formData.orgao}
+                onValueChange={(value) => handleInputChange('orgao', value)}
+                placeholder="Selecione o órgão"
+                searchPlaceholder="Buscar órgão..."
+                emptyMessage="Nenhum órgão encontrado."
+                className={errors.orgao ? "border-destructive" : validatedFields.has('orgao') ? "border-success" : ""}
+              />
+              {errors.orgao && (
+                <p className="text-xs text-destructive">{errors.orgao}</p>
+              )}
+              {validatedFields.has('orgao') && !errors.orgao && (
                 <p className="text-xs text-success">✓ Campo validado</p>
               )}
             </div>
