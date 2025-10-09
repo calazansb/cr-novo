@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, Paperclip, Search } from "lucide-react";
+import { Building, Paperclip } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useCNJSearch } from "@/hooks/useCNJSearch";
+
 
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ const BalcaoControladoriaForm = () => {
   const { toast } = useToast();
   const { criarSolicitacao } = useSolicitacoes();
   const { user } = useAuth();
-  const { buscarProcesso, loading: searchingCNJ } = useCNJSearch();
+  
   
   // Verificar se é admin
   const [isAdmin, setIsAdmin] = useState(false);
@@ -181,28 +181,6 @@ const BalcaoControladoriaForm = () => {
   const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Se o campo for numeroProcesso e tiver 20 dígitos, busca no CNJ
-    if (field === 'numeroProcesso' && value.replace(/\D/g, '').length === 20) {
-      const dadosCNJ = await buscarProcesso(value);
-      
-      if (dadosCNJ) {
-        // Preenche automaticamente os campos disponíveis
-        setFormData(prev => ({
-          ...prev,
-          tribunalOrgao: dadosCNJ.orgaoJulgador || prev.tribunalOrgao,
-          tipoSolicitacao: dadosCNJ.classe || prev.tipoSolicitacao,
-        }));
-        
-        // Adiciona informações sobre as partes na solicitação se houver
-        if (dadosCNJ.todasPartes.length > 0) {
-          const partesInfo = `\n\nPartes do processo:\n${dadosCNJ.todasPartes.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
-          setFormData(prev => ({
-            ...prev,
-            solicitacao: prev.solicitacao + partesInfo
-          }));
-        }
-      }
-    }
     
     // Se o cliente for "Outros", mostrar campo de texto
     if (field === 'cliente') {
@@ -482,11 +460,6 @@ const BalcaoControladoriaForm = () => {
                   placeholder="Digite o número do processo (20 dígitos)"
                   className={errors.numeroProcesso ? "border-destructive" : validatedFields.has('numeroProcesso') ? "border-success" : ""}
                 />
-                {searchingCNJ && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Search className="h-4 w-4 animate-spin text-primary" />
-                  </div>
-                )}
               </div>
               {errors.numeroProcesso && (
                 <p className="text-xs text-destructive mt-1">{errors.numeroProcesso}</p>
