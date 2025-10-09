@@ -532,81 +532,147 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       <div className="space-y-4 mb-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Gráfico de Status */}
-          <Card className="shadow-sm">
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-background to-muted/30">
             <CardHeader className="pb-2 pt-3">
-              <CardTitle className="text-sm">Distribuição por Status</CardTitle>
+              <CardTitle className="text-sm font-semibold">Distribuição por Status</CardTitle>
               <CardDescription className="text-xs">Percentual por situação</CardDescription>
             </CardHeader>
             <CardContent className="pb-3">
-              <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
+                  <defs>
+                    <linearGradient id="gradientPendentes" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#dc2626" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#991b1b" stopOpacity={0.8} />
+                    </linearGradient>
+                    <linearGradient id="gradientConcluidas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#1e40af" stopOpacity={0.8} />
+                    </linearGradient>
+                    <linearGradient id="gradientCanceladas" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#b45309" stopOpacity={0.8} />
+                    </linearGradient>
+                    <filter id="shadow">
+                      <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3"/>
+                    </filter>
+                  </defs>
                   <Pie
                     data={[
-                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#991b1b' },
-                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#1e3a8a' },
-                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#854d0e' }
+                      { name: 'Pendentes', value: estatisticas.pendentes, color: 'url(#gradientPendentes)' },
+                      { name: 'Concluídas', value: estatisticas.concluidas, color: 'url(#gradientConcluidas)' },
+                      { name: 'Canceladas', value: estatisticas.canceladas, color: 'url(#gradientCanceladas)' }
                     ].filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
                     label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={70}
+                    outerRadius={75}
+                    innerRadius={35}
                     fill="#8884d8"
                     dataKey="value"
+                    paddingAngle={3}
+                    style={{ filter: 'url(#shadow)' }}
                   >
                     {[
-                      { name: 'Pendentes', value: estatisticas.pendentes, color: '#991b1b' },
-                      { name: 'Concluídas', value: estatisticas.concluidas, color: '#1e3a8a' },
-                      { name: 'Canceladas', value: estatisticas.canceladas, color: '#854d0e' }
+                      { name: 'Pendentes', value: estatisticas.pendentes, color: 'url(#gradientPendentes)' },
+                      { name: 'Concluídas', value: estatisticas.concluidas, color: 'url(#gradientConcluidas)' },
+                      { name: 'Canceladas', value: estatisticas.canceladas, color: 'url(#gradientCanceladas)' }
                     ].filter(item => item.value > 0).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="#fff" strokeWidth={2} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                      border: 'none', 
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '12px'
+                    }} 
+                  />
+                  <Legend 
+                    wrapperStyle={{ 
+                      fontSize: '12px',
+                      fontWeight: 500
+                    }} 
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
           {/* Gráfico de Pendentes por Tempo */}
-          <Card className="shadow-sm">
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-background to-muted/30">
             <CardHeader className="pb-2 pt-3">
-              <CardTitle className="text-sm">Pendentes por Tempo</CardTitle>
+              <CardTitle className="text-sm font-semibold">Pendentes por Tempo</CardTitle>
               <CardDescription className="text-xs">Distribuição por dias</CardDescription>
             </CardHeader>
             <CardContent className="pb-3">
               {estatisticas.pendentes === 0 ? (
-                <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground">
+                <div className="flex items-center justify-center h-[240px] text-xs text-muted-foreground">
                   Nenhuma solicitação pendente
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
+                <ResponsiveContainer width="100%" height={240}>
                   <PieChart>
+                    <defs>
+                      <linearGradient id="gradientMenos3" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#059669" stopOpacity={0.8} />
+                      </linearGradient>
+                      <linearGradient id="gradient3a5" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#f59e0b" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#d97706" stopOpacity={0.8} />
+                      </linearGradient>
+                      <linearGradient id="gradientMais5" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#ef4444" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#dc2626" stopOpacity={0.8} />
+                      </linearGradient>
+                      <filter id="shadowTempo">
+                        <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3"/>
+                      </filter>
+                    </defs>
                     <Pie
                       data={[
-                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#22c55e' },
-                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#f59e0b' },
-                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#ef4444' }
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: 'url(#gradientMenos3)' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: 'url(#gradient3a5)' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: 'url(#gradientMais5)' }
                       ].filter(item => item.value > 0)}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
                       label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={70}
+                      outerRadius={75}
+                      innerRadius={35}
                       fill="#8884d8"
                       dataKey="value"
+                      paddingAngle={3}
+                      style={{ filter: 'url(#shadowTempo)' }}
                     >
                       {[
-                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: '#166534' },
-                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: '#92400e' },
-                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: '#991b1b' }
+                        { name: '< 3 dias', value: estatisticasPendentesPorTempo.menosDe3Dias, color: 'url(#gradientMenos3)' },
+                        { name: '3-5 dias', value: estatisticasPendentesPorTempo.maisde3Dias, color: 'url(#gradient3a5)' },
+                        { name: '> 5 dias', value: estatisticasPendentesPorTempo.maisDe5Dias, color: 'url(#gradientMais5)' }
                       ].filter(item => item.value > 0).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="#fff" strokeWidth={2} />
                       ))}
                     </Pie>
-                    <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                        border: 'none', 
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontSize: '12px'
+                      }} 
+                    />
+                    <Legend 
+                      wrapperStyle={{ 
+                        fontSize: '12px',
+                        fontWeight: 500
+                      }} 
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               )}
