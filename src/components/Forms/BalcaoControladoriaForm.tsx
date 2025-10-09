@@ -426,28 +426,25 @@ const BalcaoControladoriaForm = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nome do Solicitante - Select */}
+            {/* Nome do Solicitante - Combobox */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Nome do Solicitante <span className="text-destructive">*</span>
               </label>
-              <Select 
-                value={formData.nomeSolicitante} 
+              <Combobox
+                options={usuarios.map(u => ({ value: u.nome, label: u.nome }))}
+                value={formData.nomeSolicitante}
                 onValueChange={(value) => handleInputChange('nomeSolicitante', value)}
-              >
-                <SelectTrigger className={`${errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}`}>
-                  <SelectValue placeholder="Selecione o solicitante" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
-                  {usuarios.map((usuario) => (
-                    <SelectItem key={usuario.id} value={usuario.nome}>
-                      {usuario.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Selecione o solicitante"
+                searchPlaceholder="Buscar solicitante..."
+                emptyMessage="Nenhum solicitante encontrado."
+                className={errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}
+              />
               {errors.nomeSolicitante && (
                 <p className="text-xs text-destructive mt-1">{errors.nomeSolicitante}</p>
+              )}
+              {validatedFields.has('nomeSolicitante') && !errors.nomeSolicitante && (
+                <p className="text-xs text-success mt-1">✓ Campo validado</p>
               )}
             </div>
 
@@ -472,27 +469,20 @@ const BalcaoControladoriaForm = () => {
               )}
             </div>
 
-            {/* Cliente - Select com opção Outros */}
+            {/* Cliente - Combobox */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Cliente <span className="text-destructive">*</span>
               </label>
-              <Select 
-                value={formData.cliente} 
+              <Combobox
+                options={[...clientes.map(c => ({ value: c, label: c })), { value: 'Outros', label: 'Outros' }]}
+                value={formData.cliente}
                 onValueChange={(value) => handleInputChange('cliente', value)}
-              >
-                <SelectTrigger className={`${errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}`}>
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-background max-h-60 overflow-y-auto">
-                  {clientes.map((cliente) => (
-                    <SelectItem key={cliente} value={cliente}>
-                      {cliente}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="Outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
+                placeholder="Selecione o cliente"
+                searchPlaceholder="Buscar cliente..."
+                emptyMessage="Nenhum cliente encontrado."
+                className={errors.cliente ? "border-destructive" : validatedFields.has('cliente') ? "border-success" : ""}
+              />
               {showClienteOutro && (
                 <Input
                   placeholder="Digite o nome do cliente"
@@ -504,6 +494,9 @@ const BalcaoControladoriaForm = () => {
               <div className="h-4">
                 {errors.cliente && (
                   <p className="text-xs text-destructive">{errors.cliente}</p>
+                )}
+                {validatedFields.has('cliente') && !errors.cliente && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
                 )}
               </div>
             </div>

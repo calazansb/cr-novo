@@ -362,26 +362,20 @@ ${validatedData.resumoDecisao}
               success={validatedFields.has('varaTribunal')}
             />
 
-            {/* Nome do Cliente - Select */}
+            {/* Nome do Cliente - Combobox */}
             <div className="space-y-2">
               <Label htmlFor="nomeCliente">
                 Nome do Cliente <span className="text-destructive">*</span>
               </Label>
-              <Select 
-                value={formData.nomeCliente} 
+              <Combobox
+                options={clientes.map(c => ({ value: c, label: c }))}
+                value={formData.nomeCliente}
                 onValueChange={(value) => handleInputChange('nomeCliente', value)}
-              >
-                <SelectTrigger className={errors.nomeCliente ? "border-destructive" : validatedFields.has('nomeCliente') ? "border-success" : ""}>
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clientes.map((cliente) => (
-                    <SelectItem key={cliente} value={cliente}>
-                      {cliente}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                placeholder="Selecione o cliente"
+                searchPlaceholder="Buscar cliente..."
+                emptyMessage="Nenhum cliente encontrado."
+                className={errors.nomeCliente ? "border-destructive" : validatedFields.has('nomeCliente') ? "border-success" : ""}
+              />
               
               {showClienteOutro && (
                 <Input
@@ -412,26 +406,35 @@ ${validatedData.resumoDecisao}
               success={validatedFields.has('adverso')}
             />
 
-            <FormField
-              type="select"
-              id="tipoDecisao"
-              label="Decisão (Sentença / Acórdão)"
-              value={formData.tipoDecisao}
-              onChange={(value) => handleInputChange('tipoDecisao', value)}
-              placeholder="Selecione o tipo de decisão"
-              required
-              error={errors.tipoDecisao}
-              success={validatedFields.has('tipoDecisao')}
-              options={[
-                { value: 'acordao-favoravel', label: 'Acórdão Favorável' },
-                { value: 'acordao-parcialmente-favoravel', label: 'Acórdão Parcialmente Favorável' },
-                { value: 'acordao-desfavoravel', label: 'Acórdão Desfavorável' },
-                { value: 'sentenca-favoravel', label: 'Sentença / Decisão Favorável' },
-                { value: 'sentenca-parcialmente-favoravel', label: 'Sentença / Decisão Parcialmente Favorável' },
-                { value: 'sentenca-desfavoravel', label: 'Sentença / Decisão Desfavorável' },
-                { value: 'liberacao-valor-bloqueado', label: 'Liberação de Valor Bloqueado' }
-              ]}
-            />
+            {/* Decisão (Sentença / Acórdão) - Combobox */}
+            <div className="space-y-2">
+              <Label htmlFor="tipoDecisao">
+                Decisão (Sentença / Acórdão) <span className="text-destructive">*</span>
+              </Label>
+              <Combobox
+                options={[
+                  { value: 'acordao-favoravel', label: 'Acórdão Favorável' },
+                  { value: 'acordao-parcialmente-favoravel', label: 'Acórdão Parcialmente Favorável' },
+                  { value: 'acordao-desfavoravel', label: 'Acórdão Desfavorável' },
+                  { value: 'sentenca-favoravel', label: 'Sentença / Decisão Favorável' },
+                  { value: 'sentenca-parcialmente-favoravel', label: 'Sentença / Decisão Parcialmente Favorável' },
+                  { value: 'sentenca-desfavoravel', label: 'Sentença / Decisão Desfavorável' },
+                  { value: 'liberacao-valor-bloqueado', label: 'Liberação de Valor Bloqueado' }
+                ]}
+                value={formData.tipoDecisao}
+                onValueChange={(value) => handleInputChange('tipoDecisao', value)}
+                placeholder="Selecione o tipo de decisão"
+                searchPlaceholder="Buscar tipo de decisão..."
+                emptyMessage="Nenhum tipo encontrado."
+                className={errors.tipoDecisao ? "border-destructive" : validatedFields.has('tipoDecisao') ? "border-success" : ""}
+              />
+              {errors.tipoDecisao && (
+                <p className="text-xs text-destructive">{errors.tipoDecisao}</p>
+              )}
+              {validatedFields.has('tipoDecisao') && !errors.tipoDecisao && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
 
             <FormField
               type="input"
