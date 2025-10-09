@@ -65,7 +65,7 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 pointer-events-auto z-50 bg-popover" align="start" sideOffset={4}>
         <Command className="bg-popover">
-          <CommandInput placeholder={searchPlaceholder} className="h-11 py-3" />
+          <CommandInput placeholder={searchPlaceholder} className="h-12 px-3 py-3.5" />
           <CommandList className="max-h-[300px]">
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup>
