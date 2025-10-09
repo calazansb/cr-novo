@@ -16,7 +16,7 @@ import UserManagement from "@/components/Admin/UserManagement";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -39,7 +39,18 @@ const Index = () => {
       case 'custom-dashboard':
         return <CustomizableDashboard />;
       case 'hapvida':
-        return <HapvidaModule />;
+      case 'hapvida-pendencias':
+        return <PendenciasForm clienteFilter="Hapvida Assistência Médica LTDA" />;
+      case 'hapvida-solicitacoes':
+        return <div className="p-6">
+            <h2 className="text-2xl font-semibold text-foreground">Solicitações Hapvida</h2>
+            <p className="text-muted-foreground">Em desenvolvimento</p>
+          </div>;
+      case 'hapvida-relatorios':
+        return <div className="p-6">
+            <h2 className="text-2xl font-semibold text-foreground">Relatórios Hapvida</h2>
+            <p className="text-muted-foreground">Em desenvolvimento</p>
+          </div>;
       case 'decisoes':
         return <DecisaoJudicialForm />;
       case 'pendencias':

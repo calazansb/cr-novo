@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/Auth/AuthProvider";
-import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard, Building2 } from 'lucide-react';
+import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard, Building2, ChevronDown } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -14,21 +14,24 @@ const ModernSidebar = ({
   onSectionChange
 }: ModernSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['hapvida']);
   const {
     user
   } = useAuth();
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups(prev => 
+      prev.includes(groupId) 
+        ? prev.filter(id => id !== groupId)
+        : [...prev, groupId]
+    );
+  };
   const navigationItems = [{
     id: 'custom-dashboard' as ActiveSection,
     title: "Meu Dashboard",
     icon: LayoutDashboard,
     color: "text-purple-500",
     bgHover: "hover:bg-purple-500/10"
-  }, {
-    id: 'hapvida' as ActiveSection,
-    title: "Hapvida",
-    icon: Building2,
-    color: "text-emerald-500",
-    bgHover: "hover:bg-emerald-500/10"
   }, {
     id: 'balcao' as ActiveSection,
     title: "Balcão da Controladoria",
@@ -78,6 +81,27 @@ const ModernSidebar = ({
     color: "text-violet-500",
     bgHover: "hover:bg-violet-500/10"
   }];
+
+  const hapvidaSubItems = [
+    {
+      id: 'hapvida-pendencias' as ActiveSection,
+      title: "Pendências e Urgências",
+      icon: AlertTriangle,
+      color: "text-rose-400",
+    },
+    {
+      id: 'hapvida-solicitacoes' as ActiveSection,
+      title: "Solicitações",
+      icon: Building,
+      color: "text-blue-400",
+    },
+    {
+      id: 'hapvida-relatorios' as ActiveSection,
+      title: "Relatórios",
+      icon: BarChart3,
+      color: "text-amber-400",
+    }
+  ];
   return <>
       {/* Mobile Backdrop */}
       {!isCollapsed && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsCollapsed(true)} />}
@@ -117,17 +141,9 @@ const ModernSidebar = ({
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
-          {navigationItems
-        // .filter(item => {
-        //   // Mostrar "Gerenciar Usuários" apenas para administradores
-        //   if (item.id === 'admin-usuarios') {
-        //     return user?.user_metadata?.role === 'admin';
-        //   }
-        //   return true;
-        // })
-        .map((item, index) => <Button key={item.id} variant="ghost" className={cn("w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden rounded-xl", isCollapsed ? "px-3" : "px-4", activeSection === item.id ? "bg-blue-600/25 text-white border-l-4 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "text-slate-300 hover:bg-blue-500/15 hover:text-white", item.bgHover)} style={{
-          animationDelay: `${index * 50}ms`
-        }} onClick={() => onSectionChange(item.id)}>
+          {navigationItems.map((item, index) => <Button key={item.id} variant="ghost" className={cn("w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden rounded-xl", isCollapsed ? "px-3" : "px-4", activeSection === item.id ? "bg-blue-600/25 text-white border-l-4 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]" : "text-slate-300 hover:bg-blue-500/15 hover:text-white", item.bgHover)} style={{
+            animationDelay: `${index * 50}ms`
+          }} onClick={() => onSectionChange(item.id)}>
               <item.icon className={cn("w-5 h-5 flex-shrink-0 transition-all duration-200", activeSection === item.id ? item.color : item.color, !isCollapsed && "mr-3", "drop-shadow-[0_0_8px_currentColor]")} />
               
               {!isCollapsed && <>
@@ -137,6 +153,62 @@ const ModernSidebar = ({
                   {activeSection === item.id && <ChevronRight className="w-4 h-4 opacity-80" />}
                 </>}
             </Button>)}
+
+          {/* Hapvida Dropdown Group */}
+          <div className="space-y-1">
+            <Button 
+              variant="ghost" 
+              className={cn(
+                "w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden rounded-xl",
+                isCollapsed ? "px-3" : "px-4",
+                activeSection.startsWith('hapvida') 
+                  ? "bg-emerald-600/25 text-white border-l-4 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]" 
+                  : "text-slate-300 hover:bg-emerald-500/15 hover:text-white hover:bg-emerald-500/10"
+              )}
+              onClick={() => toggleGroup('hapvida')}
+            >
+              <Building2 className={cn(
+                "w-5 h-5 flex-shrink-0 transition-all duration-200 text-emerald-500",
+                !isCollapsed && "mr-3",
+                "drop-shadow-[0_0_8px_currentColor]"
+              )} />
+              
+              {!isCollapsed && (
+                <>
+                  <span className="font-semibold text-sm truncate flex-1 text-left">
+                    Hapvida
+                  </span>
+                  <ChevronDown className={cn(
+                    "w-4 h-4 opacity-80 transition-transform duration-200",
+                    expandedGroups.includes('hapvida') && "rotate-180"
+                  )} />
+                </>
+              )}
+            </Button>
+
+            {/* Sub-items */}
+            {!isCollapsed && expandedGroups.includes('hapvida') && (
+              <div className="ml-4 space-y-1 border-l-2 border-emerald-500/30 pl-2">
+                {hapvidaSubItems.map((subItem) => (
+                  <Button
+                    key={subItem.id}
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start h-10 transition-all duration-200 rounded-lg",
+                      "px-3",
+                      activeSection === subItem.id
+                        ? "bg-emerald-500/20 text-white font-medium"
+                        : "text-slate-400 hover:bg-emerald-500/10 hover:text-slate-200"
+                    )}
+                    onClick={() => onSectionChange(subItem.id)}
+                  >
+                    <subItem.icon className={cn("w-4 h-4 mr-2", subItem.color)} />
+                    <span className="text-sm truncate">{subItem.title}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         {/* Footer da Sidebar */}
