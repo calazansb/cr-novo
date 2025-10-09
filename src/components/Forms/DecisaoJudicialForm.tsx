@@ -23,6 +23,7 @@ const decisaoSchema = z.object({
   varaTribunal: z.string().trim().min(1, "Vara / Câmara / Turma é obrigatório").max(200, "Máximo 200 caracteres"),
   nomeCliente: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
   tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
+  nomeMagistrado: z.string().trim().min(1, "Nome do Magistrado é obrigatório").max(100, "Máximo 100 caracteres"),
   advogadoInterno: z.string().trim().min(1, "Adv. Jurídico Interno é obrigatório").max(100, "Máximo 100 caracteres"),
   adverso: z.string().trim().min(1, "Adverso é obrigatório").max(100, "Máximo 100 caracteres"),
   procedimentoObjeto: z.string().trim().min(1, "Objeto / Procedimento é obrigatório").max(200, "Máximo 200 caracteres"),
@@ -59,6 +60,7 @@ const DecisaoJudicialForm = () => {
     varaTribunal: "",
     nomeCliente: "",
     tipoDecisao: "",
+    nomeMagistrado: "",
     advogadoInterno: "",
     adverso: "",
     procedimentoObjeto: "",
@@ -71,6 +73,8 @@ const DecisaoJudicialForm = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [clienteOutro, setClienteOutro] = useState("");
   const [showClienteOutro, setShowClienteOutro] = useState(false);
+  const [magistradoOutro, setMagistradoOutro] = useState("");
+  const [showMagistradoOutro, setShowMagistradoOutro] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -145,6 +149,16 @@ const DecisaoJudicialForm = () => {
       }
     }
     
+    // Se o magistrado for "outros", mostrar campo de texto
+    if (field === 'nomeMagistrado') {
+      if (value === 'outros') {
+        setShowMagistradoOutro(true);
+      } else {
+        setShowMagistradoOutro(false);
+        setMagistradoOutro('');
+      }
+    }
+    
     // Validate after a short delay
     setTimeout(() => validateField(field, value), 300);
   };
@@ -153,7 +167,7 @@ const DecisaoJudicialForm = () => {
   const validateAllFields = () => {
     const requiredFields = [
       'numeroProcesso', 'orgao', 'varaTribunal', 'nomeCliente', 
-      'tipoDecisao', 'advogadoInterno', 'adverso', 
+      'tipoDecisao', 'nomeMagistrado', 'advogadoInterno', 'adverso', 
       'procedimentoObjeto', 'resumoDecisao'
     ];
 
@@ -199,12 +213,25 @@ ${formData.resumoDecisao}
 
       // Usar o cliente digitado se for "Outros"
       const clienteFinal = formData.nomeCliente === 'Outros' ? clienteOutro : validatedData.nomeCliente;
+      
+      // Usar o magistrado digitado se for "outros"
+      const magistradoFinal = formData.nomeMagistrado === 'outros' ? magistradoOutro : validatedData.nomeMagistrado;
 
       // Validar cliente personalizado
       if (formData.nomeCliente === 'Outros' && !clienteOutro.trim()) {
         toast({
           title: "Erro de validação",
           description: "Por favor, digite o nome do cliente.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validar magistrado personalizado
+      if (formData.nomeMagistrado === 'outros' && !magistradoOutro.trim()) {
+        toast({
+          title: "Erro de validação",
+          description: "Por favor, digite o nome do magistrado.",
           variant: "destructive",
         });
         return;
@@ -217,6 +244,7 @@ ${formData.resumoDecisao}
 *Órgão:* ${validatedData.orgao}
 *Tipo de Decisão:* ${validatedData.tipoDecisao}
 *Vara / Câmara / Turma:* ${validatedData.varaTribunal}
+*Magistrado:* ${magistradoFinal}
 *Advogado Responsável:* ${validatedData.advogadoInterno}
 *Parte Adversa:* ${validatedData.adverso}
 *Objeto / Procedimento:* ${validatedData.procedimentoObjeto}
@@ -239,6 +267,7 @@ ${validatedData.resumoDecisao}
         varaTribunal: '',
         nomeCliente: '',
         tipoDecisao: '',
+        nomeMagistrado: '',
         advogadoInterno: '',
         adverso: '',
         procedimentoObjeto: '',
@@ -248,6 +277,8 @@ ${validatedData.resumoDecisao}
       setValidatedFields(new Set());
       setClienteOutro('');
       setShowClienteOutro(false);
+      setMagistradoOutro('');
+      setShowMagistradoOutro(false);
       localStorage.removeItem('decisao-draft');
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -273,7 +304,7 @@ ${validatedData.resumoDecisao}
         <div>
           <h2 className="text-2xl font-bold text-foreground">Decisão Judicial</h2>
           <p className="text-muted-foreground">
-            {validatedFields.size > 0 && `${validatedFields.size} de 9 campos validados`}
+            {validatedFields.size > 0 && `${validatedFields.size} de 10 campos validados`}
           </p>
         </div>
         
@@ -434,6 +465,39 @@ ${validatedData.resumoDecisao}
               {validatedFields.has('tipoDecisao') && !errors.tipoDecisao && (
                 <p className="text-xs text-success">✓ Campo validado</p>
               )}
+            </div>
+
+            {/* Nome do Magistrado - SelectWithAdminEdit */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Nome do Magistrado <span className="text-destructive">*</span>
+              </label>
+              <SelectWithAdminEdit
+                optionSetKey="magistrados"
+                value={formData.nomeMagistrado}
+                onValueChange={(value) => handleInputChange('nomeMagistrado', value)}
+                placeholder="Selecione o magistrado"
+                isAdmin={isAdmin}
+                className={errors.nomeMagistrado ? "border-destructive" : validatedFields.has('nomeMagistrado') ? "border-success" : ""}
+              />
+              
+              {showMagistradoOutro && (
+                <Input
+                  placeholder="Digite o nome do magistrado"
+                  value={magistradoOutro}
+                  onChange={(e) => setMagistradoOutro(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+              
+              <div className="h-4">
+                {errors.nomeMagistrado && (
+                  <p className="text-xs text-destructive">{errors.nomeMagistrado}</p>
+                )}
+                {validatedFields.has('nomeMagistrado') && !errors.nomeMagistrado && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
+              </div>
             </div>
 
             <FormField
