@@ -23,21 +23,52 @@ serve(async (req) => {
     // Remove caracteres não numéricos
     const numeroLimpo = numeroProcesso.replace(/\D/g, '');
     
-    // Determina o tribunal baseado no número do processo (segmento)
+    // Determina segmento (J) e o código do tribunal (TR)
     const segmento = numeroLimpo.substring(13, 14);
-    let tribunal = 'trf1'; // Default
-    
-    // Mapeia tribunais (simplificado - você pode expandir)
-    const tribunalMap: Record<string, string> = {
-      '1': 'trf1',
-      '2': 'trf2',
-      '3': 'trf3',
-      '4': 'trf4',
-      '5': 'trf5',
-      '6': 'trf6',
+    const trCode = numeroLimpo.substring(14, 16);
+
+    // Mapas auxiliares
+    const estadoMap: Record<string, string> = {
+      '01': 'ac','02': 'al','03': 'am','04': 'ap','05': 'ba','06': 'ce','07': 'df','08': 'es','09': 'go','10': 'ma','11': 'mg','12': 'ms','13': 'mt','14': 'pa','15': 'pb','16': 'pe','17': 'pi','18': 'pr','19': 'rj','20': 'rn','21': 'ro','22': 'rr','23': 'rs','24': 'sc','25': 'se','26': 'sp','27': 'to',
     };
-    
-    tribunal = tribunalMap[segmento] || 'trf1';
+
+    function resolveEndpoint(segmento: string, tr: string): string {
+      // Tribunais superiores
+      if (segmento === '1') return 'stf';
+      if (segmento === '2') return 'stj';
+      if (segmento === '6') return 'stm';
+
+      // Justiça Federal (TRF)
+      if (segmento === '5') {
+        const reg = String(parseInt(tr, 10)); // '01' -> '1'
+        return `trf${reg}`;
+      }
+
+      // Justiça Estadual (TJ)
+      if (segmento === '8') {
+        const uf = estadoMap[tr];
+        if (uf === 'df') return 'tjdft';
+        return uf ? `tj${uf}` : 'tjsp';
+      }
+
+      // Justiça do Trabalho (TRT)
+      if (segmento === '4') {
+        const reg = String(parseInt(tr, 10));
+        return `trt${reg}`;
+      }
+
+      // Justiça Eleitoral (TRE)
+      if (segmento === '3') {
+        const uf = estadoMap[tr];
+        return uf ? `tre-${uf}` : 'tre-sp';
+      }
+
+      // Fallback: usa TJSP
+      return 'tjsp';
+    }
+
+    const tribunal = resolveEndpoint(segmento, trCode);
+    console.log('[buscar-processo-cnj] segmento:', segmento, 'tr:', trCode, 'endpoint:', tribunal);
     
     const apiKey = Deno.env.get('CNJ_API_KEY');
     

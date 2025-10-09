@@ -23,7 +23,8 @@ export const useCNJSearch = () => {
   const { toast } = useToast();
 
   const buscarProcesso = async (numeroProcesso: string): Promise<ProcessoCNJ | null> => {
-    if (!numeroProcesso || numeroProcesso.length < 20) {
+    const digits = numeroProcesso?.replace(/\D/g, '') || '';
+    if (!digits || digits.length < 20) {
       return null;
     }
 
