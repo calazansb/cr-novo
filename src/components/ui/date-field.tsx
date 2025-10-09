@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/popover";
 
 interface DateFieldProps {
-  label: string;
+  label?: string;
   id: string;
   value: string;
   onChange: (value: string) => void;
@@ -132,16 +132,18 @@ export const DateField: React.FC<DateFieldProps> = ({
 
   return (
     <div className={`space-y-1.5 ${className}`}>
-      <Label 
-        htmlFor={id} 
-        className={`
-          text-xs font-medium transition-colors flex items-center gap-1.5 h-4
-          ${error ? 'text-destructive' : success ? 'text-success' : 'text-foreground'}
-        `}
-      >
-        {label}
-        {required && <span className="text-destructive">*</span>}
-      </Label>
+      {label && (
+        <Label 
+          htmlFor={id} 
+          className={`
+            text-xs font-medium transition-colors flex items-center gap-1.5 h-4
+            ${error ? 'text-destructive' : success ? 'text-success' : 'text-foreground'}
+          `}
+        >
+          {label}
+          {required && <span className="text-destructive">*</span>}
+        </Label>
+      )}
 
       <div className="relative">
         <Popover open={isOpen} onOpenChange={setIsOpen}>

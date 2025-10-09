@@ -440,33 +440,35 @@ const BalcaoControladoriaForm = () => {
                 emptyMessage="Nenhum solicitante encontrado."
                 className={errors.nomeSolicitante ? "border-destructive" : validatedFields.has('nomeSolicitante') ? "border-success" : ""}
               />
-              {errors.nomeSolicitante && (
-                <p className="text-xs text-destructive mt-1">{errors.nomeSolicitante}</p>
-              )}
-              {validatedFields.has('nomeSolicitante') && !errors.nomeSolicitante && (
-                <p className="text-xs text-success mt-1">✓ Campo validado</p>
-              )}
+              <div className="h-4">
+                {errors.nomeSolicitante && (
+                  <p className="text-xs text-destructive">{errors.nomeSolicitante}</p>
+                )}
+                {validatedFields.has('nomeSolicitante') && !errors.nomeSolicitante && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Número do Processo <span className="text-destructive">*</span>
               </label>
-              <div className="relative">
-                <Input
-                  id="numeroProcesso"
-                  value={formData.numeroProcesso}
-                  onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
-                  placeholder="Digite o número do processo (20 dígitos)"
-                  className={errors.numeroProcesso ? "border-destructive" : validatedFields.has('numeroProcesso') ? "border-success" : ""}
-                />
+              <Input
+                id="numeroProcesso"
+                value={formData.numeroProcesso}
+                onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
+                placeholder="Digite o número do processo (20 dígitos)"
+                className={errors.numeroProcesso ? "border-destructive" : validatedFields.has('numeroProcesso') ? "border-success" : ""}
+              />
+              <div className="h-4">
+                {errors.numeroProcesso && (
+                  <p className="text-xs text-destructive">{errors.numeroProcesso}</p>
+                )}
+                {validatedFields.has('numeroProcesso') && !errors.numeroProcesso && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
               </div>
-              {errors.numeroProcesso && (
-                <p className="text-xs text-destructive mt-1">{errors.numeroProcesso}</p>
-              )}
-              {validatedFields.has('numeroProcesso') && !errors.numeroProcesso && (
-                <p className="text-xs text-success mt-1">✓ Campo validado</p>
-              )}
             </div>
 
             {/* Cliente - Combobox */}
@@ -488,7 +490,7 @@ const BalcaoControladoriaForm = () => {
                   placeholder="Digite o nome do cliente"
                   value={clienteOutro}
                   onChange={(e) => setClienteOutro(e.target.value)}
-                  className="mt-2 h-9"
+                  className="mt-2"
                 />
               )}
               <div className="h-4">
@@ -513,11 +515,14 @@ const BalcaoControladoriaForm = () => {
                 placeholder="Selecione o tipo"
                 isAdmin={isAdmin}
                 label="Tipo de Solicitação"
-                className={`${errors.tipoSolicitacao ? "border-destructive" : validatedFields.has('tipoSolicitacao') ? "border-success" : ""}`}
+                className={errors.tipoSolicitacao ? "border-destructive" : validatedFields.has('tipoSolicitacao') ? "border-success" : ""}
               />
               <div className="h-4">
                 {errors.tipoSolicitacao && (
                   <p className="text-xs text-destructive">{errors.tipoSolicitacao}</p>
+                )}
+                {validatedFields.has('tipoSolicitacao') && !errors.tipoSolicitacao && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
                 )}
               </div>
             </div>
@@ -534,52 +539,89 @@ const BalcaoControladoriaForm = () => {
                 placeholder="Selecione o órgão"
                 searchPlaceholder="Buscar órgão..."
                 emptyMessage="Nenhum órgão encontrado."
-                className={`${errors.orgao ? "border-destructive" : validatedFields.has('orgao') ? "border-success" : ""}`}
+                className={errors.orgao ? "border-destructive" : validatedFields.has('orgao') ? "border-success" : ""}
               />
               <div className="h-4">
                 {errors.orgao && (
                   <p className="text-xs text-destructive">{errors.orgao}</p>
                 )}
+                {validatedFields.has('orgao') && !errors.orgao && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
               </div>
             </div>
 
-            <FormField
-              type="input"
-              id="tribunalOrgao"
-              label="Vara / Câmara / Turma"
-              value={formData.tribunalOrgao}
-              onChange={(value) => handleInputChange('tribunalOrgao', value)}
-              placeholder="Ex: 1ª Vara Cível de São Paulo"
-              required
-              error={errors.tribunalOrgao}
-              success={validatedFields.has('tribunalOrgao')}
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Vara / Câmara / Turma <span className="text-destructive">*</span>
+              </label>
+              <Input
+                id="tribunalOrgao"
+                value={formData.tribunalOrgao}
+                onChange={(e) => handleInputChange('tribunalOrgao', e.target.value)}
+                placeholder="Ex: 1ª Vara Cível de São Paulo"
+                className={errors.tribunalOrgao ? "border-destructive" : validatedFields.has('tribunalOrgao') ? "border-success" : ""}
+              />
+              <div className="h-4">
+                {errors.tribunalOrgao && (
+                  <p className="text-xs text-destructive">{errors.tribunalOrgao}</p>
+                )}
+                {validatedFields.has('tribunalOrgao') && !errors.tribunalOrgao && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
+              </div>
+            </div>
 
             {/* Prazo Para Retorno */}
-            <DateField
-              label="Prazo Para Retorno"
-              id="prazoRetorno"
-              value={formData.prazoRetorno}
-              onChange={(value) => handleInputChange('prazoRetorno', value)}
-              placeholder="Selecione o prazo para retorno"
-              required
-              error={errors.prazoRetorno}
-              success={validatedFields.has('prazoRetorno')}
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Prazo Para Retorno <span className="text-destructive">*</span>
+              </label>
+              <DateField
+                id="prazoRetorno"
+                value={formData.prazoRetorno}
+                onChange={(value) => handleInputChange('prazoRetorno', value)}
+                placeholder="Selecione o prazo para retorno"
+                className={errors.prazoRetorno ? "border-destructive" : validatedFields.has('prazoRetorno') ? "border-success" : ""}
+              />
+              <div className="h-4">
+                {errors.prazoRetorno && (
+                  <p className="text-xs text-destructive">{errors.prazoRetorno}</p>
+                )}
+                {validatedFields.has('prazoRetorno') && !errors.prazoRetorno && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
+              </div>
+            </div>
           </div>
 
-          <FormField
-            type="textarea"
-            id="solicitacao"
-            label="Solicitação"
-            value={formData.solicitacao}
-            onChange={(value) => handleInputChange('solicitacao', value)}
-            placeholder="Descreva detalhadamente sua solicitação"
-            rows={4}
-            required
-            error={errors.solicitacao}
-            success={validatedFields.has('solicitacao')}
-          />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Solicitação <span className="text-destructive">*</span>
+            </label>
+            <textarea
+              id="solicitacao"
+              value={formData.solicitacao}
+              onChange={(e) => handleInputChange('solicitacao', e.target.value)}
+              placeholder="Descreva detalhadamente sua solicitação"
+              rows={4}
+              className={`w-full px-3 py-2 rounded-md border ${
+                errors.solicitacao 
+                  ? "border-destructive" 
+                  : validatedFields.has('solicitacao') 
+                    ? "border-success" 
+                    : "border-input"
+              } bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent`}
+            />
+            <div className="h-4">
+              {errors.solicitacao && (
+                <p className="text-xs text-destructive">{errors.solicitacao}</p>
+              )}
+              {validatedFields.has('solicitacao') && !errors.solicitacao && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
+          </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-foreground flex items-center gap-2">
