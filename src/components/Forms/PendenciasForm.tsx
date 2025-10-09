@@ -9,7 +9,7 @@ import { DateField } from "@/components/ui/date-field";
 import { AlertTriangle, MessageCircle, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientes } from "@/hooks/useClientes";
-import { openWhatsApp } from "@/lib/utils";
+import { openWhatsAppGroup } from "@/lib/utils";
 import { z } from "zod";
 
 const pendenciaSchema = z.object({
@@ -90,11 +90,16 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
 
 `;
 
-      openWhatsApp(message);
+      // Se for Hapvida, envia para o grupo específico
+      if (clienteFinal === "Hapvida Assistência Médica LTDA") {
+        openWhatsAppGroup(message, "https://chat.whatsapp.com/LovaZHeq5KOFoCif9IW04R");
+      } else {
+        openWhatsAppGroup(message, "https://chat.whatsapp.com/LovaZHeq5KOFoCif9IW04R");
+      }
 
       toast({
         title: "Pendência comunicada!",
-        description: `Urgência preparada para envio via WhatsApp.`,
+        description: `Grupo do WhatsApp aberto. Cole a mensagem copiada!`,
       });
 
       setFormData({

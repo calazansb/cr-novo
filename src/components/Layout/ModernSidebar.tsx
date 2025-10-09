@@ -51,12 +51,6 @@ const ModernSidebar = ({
     color: "text-indigo-500",
     bgHover: "hover:bg-indigo-500/10"
   }, {
-    id: 'pendencias' as ActiveSection,
-    title: "Pendências / Urgências",
-    icon: AlertTriangle,
-    color: "text-rose-500",
-    bgHover: "hover:bg-rose-500/10"
-  }, {
     id: 'calculo-prazos' as ActiveSection,
     title: "Cálculo de Prazos",
     icon: Calculator,
