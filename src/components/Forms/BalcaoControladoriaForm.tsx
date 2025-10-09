@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, Paperclip } from "lucide-react";
+import { Building, Paperclip, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useCNJSearch } from "@/hooks/useCNJSearch";
 
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ const BalcaoControladoriaForm = () => {
   const { toast } = useToast();
   const { criarSolicitacao } = useSolicitacoes();
   const { user } = useAuth();
+  const { buscarProcesso, loading: searchingCNJ } = useCNJSearch();
   
   // Verificar se é admin
   const [isAdmin, setIsAdmin] = useState(false);
@@ -176,8 +178,22 @@ const BalcaoControladoriaForm = () => {
     return !error;
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se o campo for numeroProcesso e tiver 20 dígitos, busca no CNJ
+    if (field === 'numeroProcesso' && value.replace(/\D/g, '').length === 20) {
+      const dadosCNJ = await buscarProcesso(value);
+      
+      if (dadosCNJ) {
+        // Preenche automaticamente os campos disponíveis
+        setFormData(prev => ({
+          ...prev,
+          tribunalOrgao: dadosCNJ.orgaoJulgador || prev.tribunalOrgao,
+          tipoSolicitacao: dadosCNJ.assuntos || prev.tipoSolicitacao,
+        }));
+      }
+    }
     
     // Se o cliente for "Outros", mostrar campo de texto
     if (field === 'cliente') {
@@ -407,9 +423,14 @@ const BalcaoControladoriaForm = () => {
           
           {Object.keys(errors).length > 0 && (
             <div className="bg-destructive-light/20 border border-destructive/20 rounded-lg p-4 animate-slide-in-left">
-              <p className="text-sm text-destructive font-medium">
-                Por favor, corrija os erros nos campos destacados antes de continuar.
+              <p className="text-sm text-destructive font-medium mb-2">
+                Por favor, corrija os erros nos campos destacados antes de continuar:
               </p>
+              <ul className="text-xs text-destructive list-disc list-inside space-y-1">
+                {Object.entries(errors).map(([field, error]) => error && (
+                  <li key={field}>{error}</li>
+                ))}
+              </ul>
             </div>
           )}
         </CardHeader>
@@ -440,17 +461,31 @@ const BalcaoControladoriaForm = () => {
               )}
             </div>
 
-            <FormField
-              type="input"
-              id="numeroProcesso"
-              label="Número do Processo"
-              value={formData.numeroProcesso}
-              onChange={(value) => handleInputChange('numeroProcesso', value)}
-              placeholder="Digite o número do processo"
-              required
-              error={errors.numeroProcesso}
-              success={validatedFields.has('numeroProcesso')}
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Número do Processo <span className="text-destructive">*</span>
+              </label>
+              <div className="relative">
+                <Input
+                  id="numeroProcesso"
+                  value={formData.numeroProcesso}
+                  onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
+                  placeholder="Digite o número do processo (20 dígitos)"
+                  className={errors.numeroProcesso ? "border-destructive" : validatedFields.has('numeroProcesso') ? "border-success" : ""}
+                />
+                {searchingCNJ && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Search className="h-4 w-4 animate-spin text-primary" />
+                  </div>
+                )}
+              </div>
+              {errors.numeroProcesso && (
+                <p className="text-xs text-destructive mt-1">{errors.numeroProcesso}</p>
+              )}
+              {validatedFields.has('numeroProcesso') && !errors.numeroProcesso && (
+                <p className="text-xs text-success mt-1">✓ Campo validado</p>
+              )}
+            </div>
 
             {/* Cliente - Select com opção Outros */}
             <div className="space-y-2">
