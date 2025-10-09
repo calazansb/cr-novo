@@ -1,17 +1,9 @@
 import { useState } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Settings } from 'lucide-react';
 import { OptionAdminModal } from './OptionAdminModal';
 import { useOptionItems } from '@/hooks/useOptionItems';
+import { Combobox, ComboboxOption } from '@/components/ui/combobox';
+import { Button } from '@/components/ui/button';
 
 interface SelectWithAdminEditProps {
   optionSetKey: string;
@@ -38,58 +30,39 @@ export function SelectWithAdminEdit({
   const { items, isLoading } = useOptionItems(optionSetKey, { activeOnly: true });
 
   const handleValueChange = (newValue: string) => {
-    // Se clicar em "Criar e Editar...", abrir modal ao invés de selecionar
-    if (newValue === '__ADMIN_EDIT__') {
-      setModalOpen(true);
-      return;
-    }
-
     onValueChange?.(newValue);
   };
 
+  // Converter items para formato ComboboxOption
+  const comboboxOptions: ComboboxOption[] = items.map((item) => ({
+    value: item.value,
+    label: item.label,
+  }));
+
   return (
-    <>
-      <Select
+    <div className="space-y-2">
+      <Combobox
+        options={comboboxOptions}
         value={value}
         onValueChange={handleValueChange}
-        disabled={disabled || isLoading}
-      >
-        <SelectTrigger className={className} aria-label={label}>
-          <SelectValue placeholder={isLoading ? 'Carregando...' : placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {label && <SelectLabel>{label}</SelectLabel>}
-            
-            {items.map((item) => (
-              <SelectItem key={item.id} value={item.value}>
-                {item.label}
-              </SelectItem>
-            ))}
+        placeholder={isLoading ? 'Carregando...' : placeholder}
+        searchPlaceholder="Buscar..."
+        emptyMessage="Nenhuma opção encontrada."
+        className={className}
+      />
 
-            {items.length === 0 && !isLoading && (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                Nenhuma opção disponível
-              </div>
-            )}
-          </SelectGroup>
-
-          {isAdmin && items.length > 0 && (
-            <>
-              <SelectSeparator />
-              <SelectItem 
-                value="__ADMIN_EDIT__"
-                className="text-primary font-medium"
-              >
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Criar e Editar...
-                </div>
-              </SelectItem>
-            </>
-          )}
-        </SelectContent>
-      </Select>
+      {isAdmin && items.length > 0 && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setModalOpen(true)}
+          className="w-full text-primary"
+        >
+          <Settings className="h-4 w-4 mr-2" />
+          Criar e Editar Opções
+        </Button>
+      )}
 
       {isAdmin && (
         <OptionAdminModal
@@ -98,6 +71,6 @@ export function SelectWithAdminEdit({
           optionSetKey={optionSetKey}
         />
       )}
-    </>
+    </div>
   );
 }
