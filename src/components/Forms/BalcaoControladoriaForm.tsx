@@ -24,7 +24,7 @@ const balcaoSchema = z.object({
   cliente: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   tipoSolicitacao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
   orgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
-  tribunalOrgao: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
+  tribunalOrgao: z.string().trim().min(1, "Vara / Câmara / Turma é obrigatório").max(100, "Máximo 100 caracteres"),
   prazoRetorno: z.string().min(1, "Campo obrigatório"),
   solicitacao: z.string().trim().min(10, "Mínimo 10 caracteres").max(1000, "Máximo 1000 caracteres")
 });
@@ -152,7 +152,7 @@ const BalcaoControladoriaForm = () => {
         if (!value.trim()) error = 'Tipo de solicitação é obrigatório';
         break;
       case 'tribunalOrgao':
-        if (!value.trim()) error = 'Tribunal/Órgão é obrigatório';
+        if (!value.trim()) error = 'Vara / Câmara / Turma é obrigatório';
         break;
       case 'prazoRetorno':
         if (!value.trim()) error = 'Prazo para retorno é obrigatório';
@@ -553,10 +553,10 @@ const BalcaoControladoriaForm = () => {
             <FormField
               type="input"
               id="tribunalOrgao"
-              label="Tribunal / Órgão"
+              label="Vara / Câmara / Turma"
               value={formData.tribunalOrgao}
               onChange={(value) => handleInputChange('tribunalOrgao', value)}
-              placeholder="Ex: TJ-SP, STJ, Tribunal Regional"
+              placeholder="Ex: 1ª Vara Cível de São Paulo"
               required
               error={errors.tribunalOrgao}
               success={validatedFields.has('tribunalOrgao')}

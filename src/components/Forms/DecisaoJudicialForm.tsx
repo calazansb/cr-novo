@@ -17,7 +17,7 @@ import { z } from "zod";
 const decisaoSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Número do processo é obrigatório").max(100, "Máximo 100 caracteres"),
   orgao: z.string().trim().min(1, "Órgão é obrigatório").max(100, "Máximo 100 caracteres"),
-  varaTribunal: z.string().trim().min(1, "Vara/Tribunal é obrigatório").max(200, "Máximo 200 caracteres"),
+  varaTribunal: z.string().trim().min(1, "Vara / Câmara / Turma é obrigatório").max(200, "Máximo 200 caracteres"),
   nomeCliente: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
   tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
   advogadoInterno: z.string().trim().min(1, "Adv. Jurídico Interno é obrigatório").max(100, "Máximo 100 caracteres"),
@@ -152,7 +152,7 @@ const DecisaoJudicialForm = () => {
 🏛️ *DECISÃO JUDICIAL COMUNICADA*
 
 📋 *Processo:* ${formData.numeroProcesso}
-⚖️ *Vara/Tribunal:* ${formData.varaTribunal}
+⚖️ *Vara / Câmara / Turma:* ${formData.varaTribunal}
 👤 *Cliente:* ${formData.nomeCliente}
 📄 *Tipo:* ${formData.tipoDecisao}
 👨‍💼 *Advogado:* ${formData.advogadoInterno}
@@ -193,7 +193,7 @@ ${formData.resumoDecisao}
 *Processo:* ${validatedData.numeroProcesso}
 *Órgão:* ${validatedData.orgao}
 *Tipo de Decisão:* ${validatedData.tipoDecisao}
-*Vara/Tribunal:* ${validatedData.varaTribunal}
+*Vara / Câmara / Turma:* ${validatedData.varaTribunal}
 *Advogado Responsável:* ${validatedData.advogadoInterno}
 *Parte Adversa:* ${validatedData.adverso}
 *Procedimento/Objeto:* ${validatedData.procedimentoObjeto}
@@ -330,7 +330,7 @@ ${validatedData.resumoDecisao}
             <FormField
               type="input"
               id="varaTribunal"
-              label="Vara/Tribunal"
+              label="Vara / Câmara / Turma"
               value={formData.varaTribunal}
               onChange={(value) => handleInputChange('varaTribunal', value)}
               placeholder="Ex: 1ª Vara Cível de São Paulo"
