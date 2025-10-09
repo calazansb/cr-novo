@@ -15,7 +15,8 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import UserManagement from "@/components/Admin/UserManagement";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Button } from "@/components/ui/button";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
+import HapvidaModule from "@/components/Modules/HapvidaModule";
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -37,6 +38,8 @@ const Index = () => {
     switch (activeSection) {
       case 'custom-dashboard':
         return <CustomizableDashboard />;
+      case 'hapvida':
+        return <HapvidaModule />;
       case 'decisoes':
         return <DecisaoJudicialForm />;
       case 'pendencias':

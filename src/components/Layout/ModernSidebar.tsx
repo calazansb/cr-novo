@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "@/components/Auth/AuthProvider";
-import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard } from 'lucide-react';
+import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard, Building2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -24,11 +24,17 @@ const ModernSidebar = ({
     color: "text-purple-500",
     bgHover: "hover:bg-purple-500/10"
   }, {
+    id: 'hapvida' as ActiveSection,
+    title: "Hapvida",
+    icon: Building2,
+    color: "text-emerald-500",
+    bgHover: "hover:bg-emerald-500/10"
+  }, {
     id: 'balcao' as ActiveSection,
     title: "Balcão da Controladoria",
     icon: Building,
-    color: "text-emerald-500",
-    bgHover: "hover:bg-emerald-500/10"
+    color: "text-cyan-500",
+    bgHover: "hover:bg-cyan-500/10"
   }, {
     id: 'dashboard-controladoria' as ActiveSection,
     title: "Dashboard Controladoria",

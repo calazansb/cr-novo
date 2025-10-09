@@ -22,7 +22,11 @@ const pendenciaSchema = z.object({
   observacoes: z.string().max(500, "Máximo 500 caracteres").optional()
 });
 
-const PendenciasForm = () => {
+interface PendenciasFormProps {
+  clienteFilter?: string;
+}
+
+const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   const { toast } = useToast();
   const { clientes } = useClientes();
   const [formData, setFormData] = useState({
@@ -31,7 +35,7 @@ const PendenciasForm = () => {
     prazoLimite: "",
     responsavel: "",
     descricao: "",
-    cliente: "",
+    cliente: clienteFilter || "",
     observacoes: ""
   });
 
@@ -200,6 +204,7 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
               <Select 
                 value={formData.cliente} 
                 onValueChange={(value) => handleInputChange('cliente', value)}
+                disabled={!!clienteFilter}
               >
                 <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Selecione o cliente" />
