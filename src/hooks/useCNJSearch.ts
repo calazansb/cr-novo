@@ -13,6 +13,9 @@ export interface ProcessoCNJ {
   movimentos: any[];
   sistema: string;
   formato: string;
+  partesPoloAtivo: string[];
+  partesPoloPassivo: string[];
+  todasPartes: string[];
 }
 
 export const useCNJSearch = () => {

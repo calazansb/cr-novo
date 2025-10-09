@@ -74,6 +74,11 @@ serve(async (req) => {
     if (data.hits && data.hits.hits && data.hits.hits.length > 0) {
       const processo = data.hits.hits[0]._source;
       
+      // Extrai nomes das partes (polo ativo e passivo)
+      const partesPoloAtivo = processo.poloAtivo?.map((p: any) => p.nome || '').filter(Boolean) || [];
+      const partesPoloPassivo = processo.poloPassivo?.map((p: any) => p.nome || '').filter(Boolean) || [];
+      const todasPartes = [...partesPoloAtivo, ...partesPoloPassivo];
+      
       return new Response(
         JSON.stringify({
           success: true,
@@ -87,7 +92,10 @@ serve(async (req) => {
             grau: processo.grau,
             movimentos: processo.movimentos || [],
             sistema: processo.sistema?.nome || '',
-            formato: processo.formato?.nome || ''
+            formato: processo.formato?.nome || '',
+            partesPoloAtivo,
+            partesPoloPassivo,
+            todasPartes
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -103,8 +111,9 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Erro ao buscar processo:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -113,11 +113,20 @@ const DecisaoJudicialForm = () => {
       const dadosCNJ = await buscarProcesso(value);
       
       if (dadosCNJ) {
+        // Identifica o adverso (parte que não é cliente)
+        const adverso = dadosCNJ.todasPartes.find(parte => 
+          !clientes.some(cliente => 
+            parte.toLowerCase().includes(cliente.toLowerCase()) ||
+            cliente.toLowerCase().includes(parte.toLowerCase())
+          )
+        ) || '';
+        
         // Preenche automaticamente os campos disponíveis
         setFormData(prev => ({
           ...prev,
           varaTribunal: dadosCNJ.orgaoJulgador || prev.varaTribunal,
           procedimentoObjeto: dadosCNJ.assuntos || prev.procedimentoObjeto,
+          adverso: adverso || prev.adverso,
         }));
       }
     }

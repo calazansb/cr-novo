@@ -190,8 +190,17 @@ const BalcaoControladoriaForm = () => {
         setFormData(prev => ({
           ...prev,
           tribunalOrgao: dadosCNJ.orgaoJulgador || prev.tribunalOrgao,
-          tipoSolicitacao: dadosCNJ.assuntos || prev.tipoSolicitacao,
+          tipoSolicitacao: dadosCNJ.classe || prev.tipoSolicitacao,
         }));
+        
+        // Adiciona informações sobre as partes na solicitação se houver
+        if (dadosCNJ.todasPartes.length > 0) {
+          const partesInfo = `\n\nPartes do processo:\n${dadosCNJ.todasPartes.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
+          setFormData(prev => ({
+            ...prev,
+            solicitacao: prev.solicitacao + partesInfo
+          }));
+        }
       }
     }
     
