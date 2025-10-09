@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, MessageCircle, Mail, Eye } from "lucide-react";
+import { Building2, MessageCircle, Mail, Eye, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { useClientes } from "@/hooks/useClientes";
+import { useCNJSearch } from "@/hooks/useCNJSearch";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
@@ -26,6 +27,7 @@ const decisaoSchema = z.object({
 const DecisaoJudicialForm = () => {
   const { toast } = useToast();
   const { clientes } = useClientes();
+  const { buscarProcesso, loading: searchingCNJ } = useCNJSearch();
   const [formData, setFormData] = useState({
     numeroProcesso: "",
     varaTribunal: "",
@@ -103,8 +105,22 @@ const DecisaoJudicialForm = () => {
     return !error;
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se o campo for numeroProcesso e tiver 20 dígitos, busca no CNJ
+    if (field === 'numeroProcesso' && value.replace(/\D/g, '').length === 20) {
+      const dadosCNJ = await buscarProcesso(value);
+      
+      if (dadosCNJ) {
+        // Preenche automaticamente os campos disponíveis
+        setFormData(prev => ({
+          ...prev,
+          varaTribunal: dadosCNJ.orgaoJulgador || prev.varaTribunal,
+          procedimentoObjeto: dadosCNJ.assuntos || prev.procedimentoObjeto,
+        }));
+      }
+    }
     
     // Se o cliente for "Outros", mostrar campo de texto
     if (field === 'nomeCliente') {
@@ -277,17 +293,31 @@ ${validatedData.resumoDecisao}
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              type="input"
-              id="numeroProcesso"
-              label="Número do Processo"
-              value={formData.numeroProcesso}
-              onChange={(value) => handleInputChange('numeroProcesso', value)}
-              placeholder="Digite o número do processo"
-              required
-              error={errors.numeroProcesso}
-              success={validatedFields.has('numeroProcesso')}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="numeroProcesso">
+                Número do Processo <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <Input
+                  id="numeroProcesso"
+                  value={formData.numeroProcesso}
+                  onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
+                  placeholder="Digite o número do processo (20 dígitos)"
+                  className={errors.numeroProcesso ? "border-destructive" : validatedFields.has('numeroProcesso') ? "border-success" : ""}
+                />
+                {searchingCNJ && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Search className="h-4 w-4 animate-spin text-primary" />
+                  </div>
+                )}
+              </div>
+              {errors.numeroProcesso && (
+                <p className="text-xs text-destructive">{errors.numeroProcesso}</p>
+              )}
+              {validatedFields.has('numeroProcesso') && !errors.numeroProcesso && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
 
             <FormField
               type="input"

@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateField } from "@/components/ui/date-field";
-import { AlertTriangle, MessageCircle, Mail, Calendar } from "lucide-react";
+import { AlertTriangle, MessageCircle, Mail, Calendar, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientes } from "@/hooks/useClientes";
+import { useCNJSearch } from "@/hooks/useCNJSearch";
 import { openWhatsAppGroup } from "@/lib/utils";
 import { z } from "zod";
 
@@ -29,6 +30,7 @@ interface PendenciasFormProps {
 const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   const { toast } = useToast();
   const { clientes } = useClientes();
+  const { buscarProcesso, loading: searchingCNJ } = useCNJSearch();
   const [formData, setFormData] = useState({
     numeroProcesso: "",
     tipoUrgencia: "",
@@ -43,8 +45,23 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   const [clienteOutro, setClienteOutro] = useState("");
   const [showClienteOutro, setShowClienteOutro] = useState(false);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Se o campo for numeroProcesso e tiver 20 dígitos, busca no CNJ
+    if (field === 'numeroProcesso' && value.replace(/\D/g, '').length === 20) {
+      const dadosCNJ = await buscarProcesso(value);
+      
+      if (dadosCNJ) {
+        // Preenche automaticamente descricao com os assuntos
+        if (dadosCNJ.assuntos) {
+          setFormData(prev => ({
+            ...prev,
+            descricao: `Assuntos: ${dadosCNJ.assuntos}\n\n${prev.descricao}`
+          }));
+        }
+      }
+    }
     
     // Se o cliente for "Outros", mostrar campo de texto
     if (field === 'cliente') {
@@ -151,13 +168,20 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
               <Label htmlFor="numeroProcesso" className="text-sm font-medium">
                 Número do Processo *
               </Label>
-              <Input
-                id="numeroProcesso"
-                placeholder="Ex: 1234567-89.2024.8.26.0001"
-                value={formData.numeroProcesso}
-                onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
-                className="bg-background"
-              />
+              <div className="relative">
+                <Input
+                  id="numeroProcesso"
+                  placeholder="Ex: 1234567-89.2024.8.26.0001"
+                  value={formData.numeroProcesso}
+                  onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
+                  className="bg-background"
+                />
+                {searchingCNJ && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Search className="h-4 w-4 animate-spin text-primary" />
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
