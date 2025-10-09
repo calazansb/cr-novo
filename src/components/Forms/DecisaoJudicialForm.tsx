@@ -9,9 +9,12 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
+import { SelectWithAdminEdit } from "@/components/Admin/SelectWithAdminEdit";
 import { useClientes } from "@/hooks/useClientes";
 import { ORGAOS_LIST } from "@/data/orgaos";
 import { openWhatsApp } from "@/lib/utils";
+import { useAuth } from "@/components/Auth/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const decisaoSchema = z.object({
@@ -22,13 +25,33 @@ const decisaoSchema = z.object({
   tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
   advogadoInterno: z.string().trim().min(1, "Adv. Jurídico Interno é obrigatório").max(100, "Máximo 100 caracteres"),
   adverso: z.string().trim().min(1, "Adverso é obrigatório").max(100, "Máximo 100 caracteres"),
-  procedimentoObjeto: z.string().trim().min(1, "Procedimento/Objeto é obrigatório").max(200, "Máximo 200 caracteres"),
+  procedimentoObjeto: z.string().trim().min(1, "Objeto / Procedimento é obrigatório").max(200, "Máximo 200 caracteres"),
   resumoDecisao: z.string().trim().min(20, "Resumo deve ter pelo menos 20 caracteres").max(2000, "Máximo 2000 caracteres")
 });
 
 const DecisaoJudicialForm = () => {
   const { toast } = useToast();
   const { clientes } = useClientes();
+  const { user } = useAuth();
+  
+  // Verificar se é admin
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+        
+        setIsAdmin(!error && !!data);
+      }
+    };
+    checkAdmin();
+  }, [user?.id]);
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
@@ -196,7 +219,7 @@ ${formData.resumoDecisao}
 *Vara / Câmara / Turma:* ${validatedData.varaTribunal}
 *Advogado Responsável:* ${validatedData.advogadoInterno}
 *Parte Adversa:* ${validatedData.adverso}
-*Procedimento/Objeto:* ${validatedData.procedimentoObjeto}
+*Objeto / Procedimento:* ${validatedData.procedimentoObjeto}
 
 *Resumo da Decisão:*
 ${validatedData.resumoDecisao}
@@ -423,17 +446,25 @@ ${validatedData.resumoDecisao}
             />
           </div>
 
-          <FormField
-            type="input"
-            id="procedimentoObjeto"
-            label="Procedimento Objeto"
-            value={formData.procedimentoObjeto}
-            onChange={(value) => handleInputChange('procedimentoObjeto', value)}
-            placeholder="Ex: Cirurgia Bariátrica, Medicamento Domiciliar, Cirurgia de Urgência"
-            required
-            error={errors.procedimentoObjeto}
-            success={validatedFields.has('procedimentoObjeto')}
-          />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Objeto / Procedimento <span className="text-destructive">*</span>
+            </label>
+            <SelectWithAdminEdit
+              optionSetKey="objeto-procedimento"
+              value={formData.procedimentoObjeto}
+              onValueChange={(value) => handleInputChange('procedimentoObjeto', value)}
+              placeholder="Selecione o objeto/procedimento"
+              isAdmin={isAdmin}
+              className={errors.procedimentoObjeto ? "border-destructive" : validatedFields.has('procedimentoObjeto') ? "border-success" : ""}
+            />
+            {errors.procedimentoObjeto && (
+              <p className="text-xs text-destructive mt-1">{errors.procedimentoObjeto}</p>
+            )}
+            {validatedFields.has('procedimentoObjeto') && !errors.procedimentoObjeto && (
+              <p className="text-xs text-success mt-1">✓ Campo validado</p>
+            )}
+          </div>
 
           <FormField
             type="textarea"

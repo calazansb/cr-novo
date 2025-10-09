@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AuthCallback from "@/components/Auth/AuthCallback";
 import ResetPasswordForm from "@/components/Auth/ResetPasswordForm";
+import { seedObjetoProcedimento } from "@/lib/seed-objeto-procedimento";
 
 console.log('🎯 App.tsx carregado!');
 
@@ -17,6 +19,19 @@ const queryClient = new QueryClient();
 const App = () => {
   console.log('🏃 App component renderizando...');
   console.log('🌐 Window location:', window.location.href);
+  
+  useEffect(() => {
+    const runSeed = async () => {
+      const hasSeeded = localStorage.getItem('objeto-procedimento-seeded');
+      if (!hasSeeded) {
+        const success = await seedObjetoProcedimento();
+        if (success) {
+          localStorage.setItem('objeto-procedimento-seeded', 'true');
+        }
+      }
+    };
+    runSeed();
+  }, []);
   
   return (
     <QueryClientProvider client={queryClient}>
