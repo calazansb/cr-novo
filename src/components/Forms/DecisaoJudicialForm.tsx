@@ -78,6 +78,8 @@ const DecisaoJudicialForm = () => {
   const [showMagistradoOutro, setShowMagistradoOutro] = useState(false);
   const [comarcaOutra, setComarcaOutra] = useState("");
   const [showComarcaOutra, setShowComarcaOutra] = useState(false);
+  const [varaOutra, setVaraOutra] = useState("");
+  const [showVaraOutra, setShowVaraOutra] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -169,6 +171,16 @@ const DecisaoJudicialForm = () => {
       } else {
         setShowComarcaOutra(false);
         setComarcaOutra('');
+      }
+    }
+    
+    // Se a vara for "Outra", mostrar campo de texto
+    if (field === 'varaTribunal') {
+      if (value === 'Outra') {
+        setShowVaraOutra(true);
+      } else {
+        setShowVaraOutra(false);
+        setVaraOutra('');
       }
     }
     
@@ -295,6 +307,8 @@ ${validatedData.resumoDecisao}
       setShowMagistradoOutro(false);
       setComarcaOutra('');
       setShowComarcaOutra(false);
+      setVaraOutra('');
+      setShowVaraOutra(false);
       localStorage.removeItem('decisao-draft');
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -427,17 +441,35 @@ ${validatedData.resumoDecisao}
               )}
             </div>
 
-            <FormField
-              type="input"
-              id="varaTribunal"
-              label="Vara / Câmara / Turma"
-              value={formData.varaTribunal}
-              onChange={(value) => handleInputChange('varaTribunal', value)}
-              placeholder="Ex: 1ª Vara Cível de São Paulo"
-              required
-              error={errors.varaTribunal}
-              success={validatedFields.has('varaTribunal')}
-            />
+            {/* Vara / Câmara / Turma - COM GESTÃO ADMIN */}
+            <div className="space-y-2">
+              <Label htmlFor="varaTribunal">
+                Vara / Câmara / Turma <span className="text-destructive">*</span>
+              </Label>
+              <SelectWithAdminEdit
+                optionSetKey="varas_camaras_turmas"
+                value={formData.varaTribunal}
+                onValueChange={(value) => handleInputChange('varaTribunal', value)}
+                placeholder="Selecione a vara/câmara/turma"
+                isAdmin={isAdmin}
+                label="Vara / Câmara / Turma"
+                className={errors.varaTribunal ? "border-destructive" : validatedFields.has('varaTribunal') ? "border-success" : ""}
+              />
+              {showVaraOutra && (
+                <Input
+                  placeholder="Digite o nome da vara/câmara/turma"
+                  value={varaOutra}
+                  onChange={(e) => setVaraOutra(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+              {errors.varaTribunal && (
+                <p className="text-xs text-destructive">{errors.varaTribunal}</p>
+              )}
+              {validatedFields.has('varaTribunal') && !errors.varaTribunal && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
 
             {/* Nome do Cliente - Combobox */}
             <div className="space-y-2">

@@ -90,6 +90,8 @@ const BalcaoControladoriaForm = () => {
   const [showClienteOutro, setShowClienteOutro] = useState(false);
   const [comarcaOutra, setComarcaOutra] = useState("");
   const [showComarcaOutra, setShowComarcaOutra] = useState(false);
+  const [varaOutra, setVaraOutra] = useState("");
+  const [showVaraOutra, setShowVaraOutra] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -214,6 +216,16 @@ const BalcaoControladoriaForm = () => {
       } else {
         setShowComarcaOutra(false);
         setComarcaOutra('');
+      }
+    }
+    
+    // Se a vara for "Outra", mostrar campo de texto
+    if (field === 'tribunalOrgao') {
+      if (value === 'Outra') {
+        setShowVaraOutra(true);
+      } else {
+        setShowVaraOutra(false);
+        setVaraOutra('');
       }
     }
     
@@ -609,17 +621,28 @@ const BalcaoControladoriaForm = () => {
               </div>
             </div>
 
+            {/* Vara / Câmara / Turma - COM GESTÃO ADMIN */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Vara / Câmara / Turma <span className="text-destructive">*</span>
               </label>
-              <Input
-                id="tribunalOrgao"
+              <SelectWithAdminEdit
+                optionSetKey="varas_camaras_turmas"
                 value={formData.tribunalOrgao}
-                onChange={(e) => handleInputChange('tribunalOrgao', e.target.value)}
-                placeholder="Ex: 1ª Vara Cível de São Paulo"
+                onValueChange={(value) => handleInputChange('tribunalOrgao', value)}
+                placeholder="Selecione a vara/câmara/turma"
+                isAdmin={isAdmin}
+                label="Vara / Câmara / Turma"
                 className={errors.tribunalOrgao ? "border-destructive" : validatedFields.has('tribunalOrgao') ? "border-success" : ""}
               />
+              {showVaraOutra && (
+                <Input
+                  placeholder="Digite o nome da vara/câmara/turma"
+                  value={varaOutra}
+                  onChange={(e) => setVaraOutra(e.target.value)}
+                  className="mt-2"
+                />
+              )}
               <div className="h-4">
                 {errors.tribunalOrgao && (
                   <p className="text-xs text-destructive">{errors.tribunalOrgao}</p>
