@@ -14,7 +14,7 @@ const ModernSidebar = ({
   onSectionChange
 }: ModernSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['dashboards', 'hapvida']);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
   const {
     user
   } = useAuth();
