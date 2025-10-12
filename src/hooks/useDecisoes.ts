@@ -17,18 +17,40 @@ export const useDecisoes = () => {
   const carregarDecisoes = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Primeiro carregar as decisões
+      const { data: decisoesData, error: decisoesError } = await supabase
         .from('decisoes_judiciais')
-        .select(`
-          *,
-          profiles (
-            nome
-          )
-        `)
+        .select('*')
         .order('data_criacao', { ascending: false });
 
-      if (error) throw error;
-      setDecisoes((data || []) as any);
+      if (decisoesError) throw decisoesError;
+
+      // Depois carregar os perfis dos usuários que criaram as decisões
+      const userIds = [...new Set(decisoesData?.map(d => d.user_id).filter(Boolean) || [])];
+      
+      let profilesMap: { [key: string]: { nome: string | null } } = {};
+      
+      if (userIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, nome')
+          .in('id', userIds);
+
+        if (!profilesError && profilesData) {
+          profilesMap = profilesData.reduce((acc, profile) => {
+            acc[profile.id] = { nome: profile.nome };
+            return acc;
+          }, {} as { [key: string]: { nome: string | null } });
+        }
+      }
+
+      // Combinar os dados
+      const decisoesComPerfis = decisoesData?.map(decisao => ({
+        ...decisao,
+        profiles: decisao.user_id ? profilesMap[decisao.user_id] : null
+      })) || [];
+
+      setDecisoes(decisoesComPerfis as any);
     } catch (error) {
       console.error('Erro ao carregar decisões:', error);
       toast({
