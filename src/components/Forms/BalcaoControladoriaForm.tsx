@@ -96,7 +96,7 @@ const BalcaoControladoriaForm = () => {
     return () => clearTimeout(timeoutId);
   }, [formData]);
 
-  // Buscar usuários registrados e pré-selecionar usuário logado
+  // Buscar usuários registrados
   useEffect(() => {
     const fetchUsuarios = async () => {
       const { data, error } = await supabase
@@ -111,19 +111,21 @@ const BalcaoControladoriaForm = () => {
           nome: u.nome?.replace(/\*+$/, '').trim() || ''
         })).filter(u => u.nome); // Remover usuários sem nome
         setUsuarios(usuariosLimpos);
-
-        // Pré-selecionar o usuário logado se ainda não houver valor
-        if (user?.id && !formData.nomeSolicitante) {
-          const usuarioLogado = usuariosLimpos.find(u => u.id === user.id);
-          if (usuarioLogado) {
-            setFormData(prev => ({ ...prev, nomeSolicitante: usuarioLogado.nome }));
-          }
-        }
       }
     };
     
     fetchUsuarios();
-  }, [user?.id]);
+  }, []);
+
+  // Pré-selecionar o usuário logado quando os usuários forem carregados
+  useEffect(() => {
+    if (user?.id && usuarios.length > 0 && !formData.nomeSolicitante) {
+      const usuarioLogado = usuarios.find(u => u.id === user.id);
+      if (usuarioLogado) {
+        setFormData(prev => ({ ...prev, nomeSolicitante: usuarioLogado.nome }));
+      }
+    }
+  }, [user?.id, usuarios]);
 
   // Load draft on mount
   useEffect(() => {
