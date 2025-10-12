@@ -518,7 +518,8 @@ ${validatedData.resumoDecisao}
                   { value: 'sentenca-favoravel', label: 'Sentença / Decisão Favorável' },
                   { value: 'sentenca-parcialmente-favoravel', label: 'Sentença / Decisão Parcialmente Favorável' },
                   { value: 'sentenca-desfavoravel', label: 'Sentença / Decisão Desfavorável' },
-                  { value: 'liberacao-valor-bloqueado', label: 'Liberação de Valor Bloqueado' }
+                  { value: 'liberacao-valor-bloqueado', label: 'Liberação de Valor Bloqueado' },
+                  { value: 'efeito-suspensivo-concedido', label: 'Efeito Suspensivo Concedido' }
                 ]}
                 value={formData.tipoDecisao}
                 onValueChange={(value) => handleInputChange('tipoDecisao', value)}
