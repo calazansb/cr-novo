@@ -421,7 +421,11 @@ const UserManagement = () => {
         }
       });
 
-      if (authError) throw authError;
+      // Verificar se o usuário foi criado mesmo com possível erro de "user already exists"
+      if (authError && !authData.user) {
+        throw authError;
+      }
+      
       if (!authData.user) throw new Error('Erro ao criar usuário');
 
       // Criar profile
