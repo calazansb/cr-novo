@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MapPin, Scale } from "lucide-react";
+import { Settings, Users, MapPin, Scale, Gavel } from "lucide-react";
 import UserManagement from "@/components/Admin/UserManagement";
 import { OptionAdminModal } from "@/components/Admin/OptionAdminModal";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 export default function AdminPage() {
   const [comarcasModalOpen, setComarcasModalOpen] = useState(false);
   const [varasModalOpen, setVarasModalOpen] = useState(false);
+  const [magistradosModalOpen, setMagistradosModalOpen] = useState(false);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -23,7 +24,7 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="comarcas" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
           <TabsTrigger value="comarcas" className="gap-2">
             <MapPin className="h-4 w-4" />
             Comarcas
@@ -31,6 +32,10 @@ export default function AdminPage() {
           <TabsTrigger value="varas" className="gap-2">
             <Scale className="h-4 w-4" />
             Varas/Câmaras
+          </TabsTrigger>
+          <TabsTrigger value="magistrados" className="gap-2">
+            <Gavel className="h-4 w-4" />
+            Magistrados
           </TabsTrigger>
           <TabsTrigger value="usuarios-clientes" className="gap-2">
             <Users className="h-4 w-4" />
@@ -72,6 +77,23 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="magistrados" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Magistrados</CardTitle>
+              <CardDescription>
+                Adicione, edite ou remova magistrados (desembargadores e juízes) utilizados nas decisões judiciais
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => setMagistradosModalOpen(true)} className="w-full sm:w-auto">
+                <Gavel className="h-4 w-4 mr-2" />
+                Abrir Gerenciador de Magistrados
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="usuarios-clientes" className="mt-6">
           <UserManagement />
         </TabsContent>
@@ -87,6 +109,12 @@ export default function AdminPage() {
         open={varasModalOpen}
         onOpenChange={setVarasModalOpen}
         optionSetKey="varas_camaras_turmas"
+      />
+
+      <OptionAdminModal
+        open={magistradosModalOpen}
+        onOpenChange={setMagistradosModalOpen}
+        optionSetKey="magistrados"
       />
     </div>
   );

@@ -74,8 +74,6 @@ const DecisaoJudicialForm = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [clienteOutro, setClienteOutro] = useState("");
   const [showClienteOutro, setShowClienteOutro] = useState(false);
-  const [magistradoOutro, setMagistradoOutro] = useState("");
-  const [showMagistradoOutro, setShowMagistradoOutro] = useState(false);
   const [comarcaOutra, setComarcaOutra] = useState("");
   const [showComarcaOutra, setShowComarcaOutra] = useState(false);
   const [varaOutra, setVaraOutra] = useState("");
@@ -154,16 +152,6 @@ const DecisaoJudicialForm = () => {
       }
     }
     
-    // Se o magistrado for "outros", mostrar campo de texto
-    if (field === 'nomeMagistrado') {
-      if (value === 'outros') {
-        setShowMagistradoOutro(true);
-      } else {
-        setShowMagistradoOutro(false);
-        setMagistradoOutro('');
-      }
-    }
-    
     // Se a comarca for "Outra", mostrar campo de texto
     if (field === 'comarca') {
       if (value === 'Outra') {
@@ -238,25 +226,12 @@ ${formData.resumoDecisao}
 
       // Usar o cliente digitado se for "Outros"
       const clienteFinal = formData.nomeCliente === 'Outros' ? clienteOutro : validatedData.nomeCliente;
-      
-      // Usar o magistrado digitado se for "outros"
-      const magistradoFinal = formData.nomeMagistrado === 'outros' ? magistradoOutro : validatedData.nomeMagistrado;
 
       // Validar cliente personalizado
       if (formData.nomeCliente === 'Outros' && !clienteOutro.trim()) {
         toast({
           title: "Erro de validação",
           description: "Por favor, digite o nome do cliente.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Validar magistrado personalizado
-      if (formData.nomeMagistrado === 'outros' && !magistradoOutro.trim()) {
-        toast({
-          title: "Erro de validação",
-          description: "Por favor, digite o nome do magistrado.",
           variant: "destructive",
         });
         return;
@@ -269,7 +244,7 @@ ${formData.resumoDecisao}
 *Órgão:* ${validatedData.orgao}
 *Tipo de Decisão:* ${validatedData.tipoDecisao}
 *Vara / Câmara / Turma:* ${validatedData.varaTribunal}
-*Magistrado:* ${magistradoFinal}
+*Magistrado:* ${validatedData.nomeMagistrado}
 *Advogado Responsável:* ${validatedData.advogadoInterno}
 *Parte Adversa:* ${validatedData.adverso}
 *Objeto / Procedimento:* ${validatedData.procedimentoObjeto}
@@ -303,8 +278,6 @@ ${validatedData.resumoDecisao}
       setValidatedFields(new Set());
       setClienteOutro('');
       setShowClienteOutro(false);
-      setMagistradoOutro('');
-      setShowMagistradoOutro(false);
       setComarcaOutra('');
       setShowComarcaOutra(false);
       setVaraOutra('');
@@ -545,7 +518,7 @@ ${validatedData.resumoDecisao}
               )}
             </div>
 
-            {/* Nome do Magistrado - SelectWithAdminEdit */}
+            {/* Nome do Magistrado - COM GESTÃO ADMIN */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Nome do Magistrado <span className="text-destructive">*</span>
@@ -558,16 +531,6 @@ ${validatedData.resumoDecisao}
                 isAdmin={isAdmin}
                 className={errors.nomeMagistrado ? "border-destructive" : validatedFields.has('nomeMagistrado') ? "border-success" : ""}
               />
-              
-              {showMagistradoOutro && (
-                <Input
-                  placeholder="Digite o nome do magistrado"
-                  value={magistradoOutro}
-                  onChange={(e) => setMagistradoOutro(e.target.value)}
-                  className="mt-2"
-                />
-              )}
-              
               <div className="h-4">
                 {errors.nomeMagistrado && (
                   <p className="text-xs text-destructive">{errors.nomeMagistrado}</p>
