@@ -4,7 +4,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import * as XLSX from 'xlsx';
 
-type DecisaoJudicial = Database['public']['Tables']['decisoes_judiciais']['Row'];
+type DecisaoJudicial = Database['public']['Tables']['decisoes_judiciais']['Row'] & {
+  profiles?: { nome: string | null } | null;
+};
 type NovaDecisaoJudicial = Database['public']['Tables']['decisoes_judiciais']['Insert'];
 
 export const useDecisoes = () => {
@@ -17,11 +19,16 @@ export const useDecisoes = () => {
     try {
       const { data, error } = await supabase
         .from('decisoes_judiciais')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            nome
+          )
+        `)
         .order('data_criacao', { ascending: false });
 
       if (error) throw error;
-      setDecisoes(data || []);
+      setDecisoes((data || []) as any);
     } catch (error) {
       console.error('Erro ao carregar decisões:', error);
       toast({
@@ -106,7 +113,7 @@ export const useDecisoes = () => {
     const headers = [
       'Protocolo', 'Processo', 'Comarca', 'Órgão', 'Vara/Câmara/Turma',
       'Cliente', 'Tipo Decisão', 'Magistrado', 'Advogado Interno', 
-      'Adverso', 'Objeto/Procedimento', 'Resumo', 'Data Registro'
+      'Adverso', 'Objeto/Procedimento', 'Resumo', 'Data Registro', 'Registrado Por'
     ];
 
     const csvContent = [
@@ -124,7 +131,8 @@ export const useDecisoes = () => {
         d.adverso,
         d.procedimento_objeto,
         `"${d.resumo_decisao.replace(/"/g, '""')}"`,
-        new Date(d.data_criacao).toLocaleDateString('pt-BR')
+        new Date(d.data_criacao).toLocaleDateString('pt-BR'),
+        d.profiles?.nome || 'N/A'
       ].join(','))
     ].join('\n');
 
@@ -162,7 +170,8 @@ export const useDecisoes = () => {
       'Adverso': d.adverso,
       'Objeto/Procedimento': d.procedimento_objeto,
       'Resumo': d.resumo_decisao,
-      'Data Registro': new Date(d.data_criacao).toLocaleDateString('pt-BR')
+      'Data Registro': new Date(d.data_criacao).toLocaleDateString('pt-BR'),
+      'Registrado Por': d.profiles?.nome || 'N/A'
     }));
 
     const ws = XLSX.utils.json_to_sheet(dados);
@@ -183,7 +192,8 @@ export const useDecisoes = () => {
       { wch: 30 }, // Adverso
       { wch: 40 }, // Objeto/Procedimento
       { wch: 60 }, // Resumo
-      { wch: 15 }  // Data Registro
+      { wch: 15 }, // Data Registro
+      { wch: 25 }  // Registrado Por
     ];
     ws['!cols'] = colWidths;
 

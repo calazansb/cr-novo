@@ -25,10 +25,11 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
   const [filtroCliente, setFiltroCliente] = useState<string>('todos');
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroOrgao, setFiltroOrgao] = useState<string>('todos');
+  const [filtroAdvogado, setFiltroAdvogado] = useState<string>('todos');
   const [filtroBusca, setFiltroBusca] = useState('');
   
   // Ordenação
-  const [sortField, setSortField] = useState<'codigo' | 'data' | 'magistrado' | 'cliente' | null>(null);
+  const [sortField, setSortField] = useState<'codigo' | 'data' | 'magistrado' | 'cliente' | 'advogado' | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Listas únicas para filtros
@@ -52,6 +53,11 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
     [decisoes]
   );
 
+  const advogados = useMemo(() => 
+    [...new Set(decisoes.map(d => d.profiles?.nome).filter(Boolean))].sort() as string[],
+    [decisoes]
+  );
+
   // Aplicar filtros e ordenação
   const decisoesFiltradas = useMemo(() => {
     let resultado = decisoes.filter(d => {
@@ -59,6 +65,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
       if (filtroCliente !== 'todos' && d.nome_cliente !== filtroCliente) return false;
       if (filtroTipo !== 'todos' && d.tipo_decisao !== filtroTipo) return false;
       if (filtroOrgao !== 'todos' && d.orgao !== filtroOrgao) return false;
+      if (filtroAdvogado !== 'todos' && d.profiles?.nome !== filtroAdvogado) return false;
       if (filtroBusca && !d.numero_processo.toLowerCase().includes(filtroBusca.toLowerCase()) &&
           !d.codigo_unico.toLowerCase().includes(filtroBusca.toLowerCase())) return false;
       return true;
@@ -86,6 +93,10 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
             aValue = a.nome_cliente;
             bValue = b.nome_cliente;
             break;
+          case 'advogado':
+            aValue = a.profiles?.nome || '';
+            bValue = b.profiles?.nome || '';
+            break;
           default:
             return 0;
         }
@@ -99,7 +110,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
     }
 
     return resultado;
-  }, [decisoes, filtroMagistrado, filtroCliente, filtroTipo, filtroOrgao, filtroBusca, sortField, sortDirection]);
+  }, [decisoes, filtroMagistrado, filtroCliente, filtroTipo, filtroOrgao, filtroAdvogado, filtroBusca, sortField, sortDirection]);
 
   // Estatísticas
   const estatisticasPorMagistrado = useMemo(() => {
@@ -133,7 +144,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
       .slice(0, 8);
   }, [decisoesFiltradas]);
 
-  const handleSort = (field: 'codigo' | 'data' | 'magistrado' | 'cliente') => {
+  const handleSort = (field: 'codigo' | 'data' | 'magistrado' | 'cliente' | 'advogado') => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -142,7 +153,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
     }
   };
 
-  const renderSortIcon = (field: 'codigo' | 'data' | 'magistrado' | 'cliente') => {
+  const renderSortIcon = (field: 'codigo' | 'data' | 'magistrado' | 'cliente' | 'advogado') => {
     if (sortField !== field) {
       return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />;
     }
@@ -156,6 +167,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
     setFiltroCliente('todos');
     setFiltroTipo('todos');
     setFiltroOrgao('todos');
+    setFiltroAdvogado('todos');
     setFiltroBusca('');
   };
 
@@ -300,7 +312,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Buscar</label>
               <Input
@@ -369,6 +381,21 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Advogado</label>
+              <Select value={filtroAdvogado} onValueChange={setFiltroAdvogado}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="todos">Todos</SelectItem>
+                  {advogados.map(a => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -400,6 +427,11 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
                     </div>
                   </th>
                   <th className="text-left p-2">Tipo</th>
+                  <th className="text-left p-2 cursor-pointer hover:bg-muted/50" onClick={() => handleSort('advogado')}>
+                    <div className="flex items-center">
+                      Registrado Por {renderSortIcon('advogado')}
+                    </div>
+                  </th>
                   <th className="text-left p-2 cursor-pointer hover:bg-muted/50" onClick={() => handleSort('data')}>
                     <div className="flex items-center">
                       Data {renderSortIcon('data')}
@@ -418,6 +450,9 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
                     <td className="p-2 text-sm">{decisao.nome_magistrado}</td>
                     <td className="p-2 text-sm">{decisao.nome_cliente}</td>
                     <td className="p-2 text-sm">{decisao.tipo_decisao}</td>
+                    <td className="p-2 text-sm">
+                      <Badge variant="secondary">{decisao.profiles?.nome || 'N/A'}</Badge>
+                    </td>
                     <td className="p-2 text-sm">
                       {new Date(decisao.data_criacao).toLocaleDateString('pt-BR')}
                     </td>
