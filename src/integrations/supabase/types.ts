@@ -50,6 +50,63 @@ export type Database = {
         }
         Relationships: []
       }
+      decisoes_judiciais: {
+        Row: {
+          adverso: string
+          advogado_interno: string
+          codigo_unico: string
+          comarca: string | null
+          data_atualizacao: string | null
+          data_criacao: string | null
+          id: string
+          nome_cliente: string
+          nome_magistrado: string
+          numero_processo: string
+          orgao: string
+          procedimento_objeto: string
+          resumo_decisao: string
+          tipo_decisao: string
+          user_id: string | null
+          vara_tribunal: string
+        }
+        Insert: {
+          adverso: string
+          advogado_interno: string
+          codigo_unico: string
+          comarca?: string | null
+          data_atualizacao?: string | null
+          data_criacao?: string | null
+          id?: string
+          nome_cliente: string
+          nome_magistrado: string
+          numero_processo: string
+          orgao: string
+          procedimento_objeto: string
+          resumo_decisao: string
+          tipo_decisao: string
+          user_id?: string | null
+          vara_tribunal: string
+        }
+        Update: {
+          adverso?: string
+          advogado_interno?: string
+          codigo_unico?: string
+          comarca?: string | null
+          data_atualizacao?: string | null
+          data_criacao?: string | null
+          id?: string
+          nome_cliente?: string
+          nome_magistrado?: string
+          numero_processo?: string
+          orgao?: string
+          procedimento_objeto?: string
+          resumo_decisao?: string
+          tipo_decisao?: string
+          user_id?: string | null
+          vara_tribunal?: string
+        }
+        Relationships: []
+      }
       option_audit_logs: {
         Row: {
           action: Database["public"]["Enums"]["option_audit_action"]

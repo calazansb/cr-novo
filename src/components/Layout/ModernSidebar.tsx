@@ -4,7 +4,7 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard, Building2, ChevronDown } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -46,9 +46,15 @@ const ModernSidebar = ({
     bgHover: "hover:bg-orange-500/10"
   }, {
     id: 'decisoes' as ActiveSection,
-    title: "Decisão Judicial",
+    title: "Registrar Decisão",
     icon: Scale,
     color: "text-indigo-500",
+    bgHover: "hover:bg-indigo-500/10"
+  }, {
+    id: 'dashboard-decisoes' as ActiveSection,
+    title: "Dashboard Decisões",
+    icon: BarChart3,
+    color: "text-purple-500",
     bgHover: "hover:bg-indigo-500/10"
   }, {
     id: 'calculo-prazos' as ActiveSection,

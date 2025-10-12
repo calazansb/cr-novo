@@ -15,6 +15,7 @@ import { ORGAOS_LIST } from "@/data/orgaos";
 import { openWhatsApp } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
+import { useDecisoes } from "@/hooks/useDecisoes";
 import { z } from "zod";
 
 const decisaoSchema = z.object({
@@ -34,6 +35,7 @@ const DecisaoJudicialForm = () => {
   const { toast } = useToast();
   const { clientes } = useClientes();
   const { user } = useAuth();
+  const { criarDecisao } = useDecisoes();
   
   // Verificar se é admin
   const [isAdmin, setIsAdmin] = useState(false);
@@ -220,8 +222,9 @@ ${formData.resumoDecisao}
     `.trim();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
+      setLoading(true);
       const validatedData = decisaoSchema.parse(formData);
 
       // Usar o cliente digitado se for "Outros"
@@ -234,11 +237,28 @@ ${formData.resumoDecisao}
           description: "Por favor, digite o nome do cliente.",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
+      // Salvar no banco de dados
+      const decisao = await criarDecisao({
+        numero_processo: validatedData.numeroProcesso,
+        comarca: formData.comarca,
+        orgao: validatedData.orgao,
+        vara_tribunal: validatedData.varaTribunal,
+        nome_cliente: clienteFinal,
+        tipo_decisao: validatedData.tipoDecisao,
+        nome_magistrado: validatedData.nomeMagistrado,
+        advogado_interno: validatedData.advogadoInterno,
+        adverso: validatedData.adverso,
+        procedimento_objeto: validatedData.procedimentoObjeto,
+        resumo_decisao: validatedData.resumoDecisao
+      });
+
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
     
+*Protocolo:* ${decisao?.codigo_unico}
 *Cliente:* ${clienteFinal}
 *Processo:* ${validatedData.numeroProcesso}
 *Órgão:* ${validatedData.orgao}
@@ -255,11 +275,6 @@ ${validatedData.resumoDecisao}
 `;
 
       openWhatsApp(message);
-
-      toast({
-        title: "Comunicação enviada!",
-        description: `Decisão judicial preparada para envio por WhatsApp!`,
-      });
       
       setFormData({
         numeroProcesso: '',
@@ -294,10 +309,12 @@ ${validatedData.resumoDecisao}
       } else {
         toast({
           title: "Erro",
-          description: "Erro ao processar formulário.",
+          description: "Erro ao registrar decisão.",
           variant: "destructive",
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
