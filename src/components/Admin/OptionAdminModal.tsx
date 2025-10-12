@@ -262,7 +262,7 @@ export function OptionAdminModal({ open, onOpenChange, optionSetKey }: OptionAdm
 
           <Separator />
 
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <div className="flex-1 overflow-hidden -mx-6 px-6">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Carregando...</div>
             ) : filteredItems.length === 0 ? (
@@ -270,74 +270,76 @@ export function OptionAdminModal({ open, onOpenChange, optionSetKey }: OptionAdm
                 {searchQuery ? 'Nenhuma opção encontrada' : 'Nenhuma opção cadastrada'}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rótulo</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead className="text-center">Ordem</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">
-                        {item.label}
-                        {item.is_default && (
-                          <Badge variant="secondary" className="ml-2">
-                            Padrão
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm text-muted-foreground">
-                        {item.value}
-                      </TableCell>
-                      <TableCell className="text-center">{item.order}</TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant={item.is_active ? 'default' : 'secondary'}>
-                          {item.is_active ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => toggleActive({ id: item.id, isActive: !item.is_active })}
-                            title={item.is_active ? 'Desativar' : 'Ativar'}
-                          >
-                            {item.is_active ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleStartEdit(item)}
-                            disabled={isCreatingNew || !!editingItem}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(item.id)}
-                            disabled={isCreatingNew || !!editingItem}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <ScrollArea className="h-[400px] w-full">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background z-10">
+                    <TableRow>
+                      <TableHead>Rótulo</TableHead>
+                      <TableHead>Valor</TableHead>
+                      <TableHead className="text-center">Ordem</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">
+                          {item.label}
+                          {item.is_default && (
+                            <Badge variant="secondary" className="ml-2">
+                              Padrão
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-muted-foreground">
+                          {item.value}
+                        </TableCell>
+                        <TableCell className="text-center">{item.order}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant={item.is_active ? 'default' : 'secondary'}>
+                            {item.is_active ? 'Ativo' : 'Inativo'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => toggleActive({ id: item.id, isActive: !item.is_active })}
+                              title={item.is_active ? 'Desativar' : 'Ativar'}
+                            >
+                              {item.is_active ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleStartEdit(item)}
+                              disabled={isCreatingNew || !!editingItem}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(item.id)}
+                              disabled={isCreatingNew || !!editingItem}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             )}
-          </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
 
