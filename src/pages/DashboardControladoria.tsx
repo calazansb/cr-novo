@@ -961,7 +961,21 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
-...
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta ação não pode ser desfeita. A solicitação {solicitacao.codigo_unico} será permanentemente excluída do sistema.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deletarSolicitacao(solicitacao.id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
                     )}
