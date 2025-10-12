@@ -12,7 +12,7 @@ import CalculoPrazosForm from "../components/Forms/CalculoPrazosForm";
 import DashboardControladoria from "./DashboardControladoria";
 import CustomizableDashboard from "@/components/Dashboard/CustomizableDashboard";
 import { useAuth } from "@/components/Auth/AuthProvider";
-import UserManagement from "@/components/Admin/UserManagement";
+import AdminPage from "./AdminPage";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
@@ -60,7 +60,7 @@ const Index = () => {
       case 'sugestoes-erros':
         return <SugestoesErrosForm />;
       case 'admin-usuarios':
-        return <UserManagement />;
+        return <AdminPage />;
       case 'bulk-users':
         return <div className="space-y-6">
             <Button variant="ghost" onClick={() => setActiveSection('custom-dashboard')} className="mb-4">

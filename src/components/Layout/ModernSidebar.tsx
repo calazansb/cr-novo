@@ -70,8 +70,8 @@ const ModernSidebar = ({
     bgHover: "hover:bg-teal-500/10"
   }, {
     id: 'admin-usuarios' as ActiveSection,
-    title: "Gerenciar Usuários e Clientes",
-    icon: Users,
+    title: "Administração",
+    icon: Settings,
     color: "text-violet-500",
     bgHover: "hover:bg-violet-500/10"
   }];

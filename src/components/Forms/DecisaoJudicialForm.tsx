@@ -56,6 +56,7 @@ const DecisaoJudicialForm = () => {
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
+    comarca: "",
     orgao: "",
     varaTribunal: "",
     nomeCliente: "",
@@ -75,6 +76,8 @@ const DecisaoJudicialForm = () => {
   const [showClienteOutro, setShowClienteOutro] = useState(false);
   const [magistradoOutro, setMagistradoOutro] = useState("");
   const [showMagistradoOutro, setShowMagistradoOutro] = useState(false);
+  const [comarcaOutra, setComarcaOutra] = useState("");
+  const [showComarcaOutra, setShowComarcaOutra] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -156,6 +159,16 @@ const DecisaoJudicialForm = () => {
       } else {
         setShowMagistradoOutro(false);
         setMagistradoOutro('');
+      }
+    }
+    
+    // Se a comarca for "Outra", mostrar campo de texto
+    if (field === 'comarca') {
+      if (value === 'Outra') {
+        setShowComarcaOutra(true);
+      } else {
+        setShowComarcaOutra(false);
+        setComarcaOutra('');
       }
     }
     
@@ -263,6 +276,7 @@ ${validatedData.resumoDecisao}
       
       setFormData({
         numeroProcesso: '',
+        comarca: '',
         orgao: '',
         varaTribunal: '',
         nomeCliente: '',
@@ -279,6 +293,8 @@ ${validatedData.resumoDecisao}
       setShowClienteOutro(false);
       setMagistradoOutro('');
       setShowMagistradoOutro(false);
+      setComarcaOutra('');
+      setShowComarcaOutra(false);
       localStorage.removeItem('decisao-draft');
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -356,6 +372,36 @@ ${validatedData.resumoDecisao}
                 <p className="text-xs text-destructive">{errors.numeroProcesso}</p>
               )}
               {validatedFields.has('numeroProcesso') && !errors.numeroProcesso && (
+                <p className="text-xs text-success">✓ Campo validado</p>
+              )}
+            </div>
+
+            {/* Comarca - COM GESTÃO ADMIN */}
+            <div className="space-y-2">
+              <Label htmlFor="comarca">
+                Comarca <span className="text-destructive">*</span>
+              </Label>
+              <SelectWithAdminEdit
+                optionSetKey="comarcas"
+                value={formData.comarca}
+                onValueChange={(value) => handleInputChange('comarca', value)}
+                placeholder="Selecione a comarca"
+                isAdmin={isAdmin}
+                label="Comarca"
+                className={errors.comarca ? "border-destructive" : validatedFields.has('comarca') ? "border-success" : ""}
+              />
+              {showComarcaOutra && (
+                <Input
+                  placeholder="Digite o nome da comarca"
+                  value={comarcaOutra}
+                  onChange={(e) => setComarcaOutra(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+              {errors.comarca && (
+                <p className="text-xs text-destructive">{errors.comarca}</p>
+              )}
+              {validatedFields.has('comarca') && !errors.comarca && (
                 <p className="text-xs text-success">✓ Campo validado</p>
               )}
             </div>

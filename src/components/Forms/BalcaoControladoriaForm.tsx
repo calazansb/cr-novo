@@ -57,6 +57,7 @@ const BalcaoControladoriaForm = () => {
     nomeSolicitante: "",
     numeroProcesso: "",
     cliente: "",
+    comarca: "",
     tipoSolicitacao: "",
     orgao: "",
     tribunalOrgao: "",
@@ -87,6 +88,8 @@ const BalcaoControladoriaForm = () => {
   ]);
   const [clienteOutro, setClienteOutro] = useState("");
   const [showClienteOutro, setShowClienteOutro] = useState(false);
+  const [comarcaOutra, setComarcaOutra] = useState("");
+  const [showComarcaOutra, setShowComarcaOutra] = useState(false);
 
   // Auto-save draft
   useEffect(() => {
@@ -201,6 +204,16 @@ const BalcaoControladoriaForm = () => {
       } else {
         setShowClienteOutro(false);
         setClienteOutro('');
+      }
+    }
+    
+    // Se a comarca for "Outra", mostrar campo de texto
+    if (field === 'comarca') {
+      if (value === 'Outra') {
+        setShowComarcaOutra(true);
+      } else {
+        setShowComarcaOutra(false);
+        setComarcaOutra('');
       }
     }
     
@@ -356,6 +369,7 @@ const BalcaoControladoriaForm = () => {
         nomeSolicitante: "",
         numeroProcesso: "",
         cliente: "",
+        comarca: "",
         tipoSolicitacao: "",
         orgao: "",
         tribunalOrgao: "",
@@ -365,6 +379,8 @@ const BalcaoControladoriaForm = () => {
       setSelectedFiles([]);
       setClienteOutro('');
       setShowClienteOutro(false);
+      setComarcaOutra('');
+      setShowComarcaOutra(false);
       setErrors({});
       setValidatedFields(new Set());
       localStorage.removeItem('balcao-controladoria-draft');
@@ -532,6 +548,38 @@ const BalcaoControladoriaForm = () => {
                   <p className="text-xs text-destructive">{errors.tipoSolicitacao}</p>
                 )}
                 {validatedFields.has('tipoSolicitacao') && !errors.tipoSolicitacao && (
+                  <p className="text-xs text-success">✓ Campo validado</p>
+                )}
+              </div>
+            </div>
+
+            {/* Comarca - COM GESTÃO ADMIN */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Comarca <span className="text-destructive">*</span>
+              </label>
+              <SelectWithAdminEdit
+                optionSetKey="comarcas"
+                value={formData.comarca}
+                onValueChange={(value) => handleInputChange('comarca', value)}
+                placeholder="Selecione a comarca"
+                isAdmin={isAdmin}
+                label="Comarca"
+                className={errors.comarca ? "border-destructive" : validatedFields.has('comarca') ? "border-success" : ""}
+              />
+              {showComarcaOutra && (
+                <Input
+                  placeholder="Digite o nome da comarca"
+                  value={comarcaOutra}
+                  onChange={(e) => setComarcaOutra(e.target.value)}
+                  className="mt-2"
+                />
+              )}
+              <div className="h-4">
+                {errors.comarca && (
+                  <p className="text-xs text-destructive">{errors.comarca}</p>
+                )}
+                {validatedFields.has('comarca') && !errors.comarca && (
                   <p className="text-xs text-success">✓ Campo validado</p>
                 )}
               </div>
