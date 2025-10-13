@@ -245,47 +245,30 @@ const UserManagement = () => {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
-        options: {
-          data: {
-            nome: newUser.nome
-          }
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: newUser.email,
+          password: newUser.password,
+          nome: newUser.nome,
+          role: newUser.role
         }
       });
 
       if (error) throw error;
 
-      if (data.user) {
-        // Criar perfil
-        await supabase.from('profiles').insert({
-          id: data.user.id,
-          user_id: data.user.id,
-          nome: newUser.nome,
-          email: newUser.email
-        });
+      toast({
+        title: "Sucesso",
+        description: "Usuário criado com sucesso.",
+      });
 
-        // Criar role
-        await supabase.from('user_roles').insert({
-          user_id: data.user.id,
-          role: newUser.role
-        });
-
-        toast({
-          title: "Sucesso",
-          description: "Usuário criado com sucesso.",
-        });
-
-        setIsCreateUserDialogOpen(false);
-        setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
-        fetchData();
-      }
+      setIsCreateUserDialogOpen(false);
+      setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+      fetchData();
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível criar o usuário.",
+        description: error instanceof Error ? error.message : "Não foi possível criar o usuário.",
         variant: "destructive",
       });
     }
