@@ -65,6 +65,7 @@ Deno.serve(async (req) => {
     });
 
     if (createError) {
+      console.error('Error creating user:', createError);
       return new Response(
         JSON.stringify({ error: createError.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -85,16 +86,21 @@ Deno.serve(async (req) => {
       console.error('Error creating profile:', profileError);
     }
 
-    // Criar role
+    // Criar role - garantir que o valor é válido para o enum app_role
+    const validRole = role || 'user';
     const { error: roleError } = await supabaseClient
       .from('user_roles')
       .insert({
         user_id: newUser.user.id,
-        role: role || 'advogado'
+        role: validRole
       });
 
     if (roleError) {
       console.error('Error creating role:', roleError);
+      return new Response(
+        JSON.stringify({ error: 'User created but failed to assign role: ' + roleError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     return new Response(

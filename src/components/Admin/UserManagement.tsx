@@ -16,7 +16,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 interface UserRole {
   id: string;
   user_id: string;
-  role: 'admin' | 'advogado' | 'cliente';
+  role: 'admin' | 'moderator' | 'user';
 }
 
 interface Profile {
@@ -57,7 +57,7 @@ const UserManagement = () => {
   const [newPassword, setNewPassword] = useState('');
   const [selectedUserForPassword, setSelectedUserForPassword] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [newUser, setNewUser] = useState({ nome: '', email: '', password: '', role: 'advogado' as 'admin' | 'advogado' });
+  const [newUser, setNewUser] = useState({ nome: '', email: '', password: '', role: 'user' as 'admin' | 'moderator' | 'user' });
   const [newCliente, setNewCliente] = useState({ nome: '', email: '', telefone: '', cpf_cnpj: '', endereco: '', observacoes: '' });
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroBusca, setFiltroBusca] = useState<string>('');
@@ -105,7 +105,7 @@ const UserManagement = () => {
       // Combinar dados de usuários
       const usersWithRoles: ItemLista[] = (profilesData || []).map(profile => ({
         ...profile,
-        roles: (rolesData || []).filter(role => role.user_id === profile.id),
+        roles: (rolesData || []).filter(role => role.user_id === profile.id) as UserRole[],
         tipo: 'usuario' as const
       }));
 
@@ -190,9 +190,9 @@ const UserManagement = () => {
     setFilteredItems(resultado);
   }, [filtroTipo, filtroBusca, items, sortField, sortDirection]);
 
-  const getUserRole = (user: Profile | null): 'admin' | 'advogado' | 'cliente' => {
-    if (!user) return 'advogado';
-    return user.roles?.[0]?.role || 'advogado';
+  const getUserRole = (user: Profile | null): 'admin' | 'moderator' | 'user' => {
+    if (!user) return 'user';
+    return user.roles?.[0]?.role || 'user';
   };
 
   const handleUpdateUser = async () => {
@@ -262,7 +262,7 @@ const UserManagement = () => {
       });
 
       setIsCreateUserDialogOpen(false);
-      setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+      setNewUser({ nome: '', email: '', password: '', role: 'user' });
       fetchData();
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
@@ -866,13 +866,14 @@ const UserManagement = () => {
               <Label htmlFor="new-role">Perfil</Label>
               <Select
                 value={newUser.role}
-                onValueChange={(value: 'admin' | 'advogado') => setNewUser(prev => ({ ...prev, role: value }))}
+                onValueChange={(value: 'admin' | 'moderator' | 'user') => setNewUser(prev => ({ ...prev, role: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="advogado">Usuário</SelectItem>
+                  <SelectItem value="user">Usuário</SelectItem>
+                  <SelectItem value="moderator">Moderador</SelectItem>
                   <SelectItem value="admin">Administrador</SelectItem>
                 </SelectContent>
               </Select>
@@ -880,7 +881,7 @@ const UserManagement = () => {
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => {
                 setIsCreateUserDialogOpen(false);
-                setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+                setNewUser({ nome: '', email: '', password: '', role: 'user' });
               }}>
                 Cancelar
               </Button>
