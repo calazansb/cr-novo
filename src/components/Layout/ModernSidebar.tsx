@@ -4,6 +4,7 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, Database, Menu, X, ChevronRight, Calculator, Calendar, GraduationCap, LayoutDashboard, Building2, ChevronDown, TrendingUp } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useUserRole } from "@/hooks/useUserRole";
 type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
@@ -15,9 +16,8 @@ const ModernSidebar = ({
 }: ModernSidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups(prev => 
@@ -26,7 +26,7 @@ const ModernSidebar = ({
         : [...prev, groupId]
     );
   };
-  const navigationItems = [{
+  const baseNavigationItems = [{
     id: 'custom-dashboard' as ActiveSection,
     title: "Meu Dashboard",
     icon: LayoutDashboard,
@@ -62,13 +62,18 @@ const ModernSidebar = ({
     icon: Settings,
     color: "text-teal-500",
     bgHover: "hover:bg-teal-500/10"
-  }, {
-    id: 'admin-usuarios' as ActiveSection,
-    title: "Administração",
-    icon: Settings,
-    color: "text-violet-500",
-    bgHover: "hover:bg-violet-500/10"
   }];
+
+  // Adiciona item de Administração apenas para admins
+  const navigationItems = isAdmin 
+    ? [...baseNavigationItems, {
+        id: 'admin-usuarios' as ActiveSection,
+        title: "Administração",
+        icon: Settings,
+        color: "text-violet-500",
+        bgHover: "hover:bg-violet-500/10"
+      }]
+    : baseNavigationItems;
 
   const dashboardsSubItems = [
     {
