@@ -228,7 +228,26 @@ ${formData.resumoDecisao}
         return;
       }
 
-      // Salvar no banco de dados
+      // Melhorar o texto do resumo automaticamente antes de salvar/enviar
+      let resumoFinal = validatedData.resumoDecisao;
+      try {
+        const { data, error } = await supabase.functions.invoke('melhorar-texto-juridico', {
+          body: { texto: validatedData.resumoDecisao }
+        });
+
+        if (!error && data?.textoMelhorado) {
+          resumoFinal = data.textoMelhorado;
+          toast({
+            title: "Texto aprimorado",
+            description: "O resumo foi automaticamente melhorado para envio.",
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao melhorar texto automaticamente:', error);
+        // Continua com o texto original se houver erro
+      }
+
+      // Salvar no banco de dados com o resumo melhorado
       const decisao = await criarDecisao({
         numero_processo: validatedData.numeroProcesso,
         comarca: formData.comarca,
@@ -240,7 +259,7 @@ ${formData.resumoDecisao}
         advogado_interno: validatedData.advogadoInterno,
         adverso: validatedData.adverso,
         procedimento_objeto: validatedData.procedimentoObjeto,
-        resumo_decisao: validatedData.resumoDecisao
+        resumo_decisao: resumoFinal
       });
 
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
@@ -257,7 +276,7 @@ ${formData.resumoDecisao}
 *Objeto / Procedimento:* ${validatedData.procedimentoObjeto}
 
 *Resumo da Decisão:*
-${validatedData.resumoDecisao}
+${resumoFinal}
 
 `;
 
