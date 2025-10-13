@@ -267,6 +267,54 @@ export type Database = {
           },
         ]
       }
+      pendencias_urgencias: {
+        Row: {
+          cliente: string
+          codigo_unico: string
+          created_at: string
+          descricao: string
+          id: string
+          numero_processo: string
+          observacoes: string | null
+          orgao: string
+          prazo_limite: string
+          responsavel: string
+          tipo_urgencia: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cliente: string
+          codigo_unico: string
+          created_at?: string
+          descricao: string
+          id?: string
+          numero_processo: string
+          observacoes?: string | null
+          orgao: string
+          prazo_limite: string
+          responsavel: string
+          tipo_urgencia: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cliente?: string
+          codigo_unico?: string
+          created_at?: string
+          descricao?: string
+          id?: string
+          numero_processo?: string
+          observacoes?: string | null
+          orgao?: string
+          prazo_limite?: string
+          responsavel?: string
+          tipo_urgencia?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null

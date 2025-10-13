@@ -13,6 +13,7 @@ import { useClientes } from "@/hooks/useClientes";
 import { ORGAOS_LIST } from "@/data/orgaos";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
+import { usePendencias } from "@/hooks/usePendencias";
 
 const pendenciaSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Campo obrigatório").max(100, "Máximo 100 caracteres"),
@@ -32,6 +33,7 @@ interface PendenciasFormProps {
 const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   const { toast } = useToast();
   const { clientes } = useClientes();
+  const { criarPendencia } = usePendencias();
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
@@ -64,7 +66,7 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   };
 
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
       const validatedData = pendenciaSchema.parse(formData);
 
@@ -81,8 +83,21 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
         return;
       }
 
+      // Salvar no banco de dados
+      const pendencia = await criarPendencia({
+        numero_processo: validatedData.numeroProcesso,
+        orgao: validatedData.orgao,
+        tipo_urgencia: validatedData.tipoUrgencia,
+        prazo_limite: validatedData.prazoLimite,
+        responsavel: validatedData.responsavel,
+        cliente: clienteFinal,
+        descricao: validatedData.descricao,
+        observacoes: validatedData.observacoes
+      });
+
       const message = `*PENDÊNCIA/URGÊNCIA - CALAZANS ROSSI ADVOGADOS*
     
+*Protocolo:* ${pendencia.codigo_unico}
 *Processo:* ${validatedData.numeroProcesso}
 *Órgão:* ${validatedData.orgao}
 *Tipo de Urgência:* ${validatedData.tipoUrgencia}

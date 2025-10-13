@@ -915,7 +915,7 @@ export const CustomizableDashboard = () => {
       </div>
 
       {/* Layout Compacto: Estatísticas e Ações Rápidas lado a lado */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Estatísticas */}
         <Card>
           <CardHeader className="pb-2 pt-3">
@@ -980,6 +980,29 @@ export const CustomizableDashboard = () => {
                 Equipe
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Dashboard Hapvida */}
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 border-emerald-200 dark:border-emerald-800">
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-sm flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+              <TrendingUp className="h-4 w-4" />
+              Dashboard Hapvida
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pb-3">
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-3">
+              Acesse o dashboard completo de pendências e urgências do cliente Hapvida
+            </p>
+            <Button 
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" 
+              size="sm"
+              onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'dashboard-hapvida' }))}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Acessar Dashboard
+            </Button>
           </CardContent>
         </Card>
       </div>
