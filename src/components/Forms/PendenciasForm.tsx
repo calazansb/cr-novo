@@ -11,7 +11,7 @@ import { AlertTriangle, MessageCircle, Mail, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientes } from "@/hooks/useClientes";
 import { ORGAOS_LIST } from "@/data/orgaos";
-import { openWhatsAppGroup } from "@/lib/utils";
+import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 
 const pendenciaSchema = z.object({
@@ -97,16 +97,13 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
 
 `;
 
-      // Se for Hapvida, envia para o grupo específico
-      if (clienteFinal === "Hapvida Assistência Médica LTDA") {
-        openWhatsAppGroup(message, "https://chat.whatsapp.com/LovaZHeq5KOFoCif9IW04R");
-      } else {
-        openWhatsAppGroup(message, "https://chat.whatsapp.com/LovaZHeq5KOFoCif9IW04R");
-      }
+      // Abre o WhatsApp com a mensagem pronta; o usuário escolhe o grupo/contato
+      openWhatsApp(message);
+
 
       toast({
         title: "Pendência comunicada!",
-        description: `Grupo do WhatsApp aberto. Cole a mensagem copiada!`,
+        description: `WhatsApp aberto. Selecione o grupo Hapvida e envie a mensagem já preenchida.`,
       });
 
       setFormData({
