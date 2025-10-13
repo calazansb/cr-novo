@@ -234,6 +234,165 @@ const UserManagement = () => {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!newUser.nome || !newUser.email || !newUser.password) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+        options: {
+          data: {
+            nome: newUser.nome
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Criar perfil
+        await supabase.from('profiles').insert({
+          id: data.user.id,
+          user_id: data.user.id,
+          nome: newUser.nome,
+          email: newUser.email
+        });
+
+        // Criar role
+        await supabase.from('user_roles').insert({
+          user_id: data.user.id,
+          role: newUser.role
+        });
+
+        toast({
+          title: "Sucesso",
+          description: "Usuário criado com sucesso.",
+        });
+
+        setIsCreateUserDialogOpen(false);
+        setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o usuário.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCreateCliente = async () => {
+    if (!newCliente.nome) {
+      toast({
+        title: "Erro",
+        description: "O nome do cliente é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .insert({
+          nome: newCliente.nome,
+          email: newCliente.email || null,
+          telefone: newCliente.telefone || null,
+          cpf_cnpj: newCliente.cpf_cnpj || null,
+          endereco: newCliente.endereco || null,
+          observacoes: newCliente.observacoes || null
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Cliente criado com sucesso.",
+      });
+
+      setIsCreateClienteDialogOpen(false);
+      setNewCliente({ nome: '', email: '', telefone: '', cpf_cnpj: '', endereco: '', observacoes: '' });
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao criar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o cliente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateCliente = async () => {
+    if (!editingCliente) return;
+
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .update({
+          nome: editingCliente.nome,
+          email: editingCliente.email || null,
+          telefone: editingCliente.telefone || null,
+          cpf_cnpj: editingCliente.cpf_cnpj || null,
+          endereco: editingCliente.endereco || null,
+          observacoes: editingCliente.observacoes || null
+        })
+        .eq('id', editingCliente.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Cliente atualizado com sucesso.",
+      });
+
+      setIsEditClienteDialogOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o cliente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteCliente = async (clienteId: string) => {
+    try {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', clienteId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Cliente deletado com sucesso.",
+      });
+
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao deletar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível deletar o cliente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleResetPassword = async () => {
     if (!selectedUserForPassword || !newPassword) {
       toast({
@@ -367,7 +526,27 @@ const UserManagement = () => {
     <section className="space-y-4 p-2">
       <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h2 className="text-xl font-semibold">Usuários e Clientes</h2>
-        <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
+        <div className="flex flex-col gap-2 md:flex-row">
+          <Button
+            onClick={() => setIsCreateUserDialogOpen(true)}
+            className="gap-2"
+          >
+            <UserPlus className="h-4 w-4" />
+            Novo Usuário
+          </Button>
+          <Button
+            onClick={() => setIsCreateClienteDialogOpen(true)}
+            variant="outline"
+            className="gap-2"
+          >
+            <Building2 className="h-4 w-4" />
+            Novo Cliente
+          </Button>
+        </div>
+      </header>
+
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex w-full flex-col gap-2 md:flex-row">
           <div className="relative md:w-80">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-60" />
             <Input
@@ -390,7 +569,7 @@ const UserManagement = () => {
             </SelectContent>
           </Select>
         </div>
-      </header>
+      </div>
 
       <Card>
         <CardContent className="p-0">
@@ -491,7 +670,39 @@ const UserManagement = () => {
                             </AlertDialog>
                           </div>
                         ) : (
-                          '-'
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingCliente(item as Cliente);
+                                setIsEditClienteDialogOpen(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteCliente(item.id)}>
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         )}
                       </TableCell>
                     </TableRow>
@@ -627,6 +838,211 @@ const UserManagement = () => {
                 Cancelar
               </Button>
               <Button onClick={handleResetPassword}>Alterar Senha</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Criação de Usuário */}
+      <Dialog open={isCreateUserDialogOpen} onOpenChange={setIsCreateUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Criar Novo Usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-nome">Nome *</Label>
+              <Input
+                id="new-nome"
+                value={newUser.nome}
+                onChange={(e) => setNewUser(prev => ({ ...prev, nome: e.target.value }))}
+                placeholder="Nome do usuário"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-email">Email *</Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-user-password">Senha *</Label>
+              <Input
+                id="new-user-password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Senha do usuário"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-role">Perfil</Label>
+              <Select
+                value={newUser.role}
+                onValueChange={(value: 'admin' | 'advogado') => setNewUser(prev => ({ ...prev, role: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="advogado">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => {
+                setIsCreateUserDialogOpen(false);
+                setNewUser({ nome: '', email: '', password: '', role: 'advogado' });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateUser}>Criar Usuário</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Criação de Cliente */}
+      <Dialog open={isCreateClienteDialogOpen} onOpenChange={setIsCreateClienteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Criar Novo Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-cliente-nome">Nome *</Label>
+              <Input
+                id="new-cliente-nome"
+                value={newCliente.nome}
+                onChange={(e) => setNewCliente(prev => ({ ...prev, nome: e.target.value }))}
+                placeholder="Nome do cliente"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-cliente-email">Email</Label>
+              <Input
+                id="new-cliente-email"
+                type="email"
+                value={newCliente.email}
+                onChange={(e) => setNewCliente(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-cliente-telefone">Telefone</Label>
+              <Input
+                id="new-cliente-telefone"
+                value={newCliente.telefone}
+                onChange={(e) => setNewCliente(prev => ({ ...prev, telefone: e.target.value }))}
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-cliente-cpf">CPF/CNPJ</Label>
+              <Input
+                id="new-cliente-cpf"
+                value={newCliente.cpf_cnpj}
+                onChange={(e) => setNewCliente(prev => ({ ...prev, cpf_cnpj: e.target.value }))}
+                placeholder="000.000.000-00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-cliente-endereco">Endereço</Label>
+              <Input
+                id="new-cliente-endereco"
+                value={newCliente.endereco}
+                onChange={(e) => setNewCliente(prev => ({ ...prev, endereco: e.target.value }))}
+                placeholder="Endereço completo"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-cliente-obs">Observações</Label>
+              <Input
+                id="new-cliente-obs"
+                value={newCliente.observacoes}
+                onChange={(e) => setNewCliente(prev => ({ ...prev, observacoes: e.target.value }))}
+                placeholder="Observações adicionais"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => {
+                setIsCreateClienteDialogOpen(false);
+                setNewCliente({ nome: '', email: '', telefone: '', cpf_cnpj: '', endereco: '', observacoes: '' });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateCliente}>Criar Cliente</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Edição de Cliente */}
+      <Dialog open={isEditClienteDialogOpen} onOpenChange={setIsEditClienteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-cliente-nome">Nome</Label>
+              <Input
+                id="edit-cliente-nome"
+                value={editingCliente?.nome || ''}
+                onChange={(e) => setEditingCliente(prev => prev ? {...prev, nome: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-cliente-email">Email</Label>
+              <Input
+                id="edit-cliente-email"
+                type="email"
+                value={editingCliente?.email || ''}
+                onChange={(e) => setEditingCliente(prev => prev ? {...prev, email: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-cliente-telefone">Telefone</Label>
+              <Input
+                id="edit-cliente-telefone"
+                value={editingCliente?.telefone || ''}
+                onChange={(e) => setEditingCliente(prev => prev ? {...prev, telefone: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-cliente-cpf">CPF/CNPJ</Label>
+              <Input
+                id="edit-cliente-cpf"
+                value={editingCliente?.cpf_cnpj || ''}
+                onChange={(e) => setEditingCliente(prev => prev ? {...prev, cpf_cnpj: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-cliente-endereco">Endereço</Label>
+              <Input
+                id="edit-cliente-endereco"
+                value={editingCliente?.endereco || ''}
+                onChange={(e) => setEditingCliente(prev => prev ? {...prev, endereco: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-cliente-obs">Observações</Label>
+              <Input
+                id="edit-cliente-obs"
+                value={editingCliente?.observacoes || ''}
+                onChange={(e) => setEditingCliente(prev => prev ? {...prev, observacoes: e.target.value} : null)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsEditClienteDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleUpdateCliente}>Salvar</Button>
             </div>
           </div>
         </DialogContent>
