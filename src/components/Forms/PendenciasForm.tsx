@@ -230,7 +230,6 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
               <Select 
                 value={formData.cliente} 
                 onValueChange={(value) => handleInputChange('cliente', value)}
-                disabled={!!clienteFilter}
               >
                 <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Selecione o cliente" />
