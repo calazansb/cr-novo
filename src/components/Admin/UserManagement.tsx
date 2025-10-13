@@ -193,7 +193,136 @@ const UserManagement = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  return null;
+  if (loading) {
+    return (
+      <section className="p-4">
+        <p>Carregando...</p>
+      </section>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <section className="p-4">
+        <Card>
+          <CardContent className="py-6">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              <p>Apenas administradores podem acessar esta seção.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-4 p-2">
+      <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <h2 className="text-xl font-semibold">Usuários e Clientes</h2>
+        <div className="flex w-full flex-col gap-2 md:w-auto md:flex-row">
+          <div className="relative md:w-80">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-60" />
+            <Input
+              value={filtroBusca}
+              onChange={(e) => setFiltroBusca(e.target.value)}
+              placeholder="Buscar por nome ou email"
+              className="pl-9"
+              aria-label="Buscar por nome ou email"
+            />
+          </div>
+          <Select value={filtroTipo} onValueChange={(v) => setFiltroTipo(v)}>
+            <SelectTrigger className="md:w-56" aria-label="Filtrar por tipo">
+              <SelectValue placeholder="Filtrar por tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="cliente">Clientes</SelectItem>
+              <SelectItem value="advogado">Usuários</SelectItem>
+              <SelectItem value="admin">Administradores</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </header>
+
+      <Card>
+        <CardContent className="p-0">
+          {currentItems.length === 0 ? (
+            <div className="p-6 text-sm opacity-75">Nenhum registro encontrado.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Criado em</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentItems.map((item) => (
+                    <TableRow key={`${item.tipo}-${item.id}`}>
+                      <TableCell className="font-medium">{item.nome}</TableCell>
+                      <TableCell>{(item as any).email || '-'}</TableCell>
+                      <TableCell>{getRoleBadge(item)}</TableCell>
+                      <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {totalPages > 1 && (
+        <Pagination className="py-2">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage > 1) handlePageChange(currentPage - 1);
+                }}
+              />
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }).map((_, i) => {
+              const page = i + 1;
+              return (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    href="#"
+                    isActive={page === currentPage}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(page);
+                    }}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+    </section>
+  );
 };
 
 export default UserManagement;
