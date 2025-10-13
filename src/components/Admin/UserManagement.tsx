@@ -165,7 +165,8 @@ const UserManagement = () => {
     setFilteredItems(resultado);
   }, [filtroTipo, filtroBusca, items]);
 
-  const getUserRole = (user: Profile): 'admin' | 'advogado' | 'cliente' => {
+  const getUserRole = (user: Profile | null): 'admin' | 'advogado' | 'cliente' => {
+    if (!user) return 'advogado';
     return user.roles?.[0]?.role || 'advogado';
   };
 
