@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, MessageCircle, Mail, Eye, Sparkles } from "lucide-react";
+import { Building2, MessageCircle, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Combobox } from "@/components/ui/combobox";
 import { SelectWithAdminEdit } from "@/components/Admin/SelectWithAdminEdit";
 import { useClientes } from "@/hooks/useClientes";
@@ -74,7 +75,8 @@ const DecisaoJudicialForm = () => {
   const [melhorandoTexto, setMelhorandoTexto] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
-  const [showPreview, setShowPreview] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [textoMelhorado, setTextoMelhorado] = useState('');
   const [clienteOutro, setClienteOutro] = useState("");
   const [showClienteOutro, setShowClienteOutro] = useState(false);
   const [comarcaOutra, setComarcaOutra] = useState("");
@@ -228,7 +230,7 @@ ${formData.resumoDecisao}
         return;
       }
 
-      // Melhorar o texto do resumo automaticamente antes de salvar/enviar
+      // Melhorar o texto do resumo automaticamente antes de mostrar preview
       let resumoFinal = validatedData.resumoDecisao;
       try {
         const { data, error } = await supabase.functions.invoke('melhorar-texto-juridico', {
@@ -237,15 +239,41 @@ ${formData.resumoDecisao}
 
         if (!error && data?.textoMelhorado) {
           resumoFinal = data.textoMelhorado;
-          toast({
-            title: "Texto aprimorado",
-            description: "O resumo foi automaticamente melhorado para envio.",
-          });
         }
       } catch (error) {
         console.error('Erro ao melhorar texto automaticamente:', error);
         // Continua com o texto original se houver erro
       }
+
+      // Armazenar o texto melhorado e abrir dialog de confirmação
+      setTextoMelhorado(resumoFinal);
+      setIsConfirmDialogOpen(true);
+      setLoading(false);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
+        toast({
+          title: "Erro de validação",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Erro ao processar o formulário.",
+          variant: "destructive",
+        });
+      }
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmarEnvio = async () => {
+    try {
+      setLoading(true);
+      const validatedData = decisaoSchema.parse(formData);
+      
+      const clienteFinal = formData.nomeCliente === 'Outros' ? clienteOutro : validatedData.nomeCliente;
 
       // Salvar no banco de dados com o resumo melhorado
       const decisao = await criarDecisao({
@@ -259,7 +287,7 @@ ${formData.resumoDecisao}
         advogado_interno: validatedData.advogadoInterno,
         adverso: validatedData.adverso,
         procedimento_objeto: validatedData.procedimentoObjeto,
-        resumo_decisao: resumoFinal
+        resumo_decisao: textoMelhorado
       });
 
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
@@ -276,12 +304,14 @@ ${formData.resumoDecisao}
 *Objeto / Procedimento:* ${validatedData.procedimentoObjeto}
 
 *Resumo da Decisão:*
-${resumoFinal}
+${textoMelhorado}
 
 `;
 
       openWhatsApp(message);
       
+      setIsConfirmDialogOpen(false);
+      setTextoMelhorado('');
       setFormData({
         numeroProcesso: '',
         comarca: '',
@@ -304,21 +334,18 @@ ${resumoFinal}
       setVaraOutra('');
       setShowVaraOutra(false);
       localStorage.removeItem('decisao-draft');
+      
+      toast({
+        title: "Sucesso",
+        description: "Decisão registrada e enviada pelo WhatsApp.",
+      });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        const firstError = error.errors[0];
-        toast({
-          title: "Erro de validação",
-          description: firstError.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro",
-          description: "Erro ao registrar decisão.",
-          variant: "destructive",
-        });
-      }
+      console.error('Erro ao confirmar envio:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao enviar decisão.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -672,44 +699,68 @@ ${resumoFinal}
           </div>
 
 
-          {showPreview && (
-            <div className="space-y-4 animate-scale-in">
-              <div className="bg-muted/50 rounded-lg p-4 border">
-                <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Preview da Mensagem
-                </h4>
-                <div className="whitespace-pre-wrap text-sm font-mono bg-background p-4 rounded border">
-                  {generatePreviewMessage()}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-4 pt-6">
-            <Button
-              onClick={() => setShowPreview(!showPreview)}
-              variant="outline"
-              size="lg"
-              className="hover-lift"
-            >
-              <Eye className="h-5 w-5 mr-2" />
-              {showPreview ? "Ocultar" : "Visualizar"} Preview
-            </Button>
-            
+          <div className="flex justify-end pt-6">
             <LoadingButton
-              onClick={() => handleSubmit()}
+              onClick={handleSubmit}
               loading={loading}
-              loadingText="Enviando pelo WhatsApp..."
-              className="w-full hover-lift"
               size="lg"
+              className="w-full sm:w-auto gap-2 shadow-glow hover-lift"
             >
-              <MessageCircle className="h-5 w-5 mr-2" />
+              <MessageCircle className="h-5 w-5" />
               Enviar pelo WhatsApp
             </LoadingButton>
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog de Confirmação com Preview do Texto Melhorado */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Conferir Texto Melhorado pela IA
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                <strong>Atenção:</strong> O texto abaixo foi aprimorado automaticamente pela IA. 
+                Por favor, confira o conteúdo antes de confirmar o envio para garantir que todas as informações estão corretas.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-base font-semibold">Resumo da Decisão (Versão Melhorada)</Label>
+              <div className="bg-muted/50 rounded-lg p-4 border min-h-[200px]">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{textoMelhorado}</p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsConfirmDialogOpen(false);
+                  setTextoMelhorado('');
+                }}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+              <LoadingButton
+                onClick={handleConfirmarEnvio}
+                loading={loading}
+                className="gap-2"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Confirmar Envio
+              </LoadingButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
