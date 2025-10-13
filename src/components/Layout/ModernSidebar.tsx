@@ -87,6 +87,12 @@ const ModernSidebar = ({
       title: "Dashboard Decisões",
       icon: Scale,
       color: "text-indigo-400",
+    },
+    {
+      id: 'dashboard-hapvida' as ActiveSection,
+      title: "Dashboard Hapvida",
+      icon: Building2,
+      color: "text-emerald-400",
     }
   ];
 
