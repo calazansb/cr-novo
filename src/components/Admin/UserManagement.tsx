@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Edit, Shield, Mail, Key, Trash2, UserPlus, Search, Building2 } from 'lucide-react';
+import { Users, Edit, Shield, Mail, Key, Trash2, UserPlus, Search, Building2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
@@ -64,6 +64,8 @@ const UserManagement = () => {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [sortField, setSortField] = useState<'nome' | 'tipo' | 'created_at' | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
   const fetchData = async () => {
     try {
@@ -133,7 +135,7 @@ const UserManagement = () => {
     fetchData();
   }, []);
 
-  // Aplicar filtros
+  // Aplicar filtros e ordenação
   useEffect(() => {
     let resultado = [...items];
 
@@ -161,9 +163,32 @@ const UserManagement = () => {
       );
     }
 
+    // Aplicar ordenação
+    if (sortField) {
+      resultado.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        if (sortField === 'nome') {
+          aValue = a.nome.toLowerCase();
+          bValue = b.nome.toLowerCase();
+        } else if (sortField === 'tipo') {
+          aValue = a.tipo === 'cliente' ? 'cliente' : getUserRole(a as Profile);
+          bValue = b.tipo === 'cliente' ? 'cliente' : getUserRole(b as Profile);
+        } else if (sortField === 'created_at') {
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+        }
+
+        if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     setCurrentPage(1);
     setFilteredItems(resultado);
-  }, [filtroTipo, filtroBusca, items]);
+  }, [filtroTipo, filtroBusca, items, sortField, sortDirection]);
 
   const getUserRole = (user: Profile | null): 'admin' | 'advogado' | 'cliente' => {
     if (!user) return 'advogado';
@@ -297,6 +322,24 @@ const UserManagement = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleSort = (field: 'nome' | 'tipo' | 'created_at') => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: 'nome' | 'tipo' | 'created_at') => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-30" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="ml-2 h-4 w-4" />
+      : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
   if (loading) {
     return (
       <section className="p-4">
@@ -358,10 +401,40 @@ const UserManagement = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nome</TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('nome')}
+                        className="h-8 px-2 hover:bg-muted/50"
+                      >
+                        Nome
+                        {getSortIcon('nome')}
+                      </Button>
+                    </TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Criado em</TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('tipo')}
+                        className="h-8 px-2 hover:bg-muted/50"
+                      >
+                        Tipo
+                        {getSortIcon('tipo')}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSort('created_at')}
+                        className="h-8 px-2 hover:bg-muted/50"
+                      >
+                        Criado em
+                        {getSortIcon('created_at')}
+                      </Button>
+                    </TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
