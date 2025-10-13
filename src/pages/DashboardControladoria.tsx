@@ -994,7 +994,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                           
                           {solicitacao.observacoes && (
                             <div>
-                              <label className="text-sm font-semibold text-muted-foreground">Observações:</label>
+                              <label className="text-sm font-semibold text-muted-foreground">Observações / Situação Atual:</label>
                               <p className="text-sm whitespace-pre-wrap">{solicitacao.observacoes}</p>
                             </div>
                           )}
@@ -1163,7 +1163,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                 </Select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Observações:</label>
+                <label className="block text-sm font-medium mb-2">Observações / Situação Atual:</label>
                 <Textarea value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Adicione observações sobre o status..." />
               </div>
               <div>
