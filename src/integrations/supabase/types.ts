@@ -53,6 +53,66 @@ export type Database = {
         }
         Relationships: []
       }
+      bloqueios_judiciais: {
+        Row: {
+          agencia: string | null
+          cliente: string
+          codigo_unico: string
+          conta: string | null
+          created_at: string
+          data_bloqueio: string
+          descricao: string
+          id: string
+          instituicao_financeira: string | null
+          numero_processo: string
+          observacoes: string | null
+          orgao: string
+          responsavel: string
+          tipo_bloqueio: string
+          updated_at: string
+          user_id: string | null
+          valor_bloqueado: number | null
+        }
+        Insert: {
+          agencia?: string | null
+          cliente: string
+          codigo_unico: string
+          conta?: string | null
+          created_at?: string
+          data_bloqueio: string
+          descricao: string
+          id?: string
+          instituicao_financeira?: string | null
+          numero_processo: string
+          observacoes?: string | null
+          orgao: string
+          responsavel: string
+          tipo_bloqueio: string
+          updated_at?: string
+          user_id?: string | null
+          valor_bloqueado?: number | null
+        }
+        Update: {
+          agencia?: string | null
+          cliente?: string
+          codigo_unico?: string
+          conta?: string | null
+          created_at?: string
+          data_bloqueio?: string
+          descricao?: string
+          id?: string
+          instituicao_financeira?: string | null
+          numero_processo?: string
+          observacoes?: string | null
+          orgao?: string
+          responsavel?: string
+          tipo_bloqueio?: string
+          updated_at?: string
+          user_id?: string | null
+          valor_bloqueado?: number | null
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           cpf_cnpj: string | null

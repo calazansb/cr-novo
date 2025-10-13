@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, AlertTriangle, FileText, BarChart } from "lucide-react";
+import { Building2, AlertTriangle, FileText, BarChart, Ban } from "lucide-react";
 import PendenciasForm from "@/components/Forms/PendenciasForm";
+import BloqueiosForm from "@/components/Forms/BloqueiosForm";
 import { Badge } from "@/components/ui/badge";
 
 interface HapvidaModuleProps {
@@ -33,10 +34,14 @@ const HapvidaModule = ({ onBack }: HapvidaModuleProps) => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="pendencias" className="gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                Pendências e Urgências
+                Pendências
+              </TabsTrigger>
+              <TabsTrigger value="bloqueios" className="gap-2">
+                <Ban className="h-4 w-4" />
+                Bloqueios
               </TabsTrigger>
               <TabsTrigger value="solicitacoes" className="gap-2">
                 <FileText className="h-4 w-4" />
@@ -51,6 +56,12 @@ const HapvidaModule = ({ onBack }: HapvidaModuleProps) => {
             <TabsContent value="pendencias" className="mt-0">
               <div className="bg-muted/30 rounded-lg p-1">
                 <PendenciasForm clienteFilter="Hapvida Assistência Médica LTDA" />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="bloqueios" className="mt-0">
+              <div className="bg-muted/30 rounded-lg p-1">
+                <BloqueiosForm clienteFilter="Hapvida Assistência Médica LTDA" />
               </div>
             </TabsContent>
 
