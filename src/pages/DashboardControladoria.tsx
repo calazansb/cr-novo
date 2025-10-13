@@ -904,6 +904,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                         ? 'bg-green-600 hover:bg-green-700 text-white' 
                         : solicitacao.status === 'pendente' 
                         ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : solicitacao.status === 'em_andamento'
+                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
                         : 'bg-gray-600 hover:bg-gray-700 text-white'
                     }`}
                   >
