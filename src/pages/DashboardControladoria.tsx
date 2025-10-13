@@ -1106,7 +1106,6 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>
-                </div>
                   
                   {/* Anexos abaixo dos botões */}
                   <div className="flex gap-2 justify-center items-center text-xs">
@@ -1123,6 +1122,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </span>
                     )}
                   </div>
+                </div>
               </div>
             ))
           )}
