@@ -175,9 +175,14 @@ const UserManagement = () => {
     }
     
     const role = getUserRole(item as Profile);
+    
+    if (role === 'admin') {
+      return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Administrador</Badge>;
+    }
+    
     return (
       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-        {role === 'admin' ? 'Administrador' : 'Usuário'}
+        Usuário
       </Badge>
     );
   };
