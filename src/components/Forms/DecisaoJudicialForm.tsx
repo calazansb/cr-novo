@@ -89,22 +89,8 @@ const DecisaoJudicialForm = () => {
     return () => clearTimeout(timeoutId);
   }, [formData]);
 
-  // Load draft on mount
-  useEffect(() => {
-    const draft = localStorage.getItem('decisao-draft');
-    if (draft) {
-      try {
-        const parsedDraft = JSON.parse(draft);
-        setFormData(prev => ({ ...prev, ...parsedDraft }));
-        toast({
-          title: "Rascunho carregado",
-          description: "Seus dados foram recuperados automaticamente.",
-        });
-      } catch (error) {
-        console.error('Error loading draft:', error);
-      }
-    }
-  }, [toast]);
+  // Removed auto-load draft on mount to prevent unwanted auto-fill
+  // Users can manually restore drafts if needed
 
   const validateField = (field: string, value: string) => {
     let error = '';
