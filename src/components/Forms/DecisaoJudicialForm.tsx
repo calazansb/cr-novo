@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, MessageCircle, Mail, Eye } from "lucide-react";
+import { Building2, MessageCircle, Mail, Eye, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -71,6 +71,7 @@ const DecisaoJudicialForm = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [melhorandoTexto, setMelhorandoTexto] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
@@ -301,6 +302,48 @@ ${validatedData.resumoDecisao}
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const melhorarTextoResumo = async () => {
+    if (!formData.resumoDecisao.trim() || formData.resumoDecisao.length < 20) {
+      toast({
+        title: "Atenção",
+        description: "Digite pelo menos 20 caracteres no resumo antes de melhorar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setMelhorandoTexto(true);
+      
+      const { data, error } = await supabase.functions.invoke('melhorar-texto-juridico', {
+        body: { texto: formData.resumoDecisao }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.textoMelhorado) {
+        setFormData(prev => ({ ...prev, resumoDecisao: data.textoMelhorado }));
+        toast({
+          title: "Texto melhorado!",
+          description: "O resumo foi aprimorado com redação mais técnica.",
+        });
+      } else {
+        throw new Error('Resposta inválida do servidor');
+      }
+    } catch (error) {
+      console.error('Erro ao melhorar texto:', error);
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Não foi possível melhorar o texto. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setMelhorandoTexto(false);
     }
   };
 
@@ -578,18 +621,36 @@ ${validatedData.resumoDecisao}
             )}
           </div>
 
-          <FormField
-            type="textarea"
-            id="resumoDecisao"
-            label="Resumo da Decisão"
-            value={formData.resumoDecisao}
-            onChange={(value) => handleInputChange('resumoDecisao', value)}
-            placeholder="Descreva brevemente o conteúdo da decisão"
-            rows={4}
-            required
-            error={errors.resumoDecisao}
-            success={validatedFields.has('resumoDecisao')}
-          />
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="resumoDecisao">
+                Resumo da Decisão <span className="text-destructive">*</span>
+              </Label>
+              <Button
+                type="button"
+                onClick={melhorarTextoResumo}
+                disabled={melhorandoTexto || !formData.resumoDecisao.trim()}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Sparkles className={`h-4 w-4 ${melhorandoTexto ? 'animate-spin' : ''}`} />
+                {melhorandoTexto ? 'Melhorando...' : 'Melhorar com IA'}
+              </Button>
+            </div>
+            <FormField
+              type="textarea"
+              id="resumoDecisao"
+              label=""
+              value={formData.resumoDecisao}
+              onChange={(value) => handleInputChange('resumoDecisao', value)}
+              placeholder="Descreva brevemente o conteúdo da decisão"
+              rows={4}
+              required
+              error={errors.resumoDecisao}
+              success={validatedFields.has('resumoDecisao')}
+            />
+          </div>
 
 
           {showPreview && (
