@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSolicitacoes } from '@/hooks/useSolicitacoes';
-import { ArrowLeft, Download, Eye, Edit, AlertCircle, Trash2, Paperclip, ExternalLink, Upload, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Download, Eye, Edit, AlertCircle, Trash2, Paperclip, ExternalLink, Upload, ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { FileUpload } from '@/components/ui/file-upload';
@@ -921,8 +921,130 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-...
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Detalhes da Solicitação - {formatCodigo(solicitacao.codigo_unico)}</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Código Único:</label>
+                              <p className="text-sm">{formatCodigo(solicitacao.codigo_unico)}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Status:</label>
+                              <Badge className={`ml-2 ${
+                                solicitacao.status === 'concluida' 
+                                  ? 'bg-green-600 text-white' 
+                                  : solicitacao.status === 'pendente' 
+                                  ? 'bg-red-600 text-white' 
+                                  : 'bg-gray-600 text-white'
+                              }`}>
+                                {statusLabels[solicitacao.status]}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Solicitante:</label>
+                              <p className="text-sm">{solicitacao.nome_solicitante}</p>
+                            </div>
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Cliente:</label>
+                              <p className="text-sm">{solicitacao.cliente}</p>
+                            </div>
+                          </div>
+                          
+                          {solicitacao.numero_processo && (
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Número do Processo:</label>
+                              <p className="text-sm">{solicitacao.numero_processo}</p>
+                            </div>
+                          )}
+                          
+                          <div>
+                            <label className="text-sm font-semibold text-muted-foreground">Objeto da Solicitação:</label>
+                            <p className="text-sm">{solicitacao.objeto_solicitacao}</p>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-semibold text-muted-foreground">Descrição Detalhada:</label>
+                            <p className="text-sm whitespace-pre-wrap">{solicitacao.descricao_detalhada}</p>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Data de Criação:</label>
+                              <p className="text-sm">{new Date(solicitacao.data_criacao).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                            {solicitacao.prazo_retorno && (
+                              <div>
+                                <label className="text-sm font-semibold text-muted-foreground">Prazo de Retorno:</label>
+                                <p className="text-sm">{new Date(solicitacao.prazo_retorno).toLocaleDateString('pt-BR')}</p>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {solicitacao.observacoes && (
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground">Observações:</label>
+                              <p className="text-sm whitespace-pre-wrap">{solicitacao.observacoes}</p>
+                            </div>
+                          )}
+                          
+                          {solicitacao.anexos && Array.isArray(solicitacao.anexos) && solicitacao.anexos.length > 0 && (
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                                <Paperclip className="h-4 w-4" />
+                                Anexos da Solicitação ({solicitacao.anexos.length}):
+                              </label>
+                              <div className="space-y-1 mt-2">
+                                {solicitacao.anexos.map((anexo, idx) => {
+                                  const fileName = anexo.split('/').pop() || anexo;
+                                  return (
+                                    <a
+                                      key={idx}
+                                      href={anexo}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      {fileName}
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {(solicitacao as any).anexos_resposta && Array.isArray((solicitacao as any).anexos_resposta) && (solicitacao as any).anexos_resposta.length > 0 && (
+                            <div>
+                              <label className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                                <Upload className="h-4 w-4" />
+                                Anexos de Resposta ({(solicitacao as any).anexos_resposta.length}):
+                              </label>
+                              <div className="space-y-1 mt-2">
+                                {(solicitacao as any).anexos_resposta.map((anexo: string, idx: number) => {
+                                  const fileName = anexo.split('/').pop() || anexo;
+                                  return (
+                                    <a
+                                      key={idx}
+                                      href={anexo}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center gap-2 text-sm text-green-600 hover:text-green-800 hover:underline"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      {fileName}
+                                    </a>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </DialogContent>
                     </Dialog>
                     
