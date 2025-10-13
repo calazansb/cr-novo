@@ -1054,60 +1054,59 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </DialogContent>
                     </Dialog>
                     
-                    <Dialog>
-                      <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:bg-primary/10"
+                      title="Editar status"
+                      onClick={() => {
+                        setSolicitacaoEditando(solicitacao);
+                        setNovoStatus(solicitacao.status);
+                        setObservacoes(solicitacao.observacoes || '');
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 hover:bg-primary/10"
-                          onClick={() => {
-                            setSolicitacaoEditando(solicitacao);
-                            setNovoStatus(solicitacao.status);
-                            setObservacoes(solicitacao.observacoes || '');
-                            setArquivosResposta([]);
-                          }}
-                          title="Editar"
+                          className="h-8 w-8 hover:bg-destructive/10 text-destructive"
+                          title="Excluir solicitação"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-...
-                      </DialogContent>
-                    </Dialog>
-                    
-                    {isAdmin && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
-                            title="Excluir"
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir a solicitação <strong>{formatCodigo(solicitacao.codigo_unico)}</strong>?
+                            <br />
+                            Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              await deletarSolicitacao(solicitacao.id);
+                              toast({
+                                title: "Solicitação excluída",
+                                description: `A solicitação ${formatCodigo(solicitacao.codigo_unico)} foi removida com sucesso.`,
+                              });
+                            }}
+                            className="bg-destructive hover:bg-destructive/90"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta ação não pode ser desfeita. A solicitação {solicitacao.codigo_unico} será permanentemente excluída do sistema.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => deletarSolicitacao(solicitacao.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
+                </div>
                   
                   {/* Anexos abaixo dos botões */}
                   <div className="flex gap-2 justify-center items-center text-xs">
@@ -1124,7 +1123,6 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                       </span>
                     )}
                   </div>
-                </div>
               </div>
             ))
           )}
