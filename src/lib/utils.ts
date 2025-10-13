@@ -98,18 +98,30 @@ export function openWhatsApp(message: string, phoneNumber?: string) {
 
 // Função para abrir grupo do WhatsApp e copiar mensagem
 export function openWhatsAppGroup(message: string, groupUrl: string) {
+  // Extrai o código do grupo do URL
+  const groupCode = groupUrl.split('/').pop();
+  
   // Primeiro copia a mensagem
   navigator.clipboard?.writeText(message).then(() => {
-    // Depois abre o link do grupo
-    window.open(groupUrl, '_blank', 'noopener,noreferrer');
+    // Tenta abrir usando o esquema whatsapp:// direto para o grupo
+    try {
+      window.location.href = `whatsapp://chat?code=${groupCode}`;
+    } catch {
+      // Se falhar, usa o link web tradicional
+      window.open(groupUrl, '_blank', 'noopener,noreferrer');
+    }
     
     // Mostra confirmação
     setTimeout(() => {
-      alert('Mensagem copiada! Cole no grupo do WhatsApp que acabou de abrir.');
+      alert('Mensagem copiada! Cole no grupo do WhatsApp.');
     }, 500);
   }).catch(() => {
-    // Se falhar ao copiar, ainda abre o grupo
-    window.open(groupUrl, '_blank', 'noopener,noreferrer');
+    // Se falhar ao copiar, ainda tenta abrir o grupo
+    try {
+      window.location.href = `whatsapp://chat?code=${groupCode}`;
+    } catch {
+      window.open(groupUrl, '_blank', 'noopener,noreferrer');
+    }
     alert('Abri o grupo do WhatsApp. Por favor, copie e cole a mensagem manualmente:\n\n' + message);
   });
 }
