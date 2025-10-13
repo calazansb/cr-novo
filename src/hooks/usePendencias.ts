@@ -144,6 +144,32 @@ export const usePendencias = () => {
     }
   };
 
+  const atualizarPendencia = async (id: string, dados: Partial<NovaPendencia>) => {
+    try {
+      const { error } = await supabase
+        .from('pendencias_urgencias')
+        .update(dados)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Pendência atualizada",
+        description: "A pendência foi atualizada com sucesso.",
+      });
+
+      await carregarPendencias();
+    } catch (error) {
+      console.error('Erro ao atualizar pendência:', error);
+      toast({
+        title: "Erro ao atualizar pendência",
+        description: "Não foi possível atualizar a pendência.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     if (supabase) {
       carregarPendencias();
@@ -155,6 +181,7 @@ export const usePendencias = () => {
     loading,
     criarPendencia,
     deletarPendencia,
+    atualizarPendencia,
     carregarPendencias
   };
 };

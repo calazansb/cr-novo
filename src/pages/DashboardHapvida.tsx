@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Building2, AlertTriangle, Clock, CheckCircle, User } from "lucide-react";
+import { ArrowLeft, Building2, AlertTriangle, Clock, CheckCircle, User, Pencil, Trash2 } from "lucide-react";
 import { usePendencias } from "@/hooks/usePendencias";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -22,6 +22,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 interface DashboardHapvidaProps {
@@ -39,8 +52,12 @@ const COLORS = {
 };
 
 const DashboardHapvida = ({ onBack }: DashboardHapvidaProps) => {
-  const { pendencias, loading } = usePendencias();
+  const { pendencias, loading, deletarPendencia, atualizarPendencia } = usePendencias();
   const [selectedPendencia, setSelectedPendencia] = useState<any>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [pendenciaToDelete, setPendenciaToDelete] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
 
   // Filtrar apenas pendências da Hapvida
   const pendenciasHapvida = useMemo(() => {
@@ -93,6 +110,49 @@ const DashboardHapvida = ({ onBack }: DashboardHapvidaProps) => {
     if (tipo === "prazo-recursal" || tipo === "contestacao") return "destructive";
     if (tipo === "audiencia" || tipo === "documentacao") return "default";
     return "secondary";
+  };
+
+  const openEditDialog = (pendencia: any) => {
+    setEditForm({
+      numero_processo: pendencia.numero_processo,
+      orgao: pendencia.orgao,
+      tipo_urgencia: pendencia.tipo_urgencia,
+      prazo_limite: pendencia.prazo_limite,
+      responsavel: pendencia.responsavel,
+      cliente: pendencia.cliente,
+      descricao: pendencia.descricao,
+      observacoes: pendencia.observacoes || '',
+    });
+    setSelectedPendencia(pendencia);
+    setEditDialogOpen(true);
+  };
+
+  const handleEdit = async () => {
+    if (!selectedPendencia) return;
+
+    try {
+      await atualizarPendencia(selectedPendencia.id, editForm);
+      setEditDialogOpen(false);
+    } catch (error) {
+      // Error is already handled in the hook
+    }
+  };
+
+  const confirmDelete = (id: string) => {
+    setPendenciaToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!pendenciaToDelete) return;
+
+    try {
+      await deletarPendencia(pendenciaToDelete);
+      setDeleteDialogOpen(false);
+      setPendenciaToDelete(null);
+    } catch (error) {
+      // Error is already handled in the hook
+    }
   };
 
   return (
@@ -258,57 +318,73 @@ const DashboardHapvida = ({ onBack }: DashboardHapvidaProps) => {
                         {format(new Date(pendencia.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </TableCell>
                       <TableCell>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedPendencia(pendencia)}
-                            >
-                              Ver detalhes
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Detalhes da Pendência</DialogTitle>
-                              <DialogDescription>
-                                Protocolo: {pendencia.codigo_unico}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <p className="text-sm font-medium">Número do Processo</p>
-                                <p className="text-sm text-muted-foreground">{pendencia.numero_processo}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">Órgão</p>
-                                <p className="text-sm text-muted-foreground">{pendencia.orgao}</p>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">Tipo de Urgência</p>
-                                <Badge variant={getTipoBadgeVariant(pendencia.tipo_urgencia)}>
-                                  {pendencia.tipo_urgencia}
-                                </Badge>
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium">Descrição</p>
-                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pendencia.descricao}</p>
-                              </div>
-                              {pendencia.observacoes && (
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedPendencia(pendencia)}
+                              >
+                                Ver detalhes
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Detalhes da Pendência</DialogTitle>
+                                <DialogDescription>
+                                  Protocolo: {pendencia.codigo_unico}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4">
                                 <div>
-                                  <p className="text-sm font-medium">Observações</p>
-                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pendencia.observacoes}</p>
+                                  <p className="text-sm font-medium">Número do Processo</p>
+                                  <p className="text-sm text-muted-foreground">{pendencia.numero_processo}</p>
                                 </div>
-                              )}
-                              <div>
-                                <p className="text-sm font-medium">Registrado por</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {pendencia.profiles?.nome || 'Usuário desconhecido'}
-                                </p>
+                                <div>
+                                  <p className="text-sm font-medium">Órgão</p>
+                                  <p className="text-sm text-muted-foreground">{pendencia.orgao}</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">Tipo de Urgência</p>
+                                  <Badge variant={getTipoBadgeVariant(pendencia.tipo_urgencia)}>
+                                    {pendencia.tipo_urgencia}
+                                  </Badge>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">Descrição</p>
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pendencia.descricao}</p>
+                                </div>
+                                {pendencia.observacoes && (
+                                  <div>
+                                    <p className="text-sm font-medium">Observações</p>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{pendencia.observacoes}</p>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium">Registrado por</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {pendencia.profiles?.nome || 'Usuário desconhecido'}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
+                            </DialogContent>
+                          </Dialog>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditDialog(pendencia)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => confirmDelete(pendencia.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -318,6 +394,102 @@ const DashboardHapvida = ({ onBack }: DashboardHapvidaProps) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Pendência</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Número do Processo</Label>
+              <Input
+                value={editForm.numero_processo || ''}
+                onChange={(e) => setEditForm({ ...editForm, numero_processo: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Órgão</Label>
+              <Input
+                value={editForm.orgao || ''}
+                onChange={(e) => setEditForm({ ...editForm, orgao: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Tipo de Urgência</Label>
+              <Input
+                value={editForm.tipo_urgencia || ''}
+                onChange={(e) => setEditForm({ ...editForm, tipo_urgencia: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Prazo Limite</Label>
+              <Input
+                type="date"
+                value={editForm.prazo_limite || ''}
+                onChange={(e) => setEditForm({ ...editForm, prazo_limite: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Responsável</Label>
+              <Input
+                value={editForm.responsavel || ''}
+                onChange={(e) => setEditForm({ ...editForm, responsavel: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Cliente</Label>
+              <Input
+                value={editForm.cliente || ''}
+                onChange={(e) => setEditForm({ ...editForm, cliente: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Descrição</Label>
+              <Textarea
+                value={editForm.descricao || ''}
+                onChange={(e) => setEditForm({ ...editForm, descricao: e.target.value })}
+                rows={4}
+              />
+            </div>
+            <div>
+              <Label>Observações</Label>
+              <Textarea
+                value={editForm.observacoes || ''}
+                onChange={(e) => setEditForm({ ...editForm, observacoes: e.target.value })}
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEdit}>
+                Salvar Alterações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta pendência? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
