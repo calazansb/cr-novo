@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      assistencia_tecnica: {
+        Row: {
+          codigo_unico: string
+          created_at: string
+          id: string
+          nivel_urgencia: string
+          nome_solicitante: string
+          observacoes: string | null
+          solicitacao_problema: string
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          codigo_unico: string
+          created_at?: string
+          id?: string
+          nivel_urgencia: string
+          nome_solicitante: string
+          observacoes?: string | null
+          solicitacao_problema: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          codigo_unico?: string
+          created_at?: string
+          id?: string
+          nivel_urgencia?: string
+          nome_solicitante?: string
+          observacoes?: string | null
+          solicitacao_problema?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           cpf_cnpj: string | null
@@ -415,6 +454,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sugestoes_erros: {
+        Row: {
+          acao_corretiva: string | null
+          beneficios: string | null
+          categoria: string
+          cliente: string | null
+          codigo_unico: string
+          created_at: string
+          descricao: string
+          gravidade: string | null
+          id: string
+          impacto: string | null
+          numero_processo: string | null
+          observacoes: string | null
+          prazo_correcao: string | null
+          responsavel: string | null
+          status: string | null
+          tipo: string
+          tipo_erro: string | null
+          titulo: string
+          updated_at: string
+          urgencia: string
+          user_id: string | null
+        }
+        Insert: {
+          acao_corretiva?: string | null
+          beneficios?: string | null
+          categoria: string
+          cliente?: string | null
+          codigo_unico: string
+          created_at?: string
+          descricao: string
+          gravidade?: string | null
+          id?: string
+          impacto?: string | null
+          numero_processo?: string | null
+          observacoes?: string | null
+          prazo_correcao?: string | null
+          responsavel?: string | null
+          status?: string | null
+          tipo: string
+          tipo_erro?: string | null
+          titulo: string
+          updated_at?: string
+          urgencia: string
+          user_id?: string | null
+        }
+        Update: {
+          acao_corretiva?: string | null
+          beneficios?: string | null
+          categoria?: string
+          cliente?: string | null
+          codigo_unico?: string
+          created_at?: string
+          descricao?: string
+          gravidade?: string | null
+          id?: string
+          impacto?: string | null
+          numero_processo?: string | null
+          observacoes?: string | null
+          prazo_correcao?: string | null
+          responsavel?: string | null
+          status?: string | null
+          tipo?: string
+          tipo_erro?: string | null
+          titulo?: string
+          updated_at?: string
+          urgencia?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { openWhatsApp } from "@/lib/utils";
 import { z } from "zod";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSugestoesErros } from "@/hooks/useSugestoesErros";
 
 const sugestaoSchema = z.object({
   categoria: z.string().min(1, "Selecione uma categoria"),
@@ -34,6 +35,7 @@ const erroSchema = z.object({
 const SugestoesErrosForm = () => {
   const { toast } = useToast();
   const { clientes } = useClientes();
+  const { criarRegistro } = useSugestoesErros();
   
   // Estados para Sugestões
   const [sugestaoData, setSugestaoData] = useState({
@@ -67,23 +69,13 @@ const SugestoesErrosForm = () => {
     try {
       const validatedData = sugestaoSchema.parse(sugestaoData);
 
-      const message = `*SUGESTÃO DE MELHORIA - CALAZANS ROSSI ADVOGADOS*
-
-*Categoria:* ${validatedData.categoria}
-*Título:* ${validatedData.titulo}
-*Urgência:* ${validatedData.urgencia}
-
-*Descrição da Sugestão:*
-${validatedData.descricao}
-
-${validatedData.beneficios ? `*Benefícios Esperados:*\n${validatedData.beneficios}` : ''}
-`;
-
-      openWhatsApp(message);
-      
-      toast({
-        title: "Sugestão enviada!",
-        description: "Sua sugestão está pronta para envio via WhatsApp.",
+      await criarRegistro({
+        tipo: 'sugestao',
+        categoria: validatedData.categoria,
+        titulo: validatedData.titulo,
+        descricao: validatedData.descricao,
+        beneficios: validatedData.beneficios,
+        urgencia: validatedData.urgencia
       });
 
       setSugestaoData({
@@ -98,12 +90,6 @@ ${validatedData.beneficios ? `*Benefícios Esperados:*\n${validatedData.benefici
         toast({
           title: "Erro de validação",
           description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro ao processar a sugestão.",
           variant: "destructive",
         });
       }
@@ -127,28 +113,20 @@ ${validatedData.beneficios ? `*Benefícios Esperados:*\n${validatedData.benefici
         return;
       }
 
-      const message = `*REGISTRO DE ERRO - CALAZANS ROSSI ADVOGADOS*
-
-*Tipo de Erro:* ${validatedData.tipoErro}
-*Gravidade:* ${validatedData.gravidade}
-${validatedData.numeroProcesso ? `*Processo:* ${validatedData.numeroProcesso}` : ''}
-${validatedData.responsavel ? `*Responsável:* ${validatedData.responsavel}` : ''}
-*Cliente:* ${clienteFinal}
-${validatedData.prazoCorrecao ? `*Prazo para Correção:* ${validatedData.prazoCorrecao}` : ''}
-
-*Descrição do Erro:*
-${validatedData.descricaoErro}
-
-${validatedData.impacto ? `*Impacto:*\n${validatedData.impacto}` : ''}
-
-${validatedData.acaoCorretiva ? `*Ação Corretiva Sugerida:*\n${validatedData.acaoCorretiva}` : ''}
-`;
-
-      openWhatsApp(message);
-      
-      toast({
-        title: "Erro registrado!",
-        description: "O erro está pronto para envio via WhatsApp.",
+      await criarRegistro({
+        tipo: 'erro',
+        categoria: validatedData.tipoErro,
+        titulo: `Erro: ${validatedData.tipoErro}`,
+        descricao: validatedData.descricaoErro,
+        urgencia: validatedData.gravidade,
+        tipo_erro: validatedData.tipoErro,
+        gravidade: validatedData.gravidade,
+        numero_processo: validatedData.numeroProcesso,
+        responsavel: validatedData.responsavel,
+        cliente: clienteFinal,
+        prazo_correcao: validatedData.prazoCorrecao,
+        impacto: validatedData.impacto,
+        acao_corretiva: validatedData.acaoCorretiva
       });
 
       setErroData({
@@ -169,12 +147,6 @@ ${validatedData.acaoCorretiva ? `*Ação Corretiva Sugerida:*\n${validatedData.a
         toast({
           title: "Erro de validação",
           description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro ao processar o registro.",
           variant: "destructive",
         });
       }
@@ -288,7 +260,7 @@ ${validatedData.acaoCorretiva ? `*Ação Corretiva Sugerida:*\n${validatedData.a
                 size="lg"
               >
                 <Lightbulb className="h-5 w-5 mr-2" />
-                {loadingSugestao ? "Enviando..." : "Enviar Sugestão via WhatsApp"}
+                {loadingSugestao ? "Enviando..." : "Registrar Sugestão"}
               </Button>
             </CardContent>
           </Card>
@@ -444,7 +416,7 @@ ${validatedData.acaoCorretiva ? `*Ação Corretiva Sugerida:*\n${validatedData.a
                 size="lg"
               >
                 <AlertTriangle className="h-5 w-5 mr-2" />
-                {loadingErro ? "Enviando..." : "Registrar Erro via WhatsApp"}
+                {loadingErro ? "Enviando..." : "Registrar Erro"}
               </Button>
             </CardContent>
           </Card>

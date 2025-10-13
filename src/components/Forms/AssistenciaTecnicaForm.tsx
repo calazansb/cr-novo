@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { openWhatsApp } from "@/lib/utils";
 import { useUsuarios } from "@/hooks/useUsuarios";
 import { z } from "zod";
+import { useAssistenciaTecnica } from "@/hooks/useAssistenciaTecnica";
 
 const assistenciaSchema = z.object({
   nomeSolicitante: z.string().trim().min(3, "Mínimo 3 caracteres").max(100, "Máximo 100 caracteres"),
@@ -20,6 +21,7 @@ const assistenciaSchema = z.object({
 const AssistenciaTecnicaForm = () => {
   const { toast } = useToast();
   const { usuarios } = useUsuarios();
+  const { criarAssistencia } = useAssistenciaTecnica();
   const [formData, setFormData] = useState({
     nomeSolicitante: "",
     solicitacaoProblema: "",
@@ -133,29 +135,14 @@ ${formData.solicitacaoProblema}
     `.trim();
   };
 
-  const handleSubmit = (type: 'whatsapp' | 'email') => {
+  const handleSubmit = async (type: 'whatsapp' | 'email') => {
     try {
       const validatedData = assistenciaSchema.parse(formData);
 
-      const urgencyEmoji = {
-        'Alta': '🔴',
-        'Média': '🟡', 
-        'Baixa': '🟢'
-      };
-
-      const message = `*ASSISTÊNCIA TÉCNICA - CALAZANS ROSSI ADVOGADOS*
-    
-*Solicitante:* ${validatedData.nomeSolicitante}
-*Nível de Urgência:* ${urgencyEmoji[validatedData.nivelUrgencia as keyof typeof urgencyEmoji]} ${validatedData.nivelUrgencia}
-
-*Solicitação/Problema Técnico:*
-${validatedData.solicitacaoProblema}`;
-
-      openWhatsApp(message);
-
-      toast({
-        title: "Solicitação enviada!",
-        description: `Assistência técnica preparada para envio por WhatsApp!`,
+      await criarAssistencia({
+        nome_solicitante: validatedData.nomeSolicitante,
+        solicitacao_problema: validatedData.solicitacaoProblema,
+        nivel_urgencia: validatedData.nivelUrgencia
       });
       
       setFormData({
@@ -172,12 +159,6 @@ ${validatedData.solicitacaoProblema}`;
         toast({
           title: "Erro de validação",
           description: firstError.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro",
-          description: "Erro ao processar formulário.",
           variant: "destructive",
         });
       }
@@ -315,24 +296,12 @@ ${validatedData.solicitacaoProblema}`;
               <LoadingButton
                 onClick={() => handleSubmit('whatsapp')}
                 loading={loading}
-                loadingText="Enviando para WhatsApp..."
+                loadingText="Registrando..."
                 className="flex-1 hero-gradient hover:bg-primary-hover text-primary-foreground"
                 size="lg"
               >
-                <MessageCircle className="h-5 w-5 mr-2" />
-                Enviar para WhatsApp
-              </LoadingButton>
-              
-              <LoadingButton
-                onClick={() => handleSubmit('email')}
-                loading={loading}
-                loadingText="Enviando por E-mail..."
-                variant="outline"
-                className="flex-1 hover-lift"
-                size="lg"
-              >
-                <Mail className="h-5 w-5 mr-2" />
-                Enviar por E-mail
+                <Settings className="h-5 w-5 mr-2" />
+                Registrar Solicitação
               </LoadingButton>
             </div>
           </div>

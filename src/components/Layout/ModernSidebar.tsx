@@ -5,7 +5,7 @@ import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -93,6 +93,18 @@ const ModernSidebar = ({
       title: "Dashboard Hapvida",
       icon: Building2,
       color: "text-emerald-400",
+    },
+    {
+      id: 'dashboard-sugestoes-erros' as ActiveSection,
+      title: "Dashboard Sugestões/Erros",
+      icon: Lightbulb,
+      color: "text-amber-400",
+    },
+    {
+      id: 'dashboard-assistencia' as ActiveSection,
+      title: "Dashboard Assistência",
+      icon: Settings,
+      color: "text-teal-400",
     }
   ];
 
@@ -231,7 +243,7 @@ const ModernSidebar = ({
               className={cn(
                 "w-full justify-start h-12 transition-all duration-200 group relative overflow-hidden rounded-xl",
                 isCollapsed ? "px-3" : "px-4",
-                (activeSection === 'dashboard-controladoria' || activeSection === 'dashboard-decisoes' || activeSection === 'dashboard-hapvida')
+                (activeSection === 'dashboard-controladoria' || activeSection === 'dashboard-decisoes' || activeSection === 'dashboard-hapvida' || activeSection === 'dashboard-sugestoes-erros' || activeSection === 'dashboard-assistencia')
                   ? "bg-violet-600/25 text-white border-l-4 border-violet-500 shadow-[0_0_20px_rgba(139,92,246,0.3)]" 
                   : "text-slate-300 hover:bg-violet-500/15 hover:text-white hover:bg-violet-500/10"
               )}

@@ -12,13 +12,15 @@ import CalculoPrazosForm from "../components/Forms/CalculoPrazosForm";
 import DashboardControladoria from "./DashboardControladoria";
 import DashboardDecisoes from "./DashboardDecisoes";
 import DashboardHapvida from "./DashboardHapvida";
+import DashboardSugestoesErros from "./DashboardSugestoesErros";
+import DashboardAssistenciaTecnica from "./DashboardAssistenciaTecnica";
 import CustomizableDashboard from "@/components/Dashboard/CustomizableDashboard";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import AdminPage from "./AdminPage";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -65,6 +67,10 @@ const Index = () => {
         return <CalculoPrazosForm />;
       case 'sugestoes-erros':
         return <SugestoesErrosForm />;
+      case 'dashboard-sugestoes-erros':
+        return <DashboardSugestoesErros />;
+      case 'dashboard-assistencia':
+        return <DashboardAssistenciaTecnica />;
       case 'admin-usuarios':
         return <AdminPage />;
       case 'bulk-users':
