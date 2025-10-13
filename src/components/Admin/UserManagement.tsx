@@ -169,6 +169,104 @@ const UserManagement = () => {
     return user.roles?.[0]?.role || 'advogado';
   };
 
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          nome: editingUser.nome,
+          email: editingUser.email,
+        })
+        .eq('id', editingUser.id);
+
+      if (error) throw error;
+
+      const currentRole = getUserRole(editingUser);
+      const newRole = (editingUser as any).newRole || currentRole;
+
+      if (currentRole !== newRole) {
+        await supabase.from('user_roles').delete().eq('user_id', editingUser.id);
+        await supabase.from('user_roles').insert({ user_id: editingUser.id, role: newRole });
+      }
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário atualizado com sucesso.",
+      });
+
+      setIsEditUserDialogOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o usuário.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!selectedUserForPassword || !newPassword) {
+      toast({
+        title: "Erro",
+        description: "Preencha a nova senha.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.functions.invoke('admin-reset-password', {
+        body: {
+          userId: selectedUserForPassword.id,
+          newPassword: newPassword,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Senha alterada com sucesso.",
+      });
+
+      setIsPasswordDialogOpen(false);
+      setNewPassword('');
+      setSelectedUserForPassword(null);
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível alterar a senha.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Usuário deletado com sucesso.",
+      });
+
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao deletar usuário:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível deletar o usuário.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getRoleBadge = (item: ItemLista) => {
     if (item.tipo === 'cliente') {
       return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Cliente</Badge>;
@@ -263,6 +361,7 @@ const UserManagement = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -272,6 +371,55 @@ const UserManagement = () => {
                       <TableCell>{(item as any).email || '-'}</TableCell>
                       <TableCell>{getRoleBadge(item)}</TableCell>
                       <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        {item.tipo === 'usuario' ? (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingUser(item as Profile);
+                                setIsEditUserDialogOpen(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUserForPassword(item as Profile);
+                                setIsPasswordDialogOpen(true);
+                              }}
+                            >
+                              <Key className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteUser(item.id)}>
+                                    Excluir
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -326,6 +474,89 @@ const UserManagement = () => {
           </PaginationContent>
         </Pagination>
       )}
+
+      {/* Dialog de Edição de Usuário */}
+      <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-nome">Nome</Label>
+              <Input
+                id="edit-nome"
+                value={editingUser?.nome || ''}
+                onChange={(e) => setEditingUser(prev => prev ? {...prev, nome: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editingUser?.email || ''}
+                onChange={(e) => setEditingUser(prev => prev ? {...prev, email: e.target.value} : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-role">Perfil</Label>
+              <Select
+                value={(editingUser as any)?.newRole || getUserRole(editingUser as Profile)}
+                onValueChange={(value) => setEditingUser(prev => prev ? {...prev, newRole: value} as any : null)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="advogado">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsEditUserDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleUpdateUser}>Salvar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Alteração de Senha */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Alterando senha para: <strong>{selectedUserForPassword?.nome}</strong>
+            </p>
+            <div>
+              <Label htmlFor="new-password">Nova Senha</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Digite a nova senha"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => {
+                setIsPasswordDialogOpen(false);
+                setNewPassword('');
+                setSelectedUserForPassword(null);
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleResetPassword}>Alterar Senha</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
