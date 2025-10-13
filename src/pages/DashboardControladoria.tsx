@@ -27,11 +27,13 @@ interface DashboardControladoriaProps {
 }
 const statusColors = {
   pendente: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  em_andamento: 'bg-amber-100 text-amber-800 border-amber-200',
   concluida: 'bg-green-100 text-green-800 border-green-200',
   cancelada: 'bg-red-100 text-red-800 border-red-200'
 };
 const statusLabels = {
   pendente: 'Pendente',
+  em_andamento: 'Em Andamento',
   concluida: 'Concluída',
   cancelada: 'Cancelada'
 };
@@ -310,6 +312,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
   const estatisticas = {
     total: solicitacoes.length,
     pendentes: solicitacoes.filter(s => s.status === 'pendente').length,
+    emAndamento: solicitacoes.filter(s => s.status === 'em_andamento').length,
     concluidas: solicitacoes.filter(s => s.status === 'concluida').length,
     canceladas: solicitacoes.filter(s => s.status === 'cancelada').length
   };
@@ -698,6 +701,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               >
                 <option value="todos">Todos Status</option>
                 <option value="pendente">Pendente</option>
+                <option value="em_andamento">Em Andamento</option>
                 <option value="concluida">Concluída</option>
                 <option value="cancelada">Cancelada</option>
               </select>
@@ -1150,6 +1154,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
                     <SelectItem value="concluida">Concluída</SelectItem>
                     <SelectItem value="cancelada">Cancelada</SelectItem>
                   </SelectContent>
