@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Users, Edit, Shield, Mail, Key, Trash2, UserPlus, Search, Building2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 interface UserRole {
   id: string;
@@ -61,7 +62,9 @@ const UserManagement = () => {
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroBusca, setFiltroBusca] = useState<string>('');
   const { toast } = useToast();
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -158,6 +161,7 @@ const UserManagement = () => {
       );
     }
 
+    setCurrentPage(1);
     setFilteredItems(resultado);
   }, [filtroTipo, filtroBusca, items]);
 
@@ -188,5 +192,8 @@ const UserManagement = () => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  return null;
+};
 
 export default UserManagement;
