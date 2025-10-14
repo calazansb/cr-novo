@@ -799,7 +799,8 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
       {loading ? (
         <div className="text-center py-8">Carregando solicitações...</div>
       ) : (
-        <div className="border rounded-lg overflow-hidden bg-background">
+        <div className="overflow-x-auto">
+          <div className="min-w-[1220px] border rounded-lg overflow-hidden bg-background">
           {/* Header da Tabela - CLICÁVEL para ordenar */}
           <div className="grid grid-cols-[400px_180px_180px_120px_120px_120px_100px] gap-0 px-6 py-3 bg-muted/50 border-b font-medium text-sm text-muted-foreground">
             <button 
@@ -1126,6 +1127,7 @@ const DashboardControladoria: React.FC<DashboardControladoriaProps> = ({
               </div>
             ))
           )}
+        </div>
         </div>
       )}
 
