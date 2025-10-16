@@ -15,13 +15,25 @@ serve(async (req) => {
     const MICROSOFT_TENANT_ID = '15284730-6837-4e3e-83c2-2b07b60c6d5c'; // Calazans Rossi Advogados
     const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
 
+    // Validação básica do CLIENT_ID (deve ser um GUID)
+    const guidRegex = /^[0-9a-fA-F-]{36}$/;
+    if (!MICROSOFT_CLIENT_ID || !guidRegex.test(MICROSOFT_CLIENT_ID)) {
+      console.error('[onedrive-auth] MICROSOFT_CLIENT_ID inválido ou ausente:', MICROSOFT_CLIENT_ID);
+      return new Response(
+        JSON.stringify({ error: 'MICROSOFT_CLIENT_ID inválido. Esperado um GUID (Application ID).' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // URL de autorização do Microsoft OAuth com Tenant ID específico
     const authUrl = new URL(`https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize`);
-    authUrl.searchParams.append('client_id', MICROSOFT_CLIENT_ID!);
+    authUrl.searchParams.append('client_id', MICROSOFT_CLIENT_ID);
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('redirect_uri', redirectUri);
-    authUrl.searchParams.append('scope', 'Files.ReadWrite Files.ReadWrite.All offline_access');
+    authUrl.searchParams.append('scope', 'User.Read offline_access Files.ReadWrite Files.ReadWrite.All');
     authUrl.searchParams.append('response_mode', 'query');
+
+    console.log('[onedrive-auth] Gerando auth URL', { tenant: MICROSOFT_TENANT_ID, client_id: MICROSOFT_CLIENT_ID });
 
     return new Response(
       JSON.stringify({ authUrl: authUrl.toString() }),
