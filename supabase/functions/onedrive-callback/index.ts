@@ -1,0 +1,67 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const code = url.searchParams.get('code');
+
+    if (!code) {
+      throw new Error('Código de autorização não encontrado');
+    }
+
+    const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID');
+    const MICROSOFT_CLIENT_SECRET = Deno.env.get('MICROSOFT_CLIENT_SECRET');
+    const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
+
+    // Trocar o código pelo token de acesso
+    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: MICROSOFT_CLIENT_ID!,
+        client_secret: MICROSOFT_CLIENT_SECRET!,
+        code: code,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (tokenData.error) {
+      throw new Error(tokenData.error_description || tokenData.error);
+    }
+
+    // Redirecionar de volta para a aplicação com o access token
+    const appUrl = 'https://dd7eb8dc-bd70-4c40-be56-99eed4439748.lovableproject.com';
+    const redirectUrl = `${appUrl}?onedrive_token=${tokenData.access_token}&refresh_token=${tokenData.refresh_token}`;
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        'Location': redirectUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Erro no callback OAuth:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});
