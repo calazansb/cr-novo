@@ -23,6 +23,14 @@ serve(async (req) => {
     const MICROSOFT_TENANT_ID = '15284730-6837-4e3e-83c2-2b07b60c6d5c'; // Calazans Rossi Advogados
     const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
 
+    console.log('[onedrive-callback] Iniciando troca de código por token', {
+      tenant: MICROSOFT_TENANT_ID,
+      client_id: MICROSOFT_CLIENT_ID,
+      redirect_uri: redirectUri,
+      has_code: !!code,
+      has_client_secret: !!MICROSOFT_CLIENT_SECRET
+    });
+
     // Trocar o código pelo token de acesso usando Tenant ID específico
     const tokenResponse = await fetch(`https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/token`, {
       method: 'POST',
@@ -38,10 +46,34 @@ serve(async (req) => {
       }),
     });
 
+    console.log('[onedrive-callback] Resposta do token endpoint', {
+      status: tokenResponse.status,
+      statusText: tokenResponse.statusText,
+      ok: tokenResponse.ok
+    });
+
     const tokenData = await tokenResponse.json();
+    
+    console.log('[onedrive-callback] Dados do token recebidos', {
+      has_access_token: !!tokenData.access_token,
+      has_refresh_token: !!tokenData.refresh_token,
+      has_error: !!tokenData.error,
+      error: tokenData.error,
+      error_description: tokenData.error_description
+    });
 
     if (tokenData.error) {
+      console.error('[onedrive-callback] Erro da Microsoft:', {
+        error: tokenData.error,
+        description: tokenData.error_description,
+        correlation_id: tokenData.correlation_id
+      });
       throw new Error(tokenData.error_description || tokenData.error);
+    }
+
+    if (!tokenData.access_token) {
+      console.error('[onedrive-callback] Token de acesso ausente na resposta');
+      throw new Error('Token de acesso não recebido da Microsoft');
     }
 
     // Redirecionar de volta para a aplicação com o access token
