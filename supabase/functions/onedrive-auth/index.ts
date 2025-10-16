@@ -12,10 +12,11 @@ serve(async (req) => {
 
   try {
     const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID');
+    const MICROSOFT_TENANT_ID = '15284730-6837-4e3e-83c2-2b07b60c6d5c'; // Calazans Rossi Advogados
     const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
 
-    // URL de autorização do Microsoft OAuth
-    const authUrl = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+    // URL de autorização do Microsoft OAuth com Tenant ID específico
+    const authUrl = new URL(`https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize`);
     authUrl.searchParams.append('client_id', MICROSOFT_CLIENT_ID!);
     authUrl.searchParams.append('response_type', 'code');
     authUrl.searchParams.append('redirect_uri', redirectUri);

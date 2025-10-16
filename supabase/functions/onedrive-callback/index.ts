@@ -20,10 +20,11 @@ serve(async (req) => {
 
     const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID');
     const MICROSOFT_CLIENT_SECRET = Deno.env.get('MICROSOFT_CLIENT_SECRET');
+    const MICROSOFT_TENANT_ID = '15284730-6837-4e3e-83c2-2b07b60c6d5c'; // Calazans Rossi Advogados
     const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
 
-    // Trocar o código pelo token de acesso
-    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+    // Trocar o código pelo token de acesso usando Tenant ID específico
+    const tokenResponse = await fetch(`https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
