@@ -70,6 +70,8 @@ export const useOneDrive = () => {
     }
 
     try {
+      console.log('[useOneDrive] Iniciando upload:', file.name);
+      
       // Converter arquivo para base64
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -77,6 +79,8 @@ export const useOneDrive = () => {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+
+      console.log('[useOneDrive] Arquivo convertido para base64, tamanho:', base64.length);
 
       const { data, error } = await supabase.functions.invoke('onedrive-upload', {
         body: {
@@ -87,9 +91,24 @@ export const useOneDrive = () => {
         },
       });
 
-      if (error) throw error;
+      console.log('[useOneDrive] Resposta da função:', { data, error });
 
-      if (data.success) {
+      if (error) {
+        console.error('[useOneDrive] Erro na invocação:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        console.error('[useOneDrive] Erro retornado pela função:', data.error);
+        throw new Error(data.error);
+      }
+
+      if (data?.success) {
+        console.log('[useOneDrive] Upload bem-sucedido:', data.file);
+        toast({
+          title: "Upload concluído!",
+          description: `Arquivo ${data.file.name} enviado para o OneDrive.`,
+        });
         return {
           success: true,
           fileUrl: data.file.webUrl,
@@ -97,12 +116,13 @@ export const useOneDrive = () => {
         };
       }
 
-      return { success: false };
+      throw new Error('Resposta inesperada da função de upload');
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
+      console.error('[useOneDrive] Erro ao fazer upload:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro no upload",
-        description: "Não foi possível fazer upload do arquivo para o OneDrive.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false };
