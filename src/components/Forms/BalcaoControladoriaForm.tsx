@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, Paperclip } from "lucide-react";
+import { Building, Paperclip, Cloud, CloudOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -16,6 +16,7 @@ import { formatCodigo } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { useSolicitacoes, NovasolicitacaoControladoria } from "@/hooks/useSolicitacoes";
 import { ORGAOS_LIST } from "@/data/orgaos";
+import { useOneDrive } from "@/hooks/useOneDrive";
 import { z } from "zod";
 
 const balcaoSchema = z.object({
@@ -33,6 +34,7 @@ const BalcaoControladoriaForm = () => {
   const { toast } = useToast();
   const { criarSolicitacao } = useSolicitacoes();
   const { user } = useAuth();
+  const { isConnected, isAuthenticating, authenticate, uploadFile, disconnect } = useOneDrive();
   
   
   // Verificar se é admin
@@ -702,6 +704,54 @@ const BalcaoControladoriaForm = () => {
                 <p className="text-xs text-success">✓ Campo validado</p>
               )}
             </div>
+          </div>
+
+          {/* OneDrive Connection */}
+          <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {isConnected ? (
+                  <Cloud className="h-5 w-5 text-success" />
+                ) : (
+                  <CloudOff className="h-5 w-5 text-muted-foreground" />
+                )}
+                <span className="text-sm font-medium">
+                  {isConnected ? 'OneDrive Conectado' : 'OneDrive Não Conectado'}
+                </span>
+              </div>
+              {isConnected ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={disconnect}
+                >
+                  Desconectar
+                </Button>
+              ) : (
+                <LoadingButton
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={authenticate}
+                  loading={isAuthenticating}
+                  loadingText="Conectando..."
+                >
+                  <Cloud className="h-4 w-4 mr-2" />
+                  Conectar OneDrive
+                </LoadingButton>
+              )}
+            </div>
+            {isConnected && (
+              <p className="text-xs text-muted-foreground">
+                ✓ Anexos serão salvos em: Sistema CRA/Anexos
+              </p>
+            )}
+            {!isConnected && (
+              <p className="text-xs text-muted-foreground">
+                Conecte ao OneDrive para salvar os anexos automaticamente na nuvem
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
