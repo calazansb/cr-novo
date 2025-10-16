@@ -13,7 +13,7 @@ serve(async (req) => {
   try {
     const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID');
     const MICROSOFT_TENANT_ID = '15284730-6837-4e3e-83c2-2b07b60c6d5c'; // Calazans Rossi Advogados
-    const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
+    const redirectUri = 'https://dd7eb8dc-bd70-4c40-be56-99eed4439748.lovableproject.com/onedrive/callback';
 
     // Validação básica do CLIENT_ID (deve ser um GUID)
     const guidRegex = /^[0-9a-fA-F-]{36}$/;

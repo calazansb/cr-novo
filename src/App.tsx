@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import AuthCallback from "@/components/Auth/AuthCallback";
 import ResetPasswordForm from "@/components/Auth/ResetPasswordForm";
 import { seedObjetoProcedimento } from "@/lib/seed-objeto-procedimento";
+import OneDriveCallback from "./pages/OneDriveCallback";
 
 console.log('🎯 App.tsx carregado!');
 
@@ -43,6 +44,7 @@ const App = () => {
             <Routes>
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/auth/reset-password" element={<ResetPasswordForm />} />
+              <Route path="/onedrive/callback" element={<OneDriveCallback />} />
               <Route path="/" element={
                 <ProtectedRoute>
                   <Index />

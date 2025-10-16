@@ -12,7 +12,21 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const code = url.searchParams.get('code');
+
+    // Suporte a POST (app -> função) e GET (Microsoft -> função)
+    let code: string | null = null;
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        code = body?.code ?? null;
+        console.log('[onedrive-callback] Código recebido via POST?', { has_code: !!code });
+      } catch (e) {
+        console.warn('[onedrive-callback] Falha ao ler JSON do POST', e);
+      }
+    }
+    if (!code) {
+      code = url.searchParams.get('code');
+    }
 
     if (!code) {
       throw new Error('Código de autorização não encontrado');
@@ -21,7 +35,9 @@ serve(async (req) => {
     const MICROSOFT_CLIENT_ID = Deno.env.get('MICROSOFT_CLIENT_ID');
     const MICROSOFT_CLIENT_SECRET = Deno.env.get('MICROSOFT_CLIENT_SECRET');
     const MICROSOFT_TENANT_ID = '15284730-6837-4e3e-83c2-2b07b60c6d5c'; // Calazans Rossi Advogados
-    const redirectUri = 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
+    const redirectUri = req.method === 'POST'
+      ? 'https://dd7eb8dc-bd70-4c40-be56-99eed4439748.lovableproject.com/onedrive/callback'
+      : 'https://szioctpwyczsdeeypnnv.supabase.co/functions/v1/onedrive-callback';
 
     console.log('[onedrive-callback] Iniciando troca de código por token', {
       tenant: MICROSOFT_TENANT_ID,
@@ -76,15 +92,24 @@ serve(async (req) => {
       throw new Error('Token de acesso não recebido da Microsoft');
     }
 
-    // Redirecionar de volta para a aplicação com o access token
+    // Se veio via POST (invocado pelo app), retorne JSON com os tokens
+    if (req.method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Fluxo antigo: redirecionar de volta para a aplicação com o access token
     const appUrl = 'https://dd7eb8dc-bd70-4c40-be56-99eed4439748.lovableproject.com';
     const redirectUrl = `${appUrl}?onedrive_token=${tokenData.access_token}&refresh_token=${tokenData.refresh_token}`;
 
     return new Response(null, {
       status: 302,
-      headers: {
-        'Location': redirectUrl,
-      },
+      headers: { 'Location': redirectUrl },
     });
   } catch (error) {
     console.error('Erro no callback OAuth:', error);
