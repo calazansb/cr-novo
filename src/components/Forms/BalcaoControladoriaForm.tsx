@@ -274,35 +274,61 @@ const BalcaoControladoriaForm = () => {
     try {
       console.log('📤 Iniciando upload de', selectedFiles.length, 'arquivo(s)...');
       
-      for (const file of selectedFiles) {
-        const fileName = `${codigoUnico}/${Date.now()}-${file.name}`;
+      // Se OneDrive estiver conectado, usa ele; senão usa Supabase Storage
+      if (isConnected) {
+        console.log('☁️ Usando OneDrive para upload');
         
-        console.log('📁 Fazendo upload do arquivo:', fileName);
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('solicitacoes-anexos')
-          .upload(fileName, file);
-
-        if (uploadError) {
-          console.error('❌ Erro ao fazer upload:', uploadError);
-          toast({
-            title: "Erro no upload",
-            description: `Não foi possível enviar o arquivo ${file.name}: ${uploadError.message}`,
-            variant: "destructive"
-          });
-          continue;
+        for (const file of selectedFiles) {
+          const folderPath = `Sistema CRA/Anexos/${codigoUnico}`;
+          console.log('📁 Fazendo upload para OneDrive:', file.name);
+          
+          const result = await uploadFile(file, folderPath);
+          
+          if (result.success && result.fileUrl) {
+            console.log('✅ Upload OneDrive concluído:', result.fileUrl);
+            uploadedUrls.push(result.fileUrl);
+          } else {
+            console.error('❌ Falha no upload do OneDrive para:', file.name);
+            toast({
+              title: "Erro no upload",
+              description: `Não foi possível enviar o arquivo ${file.name} para o OneDrive.`,
+              variant: "destructive"
+            });
+          }
         }
+      } else {
+        console.log('💾 Usando Supabase Storage para upload');
+        
+        for (const file of selectedFiles) {
+          const fileName = `${codigoUnico}/${Date.now()}-${file.name}`;
+          
+          console.log('📁 Fazendo upload do arquivo:', fileName);
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('solicitacoes-anexos')
+            .upload(fileName, file);
 
-        console.log('✅ Upload concluído:', uploadData);
+          if (uploadError) {
+            console.error('❌ Erro ao fazer upload:', uploadError);
+            toast({
+              title: "Erro no upload",
+              description: `Não foi possível enviar o arquivo ${file.name}: ${uploadError.message}`,
+              variant: "destructive"
+            });
+            continue;
+          }
 
-        // Obter URL pública do arquivo
-        const { data: urlData } = await supabase.storage
-          .from('solicitacoes-anexos')
-          .getPublicUrl(fileName);
+          console.log('✅ Upload concluído:', uploadData);
 
-        if (urlData?.publicUrl) {
-          console.log('🔗 URL pública gerada:', urlData.publicUrl);
-          uploadedUrls.push(urlData.publicUrl);
+          // Obter URL pública do arquivo
+          const { data: urlData } = await supabase.storage
+            .from('solicitacoes-anexos')
+            .getPublicUrl(fileName);
+
+          if (urlData?.publicUrl) {
+            console.log('🔗 URL pública gerada:', urlData.publicUrl);
+            uploadedUrls.push(urlData.publicUrl);
+          }
         }
       }
 
