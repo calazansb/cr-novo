@@ -44,6 +44,9 @@ Reescreva esse texto para:
 - Favorecer sugestões e pedidos, utilizando expressões como: "seria possível", "gostaríamos de contar com", "solicitamos gentilmente", "quando houver disponibilidade"
 - Evitar completamente imposição de ordens, linguagem direta ou autoritária
 - Adequar o texto ao contexto formal corporativo, sem excesso de rebuscamento
+- SER CONCISO E DIRETO: priorize objetividade, evite rodeios e informações desnecessárias
+- Mantenha apenas o essencial para a compreensão da solicitação
+- Vá direto ao ponto, sem perder a cortesia e o profissionalismo
 
 Se houver partes inadequadas, realize sugestões de reformulação.
 
