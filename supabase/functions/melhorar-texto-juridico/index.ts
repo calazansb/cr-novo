@@ -38,6 +38,13 @@ Deno.serve(async (req) => {
 
 Receberá um rascunho que deve ser transformado em um comunicado profissional.
 
+REGRA CRÍTICA - NÃO INVENTE DADOS:
+- NUNCA adicione informações que não estejam no texto original
+- NUNCA inclua orientações, prazos ou ações que não foram mencionadas
+- Apenas REESCREVA e MELHORE o texto fornecido pelo advogado
+- Seja cuidadoso para não criar ordens ou instruções inexistentes
+- Mantenha TODOS os dados factuais exatamente como fornecidos
+
 FORMATO OBRIGATÓRIO:
 - Texto corrido em um único parágrafo (ou no máximo dois se necessário)
 - SEM listas, SEM itens numerados, SEM tópicos

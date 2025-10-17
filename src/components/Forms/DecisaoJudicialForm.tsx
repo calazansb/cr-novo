@@ -4,6 +4,7 @@ import { Building2, MessageCircle, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
@@ -232,6 +233,12 @@ ${formData.resumoDecisao}
 
       // Melhorar o texto do resumo automaticamente antes de mostrar preview
       let resumoFinal = validatedData.resumoDecisao;
+      
+      toast({
+        title: "Processando...",
+        description: "Melhorando sua mensagem com IA. Aguarde um momento.",
+      });
+
       try {
         const { data, error } = await supabase.functions.invoke('melhorar-texto-juridico', {
           body: { texto: validatedData.resumoDecisao }
@@ -732,10 +739,17 @@ ${textoMelhorado}
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-semibold">Resumo da Decisão (Versão Melhorada)</Label>
-              <div className="bg-muted/50 rounded-lg p-4 border min-h-[200px]">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{textoMelhorado}</p>
-              </div>
+              <Label htmlFor="textoMelhoradoDecisao" className="text-base font-semibold">Resumo da Decisão (Versão Melhorada)</Label>
+              <Textarea
+                id="textoMelhoradoDecisao"
+                value={textoMelhorado}
+                onChange={(e) => setTextoMelhorado(e.target.value)}
+                className="min-h-[200px] bg-background"
+                placeholder="Texto melhorado pela IA"
+              />
+              <p className="text-xs text-muted-foreground">
+                Você pode editar o texto acima antes de confirmar o envio.
+              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
