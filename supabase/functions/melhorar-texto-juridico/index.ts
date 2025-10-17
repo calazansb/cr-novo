@@ -51,8 +51,14 @@ ESTILO:
 - Bem redigido e fluido
 - Conciso: máximo 3-4 frases
 
+TOM IMPORTANTE:
+- NUNCA use expressões que soem como ordens: "ainda hoje", "o mais breve possível", "urgentemente", "imediatamente"
+- Apresente a situação de forma factual e informativa
+- Deixe implícita a necessidade sem impor prazos ao cliente
+- Foque na descrição da situação, necessidade e consequências
+
 CONTEÚDO:
-Inclua naturalmente no texto corrido: descrição da situação, necessidade/ação requerida, consequências/riscos (se houver), e prazo/urgência (se aplicável).
+Inclua naturalmente no texto corrido: descrição da situação, necessidade/ação requerida, consequências/riscos (se houver), e nível de urgência (se aplicável) - mas sempre de forma descritiva, nunca imperativa.
 
 EXEMPLO DO FORMATO ESPERADO:
 "Necessidade de juntada da guia de autorização do procedimento cirúrgico, uma vez que estamos incorrendo em risco de bloqueio de R$ 70.000,00. Prazo já vencido para comprovação. Risco elevado."
