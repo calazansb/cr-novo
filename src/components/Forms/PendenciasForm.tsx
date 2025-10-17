@@ -134,6 +134,12 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
 
       // Melhorar o texto da descrição automaticamente antes de mostrar preview
       let descricaoFinal = validatedData.descricao;
+      
+      toast({
+        title: "Processando...",
+        description: "Melhorando sua mensagem com IA. Aguarde um momento.",
+      });
+
       try {
         const { data, error } = await supabase.functions.invoke('melhorar-texto-juridico', {
           body: { texto: validatedData.descricao }
@@ -427,10 +433,17 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base font-semibold">Descrição da Pendência (Versão Melhorada)</Label>
-              <div className="bg-muted/50 rounded-lg p-4 border min-h-[200px]">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{textoMelhorado}</p>
-              </div>
+              <Label htmlFor="textoMelhorado" className="text-base font-semibold">Descrição da Pendência (Versão Melhorada)</Label>
+              <Textarea
+                id="textoMelhorado"
+                value={textoMelhorado}
+                onChange={(e) => setTextoMelhorado(e.target.value)}
+                className="min-h-[200px] bg-background"
+                placeholder="Texto melhorado pela IA"
+              />
+              <p className="text-xs text-muted-foreground">
+                Você pode editar o texto acima antes de confirmar o envio.
+              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
