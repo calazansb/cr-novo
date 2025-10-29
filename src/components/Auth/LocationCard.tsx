@@ -47,29 +47,26 @@ const LocationCard = () => {
   }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-20 w-[342px] h-[184px] rounded-2xl overflow-hidden shadow-2xl">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#5936B4] to-[#362A84]" />
-      
+    <div className="fixed bottom-6 right-6 z-20 w-[342px] h-[184px] rounded-2xl overflow-hidden shadow-2xl bg-white">
       {/* Cloud decoration */}
-      <div className="absolute right-0 top-0 opacity-20">
+      <div className="absolute right-0 top-0 opacity-10">
         <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <path d="M90 60C90 44 77 31 61 31C50 31 40 37 35 46C32 45 29 44 26 44C14 44 4 54 4 66C4 78 14 88 26 88H86C100 88 111 77 111 63C111 50 101 39 88 39C89 46 90 53 90 60Z" fill="white"/>
+          <path d="M90 60C90 44 77 31 61 31C50 31 40 37 35 46C32 45 29 44 26 44C14 44 4 54 4 66C4 78 14 88 26 88H86C100 88 111 77 111 63C111 50 101 39 88 39C89 46 90 53 90 60Z" fill="currentColor" className="text-primary"/>
         </svg>
       </div>
 
       {/* Content */}
-      <div className="relative h-full p-5 flex flex-col justify-between text-white">
-        <div className="main-text text-5xl font-bold z-10">
+      <div className="relative h-full p-5 flex flex-col justify-between">
+        <div className="main-text text-5xl font-bold z-10 text-foreground">
           {time}
         </div>
         
         <div className="info flex justify-between items-end">
           <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-white/60" />
-            <span className="text-white/60">{location}</span>
+            <MapPin className="w-5 h-5 text-muted-foreground" />
+            <span className="text-muted-foreground">{location}</span>
           </div>
-          <div className="info-right text-white/60">
+          <div className="info-right text-muted-foreground">
             {new Date().toLocaleDateString('pt-BR', { 
               weekday: 'short', 
               day: 'numeric',
