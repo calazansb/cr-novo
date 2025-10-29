@@ -50,7 +50,7 @@ export const HeaderQuote = () => {
 
   return (
     <div 
-      className="relative w-72 h-32 rounded-2xl overflow-hidden mx-auto animate-fade-in group"
+      className="relative w-full max-w-2xl h-32 rounded-2xl overflow-hidden animate-fade-in group"
       style={{
         background: '#29292c',
       }}

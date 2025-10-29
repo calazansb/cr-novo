@@ -26,7 +26,7 @@ const ModernHeader = ({
   return <header className={cn("sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg", className)}>
       <div className="container flex h-20 items-center justify-between px-6">
         {/* Frase Motivacional */}
-        <div className="flex-1">
+        <div className="flex-1 flex justify-start">
           <HeaderQuote />
         </div>
 
