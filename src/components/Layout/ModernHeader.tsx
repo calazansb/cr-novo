@@ -25,21 +25,8 @@ const ModernHeader = ({
   
   return <header className={cn("sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg", className)}>
       <div className="container flex h-20 items-center justify-between px-6">
-        {/* Logo */}
-        <div className="flex items-center space-x-4 flex-shrink-0">
-          <div className="flex items-center">
-            
-          </div>
-          <div className="hidden lg:flex flex-col border-l border-slate-300 dark:border-slate-600 pl-4 h-12 justify-center">
-            <h1 className="font-display font-extrabold text-2xl bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 bg-clip-text text-transparent">
-              Sistema CRA
-            </h1>
-            <p className="text-xs font-semibold text-muted-foreground">Comunicação Jurídica</p>
-          </div>
-        </div>
-
-        {/* Frase Motivacional no Centro - Mais espaço */}
-        <div className="flex items-center justify-center flex-1 px-8 max-w-3xl mx-auto">
+        {/* Frase Motivacional */}
+        <div className="flex-1">
           <HeaderQuote />
         </div>
 
