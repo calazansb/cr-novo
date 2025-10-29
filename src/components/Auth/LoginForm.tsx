@@ -63,8 +63,18 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="login-background"></div>
+      
+      {/* Logo do escritório no topo */}
+      <div className="relative z-10 mb-8">
+        <img 
+          src="/marca-negativa-principal.png" 
+          alt="Calazans Rossi Advogados" 
+          className="h-20 w-auto"
+        />
+      </div>
+
       <Card className="w-full max-w-md relative z-10 backdrop-blur-sm bg-card/95 border-primary/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Sistema Comunicação CRA</CardTitle>
