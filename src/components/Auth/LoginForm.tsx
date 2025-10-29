@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { LogIn, AlertCircle, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import LocationCard from './LocationCard';
 
 const LoginForm = () => {
   const { signIn } = useAuth();
@@ -63,7 +64,9 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <>
+      <LocationCard />
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="login-background"></div>
       
       {/* Logo do escritório no topo */}
@@ -175,6 +178,7 @@ const LoginForm = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 
