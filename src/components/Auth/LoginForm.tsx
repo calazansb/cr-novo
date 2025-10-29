@@ -71,7 +71,7 @@ const LoginForm = () => {
         <img 
           src="/marca-negativa-principal.png" 
           alt="Calazans Rossi Advogados" 
-          className="h-20 w-auto"
+          className="h-60 w-auto"
         />
       </div>
 
