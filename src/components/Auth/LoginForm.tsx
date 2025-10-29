@@ -63,8 +63,9 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-section p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="login-background"></div>
+      <Card className="w-full max-w-md relative z-10 backdrop-blur-sm bg-card/95 border-primary/20">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Sistema Comunicação CRA</CardTitle>
           <CardDescription>
