@@ -196,6 +196,18 @@ const DecisaoJudicialFormNova = () => {
   const handleSubmit = async () => {
     try {
       setLoading(true);
+      
+      // Validar se o arquivo foi enviado
+      if (!arquivoDecisao) {
+        toast({
+          title: "Arquivo obrigatório",
+          description: "Por favor, faça o upload do arquivo da decisão antes de continuar.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const validatedData = decisaoSchema.parse({
         ...formData,
         valorDisputa: formData.valorDisputa || 0
@@ -319,11 +331,14 @@ ${formData.resumoDecisao}
         
         <CardContent className="space-y-6">
           {/* Upload de Arquivo */}
-          <div className="space-y-2 border-2 border-dashed border-muted rounded-lg p-6">
+          <div className="space-y-2 border-2 border-dashed border-primary/50 rounded-lg p-6 bg-primary/5">
             <Label htmlFor="arquivo" className="flex items-center gap-2 text-lg font-semibold">
               <Upload className="h-5 w-5" />
-              Upload da Decisão (PDF, DOCX, HTML)
+              Upload da Decisão (PDF, DOCX, HTML) <span className="text-destructive">* OBRIGATÓRIO</span>
             </Label>
+            <p className="text-sm text-muted-foreground">
+              O arquivo da decisão é necessário para alimentar o Power BI e a Jurimetria
+            </p>
             <Input
               id="arquivo"
               type="file"
