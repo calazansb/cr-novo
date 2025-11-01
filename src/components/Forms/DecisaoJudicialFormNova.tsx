@@ -32,7 +32,8 @@ const decisaoSchema = z.object({
   advogadoInterno: z.string().trim().min(1, "Advogado interno é obrigatório"),
   adverso: z.string().trim().min(1, "Parte adversa é obrigatória"),
   procedimentoObjeto: z.string().trim().min(1, "Assunto/Tema é obrigatório"),
-  valorDisputa: z.number().min(0, "Valor deve ser positivo").optional(),
+  valorDisputa: z.number().min(0, "Valor em Disputa é obrigatório e deve ser positivo"),
+  economiaGerada: z.number().min(0, "Economia Gerada é obrigatória e deve ser positiva"),
   resumoDecisao: z.string().trim().min(20, "Resumo deve ter pelo menos 20 caracteres")
 });
 
@@ -89,27 +90,7 @@ const DecisaoJudicialFormNova = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [dadosExtraidos, setDadosExtraidos] = useState<any>(null);
 
-  // Calcular economia gerada automaticamente
-  useEffect(() => {
-    if (formData.poloCliente && formData.resultado && formData.valorDisputa > 0) {
-      let economia = 0;
-      
-      if (formData.poloCliente === 'Passivo') {
-        if (formData.resultado === 'Favorável') {
-          economia = formData.valorDisputa;
-        } else if (formData.resultado === 'Parcialmente Favorável' && formData.percentualExonerado > 0) {
-          economia = formData.valorDisputa * (formData.percentualExonerado / 100);
-        }
-      } else if (formData.poloCliente === 'Ativo') {
-        if ((formData.resultado === 'Favorável' || formData.resultado === 'Parcialmente Favorável') 
-            && formData.montanteReconhecido > 0) {
-          economia = formData.montanteReconhecido;
-        }
-      }
-      
-      setFormData(prev => ({ ...prev, economiaGerada: economia }));
-    }
-  }, [formData.poloCliente, formData.resultado, formData.valorDisputa, formData.percentualExonerado, formData.montanteReconhecido]);
+  // Economia gerada agora é campo obrigatório de input manual
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -210,7 +191,8 @@ const DecisaoJudicialFormNova = () => {
 
       const validatedData = decisaoSchema.parse({
         ...formData,
-        valorDisputa: formData.valorDisputa || 0
+        valorDisputa: formData.valorDisputa,
+        economiaGerada: formData.economiaGerada
       });
 
       setIsConfirmDialogOpen(true);
@@ -550,60 +532,48 @@ ${formData.resumoDecisao}
           </div>
 
           {/* Valores Financeiros */}
-          <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
+          <div className="border-2 border-primary/50 rounded-lg p-4 space-y-4 bg-primary/5">
             <div className="flex items-center gap-2">
               <Calculator className="h-5 w-5" />
-              <h3 className="font-semibold">Valores Financeiros</h3>
+              <h3 className="font-semibold">Valores Financeiros <span className="text-destructive">* OBRIGATÓRIOS</span></h3>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="valorDisputa">Valor em Disputa (R$)</Label>
+                <Label htmlFor="valorDisputa">
+                  Valor em Disputa (R$) <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="valorDisputa"
                   type="number"
                   step="0.01"
-                  value={formData.valorDisputa}
+                  min="0"
+                  value={formData.valorDisputa || ''}
                   onChange={(e) => handleInputChange('valorDisputa', parseFloat(e.target.value) || 0)}
                   placeholder="0,00"
+                  required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Valor total em discussão no processo
+                </p>
               </div>
 
-              {formData.poloCliente === 'Passivo' && formData.resultado === 'Parcialmente Favorável' && (
-                <div className="space-y-2">
-                  <Label htmlFor="percentualExonerado">% Exonerado</Label>
-                  <Input
-                    id="percentualExonerado"
-                    type="number"
-                    step="0.01"
-                    max="100"
-                    value={formData.percentualExonerado}
-                    onChange={(e) => handleInputChange('percentualExonerado', parseFloat(e.target.value) || 0)}
-                    placeholder="0,00"
-                  />
-                </div>
-              )}
-
-              {formData.poloCliente === 'Ativo' && (formData.resultado === 'Favorável' || formData.resultado === 'Parcialmente Favorável') && (
-                <div className="space-y-2">
-                  <Label htmlFor="montanteReconhecido">Montante Reconhecido (R$)</Label>
-                  <Input
-                    id="montanteReconhecido"
-                    type="number"
-                    step="0.01"
-                    value={formData.montanteReconhecido}
-                    onChange={(e) => handleInputChange('montanteReconhecido', parseFloat(e.target.value) || 0)}
-                    placeholder="0,00"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2 md:col-span-2">
-                <Label className="text-lg font-bold text-success">
-                  Economia Gerada: R$ {formData.economiaGerada.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              <div className="space-y-2">
+                <Label htmlFor="economiaGerada">
+                  Economia Gerada (R$) <span className="text-destructive">*</span>
                 </Label>
+                <Input
+                  id="economiaGerada"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.economiaGerada || ''}
+                  onChange={(e) => handleInputChange('economiaGerada', parseFloat(e.target.value) || 0)}
+                  placeholder="0,00"
+                  required
+                />
                 <p className="text-xs text-muted-foreground">
-                  Calculado automaticamente conforme regras do sistema
+                  Valor economizado pelo cliente com esta decisão
                 </p>
               </div>
             </div>
