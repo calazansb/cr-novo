@@ -3,8 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, TrendingUp, DollarSign, BarChart3, PieChart, Scale, Building } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, TrendingUp, DollarSign, BarChart3, PieChart, Scale, Building, Download, FileSpreadsheet } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import * as XLSX from 'xlsx';
 import {
   PieChart as RechartsPie,
   Pie,
@@ -33,15 +35,24 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
   const { fatoDecisao, dimTribunal, loading } = useAnalytics();
   const [anoFiltro, setAnoFiltro] = useState<string>('todos');
   const [tribunalFiltro, setTribunalFiltro] = useState<string>('todos');
+  const [clienteFiltro, setClienteFiltro] = useState<string>('todos');
+  const [dataInicio, setDataInicio] = useState<string>('');
+  const [dataFim, setDataFim] = useState<string>('');
 
   // Filtrar dados
   const dadosFiltrados = useMemo(() => {
     return fatoDecisao.filter(f => {
       if (anoFiltro !== 'todos' && f.ano !== parseInt(anoFiltro)) return false;
       if (tribunalFiltro !== 'todos' && f.tribunal !== tribunalFiltro) return false;
+      if (clienteFiltro !== 'todos' && f.cliente !== clienteFiltro) return false;
+      
+      // Filtro de período
+      if (dataInicio && f.data_decisao < dataInicio) return false;
+      if (dataFim && f.data_decisao > dataFim) return false;
+      
       return true;
     });
-  }, [fatoDecisao, anoFiltro, tribunalFiltro]);
+  }, [fatoDecisao, anoFiltro, tribunalFiltro, clienteFiltro, dataInicio, dataFim]);
 
   // Anos disponíveis
   const anos = useMemo(() => 
@@ -54,6 +65,57 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
     [...new Set(fatoDecisao.map(f => f.tribunal))].sort(),
     [fatoDecisao]
   );
+
+  // Clientes disponíveis
+  const clientes = useMemo(() => 
+    [...new Set(fatoDecisao.map(f => f.cliente).filter(Boolean))].sort(),
+    [fatoDecisao]
+  );
+
+  // Exportar lista de decisões para Excel
+  const exportarListaExcel = () => {
+    const dados = dadosFiltrados.map(f => ({
+      'Protocolo/Processo': f.processo_id,
+      'Cliente': f.cliente,
+      'Magistrado': f.magistrado_nome,
+      'Tribunal': f.tribunal,
+      'Câmara/Turma': f.camara_turma,
+      'Data Decisão': new Date(f.data_decisao).toLocaleDateString('pt-BR'),
+      'Tipo Decisão': f.tipo_decisao,
+      'Tema': f.tema,
+      'Polo Cliente': f.polo_cliente,
+      'Valor em Disputa': f.valor_em_disputa_brl || 0,
+      'Economia Gerada': f.economia_gerada_brl || 0,
+      'Resultado': f.count_favoravel ? 'Favorável' : f.count_parcial ? 'Parcial' : 'Desfavorável',
+      'Taxa Êxito': `${(f.percentual_exito * 100).toFixed(1)}%`
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(dados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Decisões');
+    
+    // Ajustar largura das colunas
+    const wscols = [
+      { wch: 25 }, // Processo
+      { wch: 30 }, // Cliente
+      { wch: 30 }, // Magistrado
+      { wch: 25 }, // Tribunal
+      { wch: 20 }, // Câmara
+      { wch: 12 }, // Data
+      { wch: 15 }, // Tipo
+      { wch: 30 }, // Tema
+      { wch: 12 }, // Polo
+      { wch: 15 }, // Valor Disputa
+      { wch: 15 }, // Economia
+      { wch: 12 }, // Resultado
+      { wch: 10 }  // Taxa
+    ];
+    ws['!cols'] = wscols;
+
+    const timestamp = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `Decisoes_Analytics_${timestamp}.xlsx`);
+  };
+
 
   // KPIs
   const kpis = useMemo(() => {
@@ -205,9 +267,43 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
       <Card>
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
+          <CardDescription>Filtre os dados para análise personalizada</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Cliente</label>
+              <Select value={clienteFiltro} onValueChange={setClienteFiltro}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos os clientes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os clientes</SelectItem>
+                  {clientes.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Período - Início</label>
+              <Input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Período - Fim</label>
+              <Input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Ano</label>
               <Select value={anoFiltro} onValueChange={setAnoFiltro}>
@@ -237,14 +333,31 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2 flex items-end">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setClienteFiltro('todos');
+                  setDataInicio('');
+                  setDataFim('');
+                  setAnoFiltro('todos');
+                  setTribunalFiltro('todos');
+                }}
+              >
+                Limpar Filtros
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs de Dashboards */}
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="geral">Visão Geral</TabsTrigger>
+          <TabsTrigger value="lista">Lista Decisões</TabsTrigger>
           <TabsTrigger value="magistrados">Magistrados</TabsTrigger>
           <TabsTrigger value="tribunais">Tribunais</TabsTrigger>
           <TabsTrigger value="temas">Temas</TabsTrigger>
@@ -397,6 +510,100 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Dashboard Lista de Decisões */}
+        <TabsContent value="lista" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Lista de Decisões Filtradas</CardTitle>
+                  <CardDescription>
+                    {dadosFiltrados.length} decisões encontradas - Economia total: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(kpis.economiaTotal)}
+                  </CardDescription>
+                </div>
+                <Button onClick={exportarListaExcel} className="flex items-center gap-2">
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Exportar Excel
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left p-3 font-semibold">Processo</th>
+                      <th className="text-left p-3 font-semibold">Cliente</th>
+                      <th className="text-left p-3 font-semibold">Magistrado</th>
+                      <th className="text-left p-3 font-semibold">Tribunal</th>
+                      <th className="text-left p-3 font-semibold">Data</th>
+                      <th className="text-left p-3 font-semibold">Tema</th>
+                      <th className="text-right p-3 font-semibold">Valor Disputa</th>
+                      <th className="text-right p-3 font-semibold">Economia</th>
+                      <th className="text-center p-3 font-semibold">Resultado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dadosFiltrados.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="text-center py-8 text-muted-foreground">
+                          Nenhuma decisão encontrada com os filtros aplicados
+                        </td>
+                      </tr>
+                    ) : (
+                      dadosFiltrados.map((decisao) => (
+                        <tr key={decisao.decisao_id} className="border-b hover:bg-muted/30 transition-colors">
+                          <td className="p-3 font-mono text-xs">{decisao.processo_id}</td>
+                          <td className="p-3">{decisao.cliente}</td>
+                          <td className="p-3">{decisao.magistrado_nome}</td>
+                          <td className="p-3 text-xs">{decisao.tribunal}</td>
+                          <td className="p-3 text-xs">
+                            {new Date(decisao.data_decisao).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="p-3 text-xs max-w-xs truncate" title={decisao.tema}>
+                            {decisao.tema}
+                          </td>
+                          <td className="p-3 text-right font-semibold">
+                            {new Intl.NumberFormat('pt-BR', { 
+                              style: 'currency', 
+                              currency: 'BRL',
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0
+                            }).format(decisao.valor_em_disputa_brl || 0)}
+                          </td>
+                          <td className="p-3 text-right font-semibold text-green-600">
+                            {new Intl.NumberFormat('pt-BR', { 
+                              style: 'currency', 
+                              currency: 'BRL',
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0
+                            }).format(decisao.economia_gerada_brl || 0)}
+                          </td>
+                          <td className="p-3 text-center">
+                            {decisao.count_favoravel === 1 ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                Favorável
+                              </span>
+                            ) : decisao.count_parcial === 1 ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                Parcial
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                Desfavorável
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Dashboard 2: Magistrados */}
