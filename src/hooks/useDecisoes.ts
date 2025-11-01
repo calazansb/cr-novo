@@ -63,15 +63,18 @@ export const useDecisoes = () => {
     }
   };
 
-  const criarDecisao = async (dados: Omit<NovaDecisaoJudicial, 'codigo_unico'>) => {
+  const criarDecisao = async (dados: any) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Remover análise_ia do objeto antes de inserir
+      const { analise_ia, ...dadosDecisao } = dados;
+
       const { data, error } = await supabase
         .from('decisoes_judiciais')
         .insert([{ 
-          ...dados, 
+          ...dadosDecisao, 
           user_id: user.id,
           codigo_unico: '' // Será gerado pelo trigger
         }])
@@ -84,6 +87,23 @@ export const useDecisoes = () => {
         title: "Decisão registrada!",
         description: `Protocolo ${data.codigo_unico} gerado com sucesso.`,
       });
+
+      // Se houver análise de IA, salvar na tabela analises_decisoes
+      if (analise_ia) {
+        const { error: analiseError } = await supabase
+          .from('analises_decisoes')
+          .insert([{
+            decisao_id: data.id,
+            termos_frequentes: analise_ia.termosFrequentes || null,
+            doutrinas_citadas: analise_ia.doutrinasCitadas || null,
+            julgados_citados: analise_ia.julgadosCitados || null,
+            padrao_decisao: analise_ia.resumo || null
+          }]);
+
+        if (analiseError) {
+          console.error('Erro ao salvar análise:', analiseError);
+        }
+      }
 
       await carregarDecisoes();
       return data;
