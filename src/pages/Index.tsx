@@ -3,7 +3,7 @@ import React from "react";
 import ModernSidebar from "@/components/Layout/ModernSidebar";
 import ModernHeader from "@/components/Layout/ModernHeader";
 import { WelcomeQuote } from "@/components/Motivational/WelcomeQuote";
-import DecisaoJudicialForm from "../components/Forms/DecisaoJudicialForm";
+import DecisaoJudicialFormNova from "../components/Forms/DecisaoJudicialFormNova";
 import PendenciasForm from "../components/Forms/PendenciasForm";
 import SugestoesErrosForm from "../components/Forms/SugestoesErrosForm";
 import AssistenciaTecnicaForm from "../components/Forms/AssistenciaTecnicaForm";
@@ -60,7 +60,7 @@ const Index = () => {
             <p className="text-muted-foreground">Em desenvolvimento</p>
           </div>;
       case 'decisoes':
-        return <DecisaoJudicialForm />;
+        return <DecisaoJudicialFormNova />;
       case 'dashboard-decisoes':
         return <DashboardDecisoes onBack={() => setActiveSection('decisoes')} />;
       case 'jurimetria':
