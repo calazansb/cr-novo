@@ -341,15 +341,24 @@ ${textoMelhorado}
       setTextoMelhorado('');
       setFormData({
         numeroProcesso: '',
+        autor: '',
+        reu: '',
         comarca: '',
         orgao: '',
         varaTribunal: '',
         nomeCliente: '',
+        poloCliente: '',
         tipoDecisao: '',
+        resultado: '',
+        dataDecisao: '',
         nomeMagistrado: '',
         advogadoInterno: '',
         adverso: '',
         procedimentoObjeto: '',
+        valorDisputa: 0,
+        economiaGerada: 0,
+        percentualExonerado: 0,
+        montanteReconhecido: 0,
         resumoDecisao: ''
       });
       setErrors({});

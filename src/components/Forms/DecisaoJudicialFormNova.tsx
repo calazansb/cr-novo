@@ -442,8 +442,8 @@ ${formData.resumoDecisao}
                 </SelectTrigger>
                 <SelectContent>
                   {clientes.map(cliente => (
-                    <SelectItem key={cliente.id} value={cliente.nome}>
-                      {cliente.nome}
+                    <SelectItem key={cliente} value={cliente}>
+                      {cliente}
                     </SelectItem>
                   ))}
                 </SelectContent>
