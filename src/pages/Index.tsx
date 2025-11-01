@@ -20,7 +20,8 @@ import AdminPage from "./AdminPage";
 import { BulkUserCreator } from "@/components/Admin/BulkUserCreator";
 import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+import Jurimetria from "./Jurimetria";
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'jurimetria' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -61,6 +62,8 @@ const Index = () => {
         return <DecisaoJudicialForm />;
       case 'dashboard-decisoes':
         return <DashboardDecisoes onBack={() => setActiveSection('decisoes')} />;
+      case 'jurimetria':
+        return <Jurimetria onBack={() => setActiveSection('custom-dashboard')} />;
       case 'pendencias':
         return <PendenciasForm />;
       case 'calculo-prazos':

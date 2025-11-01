@@ -7,13 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface PerfilMagistradoProps {
-  magistradoNome: string;
+  nomeMagistrado: string;
   onBack: () => void;
 }
 
 const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
-const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ magistradoNome, onBack }) => {
+const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onBack }) => {
+  const magistradoNome = nomeMagistrado;
   const [decisoes, setDecisoes] = useState<any[]>([]);
   const [analises, setAnalises] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
