@@ -53,6 +53,13 @@ export type Database = {
             referencedRelation: "decisoes_judiciais"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "analises_decisoes_decisao_id_fkey"
+            columns: ["decisao_id"]
+            isOneToOne: false
+            referencedRelation: "fato_decisao"
+            referencedColumns: ["decisao_id"]
+          },
         ]
       }
       assistencia_tecnica: {
@@ -289,6 +296,112 @@ export type Database = {
         }
         Relationships: []
       }
+      decisores: {
+        Row: {
+          camara_turma: string | null
+          created_at: string | null
+          id: string
+          nome: string
+          tipo: string | null
+          tribunal: string | null
+        }
+        Insert: {
+          camara_turma?: string | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          tipo?: string | null
+          tribunal?: string | null
+        }
+        Update: {
+          camara_turma?: string | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          tipo?: string | null
+          tribunal?: string | null
+        }
+        Relationships: []
+      }
+      doutrinas: {
+        Row: {
+          analise_id: string | null
+          created_at: string | null
+          doutrinador: string | null
+          fonte: string | null
+          id: string
+          obra: string | null
+          trecho: string | null
+        }
+        Insert: {
+          analise_id?: string | null
+          created_at?: string | null
+          doutrinador?: string | null
+          fonte?: string | null
+          id?: string
+          obra?: string | null
+          trecho?: string | null
+        }
+        Update: {
+          analise_id?: string | null
+          created_at?: string | null
+          doutrinador?: string | null
+          fonte?: string | null
+          id?: string
+          obra?: string | null
+          trecho?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doutrinas_analise_id_fkey"
+            columns: ["analise_id"]
+            isOneToOne: false
+            referencedRelation: "analises_decisoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      julgados_citados: {
+        Row: {
+          analise_id: string | null
+          created_at: string | null
+          data_julgamento: string | null
+          fonte: string | null
+          id: string
+          numero_processo: string | null
+          trecho: string | null
+          tribunal: string | null
+        }
+        Insert: {
+          analise_id?: string | null
+          created_at?: string | null
+          data_julgamento?: string | null
+          fonte?: string | null
+          id?: string
+          numero_processo?: string | null
+          trecho?: string | null
+          tribunal?: string | null
+        }
+        Update: {
+          analise_id?: string | null
+          created_at?: string | null
+          data_julgamento?: string | null
+          fonte?: string | null
+          id?: string
+          numero_processo?: string | null
+          trecho?: string | null
+          tribunal?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "julgados_citados_analise_id_fkey"
+            columns: ["analise_id"]
+            isOneToOne: false
+            referencedRelation: "analises_decisoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       option_audit_logs: {
         Row: {
           action: Database["public"]["Enums"]["option_audit_action"]
@@ -449,6 +562,38 @@ export type Database = {
           },
         ]
       }
+      partes: {
+        Row: {
+          documento: string | null
+          id: string
+          nome: string
+          processo_id: string | null
+          tipo: string | null
+        }
+        Insert: {
+          documento?: string | null
+          id?: string
+          nome: string
+          processo_id?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          documento?: string | null
+          id?: string
+          nome?: string
+          processo_id?: string | null
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partes_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "processos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pendencias_urgencias: {
         Row: {
           cliente: string
@@ -494,6 +639,54 @@ export type Database = {
           tipo_urgencia?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      processos: {
+        Row: {
+          assunto: string | null
+          camara_turma: string | null
+          classe_processual: string | null
+          cliente_id: string | null
+          created_at: string | null
+          id: string
+          instancia: string | null
+          numero_cnj: string
+          polo_cliente: string | null
+          tribunal: string | null
+          updated_at: string | null
+          valor_causa: number | null
+          vara: string | null
+        }
+        Insert: {
+          assunto?: string | null
+          camara_turma?: string | null
+          classe_processual?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          id?: string
+          instancia?: string | null
+          numero_cnj: string
+          polo_cliente?: string | null
+          tribunal?: string | null
+          updated_at?: string | null
+          valor_causa?: number | null
+          vara?: string | null
+        }
+        Update: {
+          assunto?: string | null
+          camara_turma?: string | null
+          classe_processual?: string | null
+          cliente_id?: string | null
+          created_at?: string | null
+          id?: string
+          instancia?: string | null
+          numero_cnj?: string
+          polo_cliente?: string | null
+          tribunal?: string | null
+          updated_at?: string | null
+          valor_causa?: number | null
+          vara?: string | null
         }
         Relationships: []
       }
@@ -693,7 +886,93 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      dim_magistrado: {
+        Row: {
+          camara_turma: string | null
+          nome: string | null
+          tribunal: string | null
+        }
+        Relationships: []
+      }
+      dim_tema: {
+        Row: {
+          tema_normalizado: string | null
+        }
+        Relationships: []
+      }
+      dim_tribunal: {
+        Row: {
+          esfera: string | null
+          tribunal: string | null
+        }
+        Relationships: []
+      }
+      fato_decisao: {
+        Row: {
+          ano: number | null
+          camara_turma: string | null
+          cliente: string | null
+          count_desfavoravel: number | null
+          count_favoravel: number | null
+          count_parcial: number | null
+          data_decisao: string | null
+          decisao_id: string | null
+          economia_gerada_brl: number | null
+          magistrado_nome: string | null
+          mes: number | null
+          percentual_exito: number | null
+          polo_cliente: string | null
+          processo_id: string | null
+          tema: string | null
+          tipo_decisao: string | null
+          tribunal: string | null
+          trimestre: number | null
+          valor_em_disputa_brl: number | null
+        }
+        Insert: {
+          ano?: never
+          camara_turma?: string | null
+          cliente?: string | null
+          count_desfavoravel?: never
+          count_favoravel?: never
+          count_parcial?: never
+          data_decisao?: string | null
+          decisao_id?: string | null
+          economia_gerada_brl?: number | null
+          magistrado_nome?: string | null
+          mes?: never
+          percentual_exito?: never
+          polo_cliente?: string | null
+          processo_id?: string | null
+          tema?: string | null
+          tipo_decisao?: string | null
+          tribunal?: string | null
+          trimestre?: never
+          valor_em_disputa_brl?: number | null
+        }
+        Update: {
+          ano?: never
+          camara_turma?: string | null
+          cliente?: string | null
+          count_desfavoravel?: never
+          count_favoravel?: never
+          count_parcial?: never
+          data_decisao?: string | null
+          decisao_id?: string | null
+          economia_gerada_brl?: number | null
+          magistrado_nome?: string | null
+          mes?: never
+          percentual_exito?: never
+          polo_cliente?: string | null
+          processo_id?: string | null
+          tema?: string | null
+          tipo_decisao?: string | null
+          tribunal?: string | null
+          trimestre?: never
+          valor_em_disputa_brl?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
