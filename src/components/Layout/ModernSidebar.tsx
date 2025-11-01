@@ -5,7 +5,7 @@ import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'jurimetria' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -93,6 +93,12 @@ const ModernSidebar = ({
       title: "Jurimetria",
       icon: TrendingUp,
       color: "text-purple-400",
+    },
+    {
+      id: 'analytics' as ActiveSection,
+      title: "Analytics (BI)",
+      icon: BarChart3,
+      color: "text-blue-400",
     },
     {
       id: 'dashboard-hapvida' as ActiveSection,
