@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      analises_decisoes: {
+        Row: {
+          created_at: string | null
+          data_analise: string | null
+          decisao_id: string
+          doutrinas_citadas: Json | null
+          id: string
+          julgados_citados: Json | null
+          padrao_decisao: string | null
+          termos_frequentes: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_analise?: string | null
+          decisao_id: string
+          doutrinas_citadas?: Json | null
+          id?: string
+          julgados_citados?: Json | null
+          padrao_decisao?: string | null
+          termos_frequentes?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          data_analise?: string | null
+          decisao_id?: string
+          doutrinas_citadas?: Json | null
+          id?: string
+          julgados_citados?: Json | null
+          padrao_decisao?: string | null
+          termos_frequentes?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analises_decisoes_decisao_id_fkey"
+            columns: ["decisao_id"]
+            isOneToOne: false
+            referencedRelation: "decisoes_judiciais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assistencia_tecnica: {
         Row: {
           codigo_unico: string
@@ -153,55 +194,97 @@ export type Database = {
         Row: {
           adverso: string
           advogado_interno: string
+          arquivo_nome: string | null
+          arquivo_url: string | null
+          autor: string | null
           codigo_unico: string
           comarca: string | null
           data_atualizacao: string | null
           data_criacao: string | null
+          data_decisao: string | null
+          economia_gerada: number | null
+          hash_arquivo: string | null
           id: string
+          montante_reconhecido: number | null
           nome_cliente: string
           nome_magistrado: string
           numero_processo: string
           orgao: string
+          percentual_exonerado: number | null
+          polo_cliente: string | null
           procedimento_objeto: string
+          resultado: string | null
           resumo_decisao: string
+          reu: string | null
+          sharepoint_drive_id: string | null
+          sharepoint_item_id: string | null
           tipo_decisao: string
           user_id: string | null
+          valor_disputa: number | null
           vara_tribunal: string
         }
         Insert: {
           adverso: string
           advogado_interno: string
+          arquivo_nome?: string | null
+          arquivo_url?: string | null
+          autor?: string | null
           codigo_unico: string
           comarca?: string | null
           data_atualizacao?: string | null
           data_criacao?: string | null
+          data_decisao?: string | null
+          economia_gerada?: number | null
+          hash_arquivo?: string | null
           id?: string
+          montante_reconhecido?: number | null
           nome_cliente: string
           nome_magistrado: string
           numero_processo: string
           orgao: string
+          percentual_exonerado?: number | null
+          polo_cliente?: string | null
           procedimento_objeto: string
+          resultado?: string | null
           resumo_decisao: string
+          reu?: string | null
+          sharepoint_drive_id?: string | null
+          sharepoint_item_id?: string | null
           tipo_decisao: string
           user_id?: string | null
+          valor_disputa?: number | null
           vara_tribunal: string
         }
         Update: {
           adverso?: string
           advogado_interno?: string
+          arquivo_nome?: string | null
+          arquivo_url?: string | null
+          autor?: string | null
           codigo_unico?: string
           comarca?: string | null
           data_atualizacao?: string | null
           data_criacao?: string | null
+          data_decisao?: string | null
+          economia_gerada?: number | null
+          hash_arquivo?: string | null
           id?: string
+          montante_reconhecido?: number | null
           nome_cliente?: string
           nome_magistrado?: string
           numero_processo?: string
           orgao?: string
+          percentual_exonerado?: number | null
+          polo_cliente?: string | null
           procedimento_objeto?: string
+          resultado?: string | null
           resumo_decisao?: string
+          reu?: string | null
+          sharepoint_drive_id?: string | null
+          sharepoint_item_id?: string | null
           tipo_decisao?: string
           user_id?: string | null
+          valor_disputa?: number | null
           vara_tribunal?: string
         }
         Relationships: []
@@ -620,10 +703,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "advogado" | "cliente"

@@ -22,14 +22,21 @@ import { z } from "zod";
 
 const decisaoSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Número do processo é obrigatório").max(100, "Máximo 100 caracteres"),
-  orgao: z.string().trim().min(1, "Órgão é obrigatório").max(100, "Máximo 100 caracteres"),
+  autor: z.string().trim().min(1, "Autor é obrigatório").max(255, "Máximo 255 caracteres"),
+  reu: z.string().trim().min(1, "Réu é obrigatório").max(255, "Máximo 255 caracteres"),
+  orgao: z.string().trim().min(1, "Órgão/Tribunal é obrigatório").max(100, "Máximo 100 caracteres"),
   varaTribunal: z.string().trim().min(1, "Vara / Câmara / Turma é obrigatório").max(200, "Máximo 200 caracteres"),
-  nomeCliente: z.string().trim().min(3, "Nome deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
+  nomeCliente: z.string().trim().min(3, "Nome do cliente deve ter pelo menos 3 caracteres").max(100, "Máximo 100 caracteres"),
+  poloCliente: z.string().min(1, "Polo do cliente é obrigatório"),
   tipoDecisao: z.string().min(1, "Tipo de decisão é obrigatório"),
-  nomeMagistrado: z.string().trim().min(1, "Nome do Magistrado é obrigatório").max(100, "Máximo 100 caracteres"),
-  advogadoInterno: z.string().trim().min(1, "Adv. Jurídico Interno é obrigatório").max(100, "Máximo 100 caracteres"),
-  adverso: z.string().trim().min(1, "Adverso é obrigatório").max(100, "Máximo 100 caracteres"),
-  procedimentoObjeto: z.string().trim().min(1, "Objeto / Procedimento é obrigatório").max(200, "Máximo 200 caracteres"),
+  resultado: z.string().min(1, "Resultado é obrigatório"),
+  dataDecisao: z.string().min(1, "Data da decisão é obrigatória"),
+  nomeMagistrado: z.string().trim().min(1, "Nome do Relator é obrigatório").max(100, "Máximo 100 caracteres"),
+  advogadoInterno: z.string().trim().min(1, "Adv. Interno é obrigatório").max(100, "Máximo 100 caracteres"),
+  adverso: z.string().trim().min(1, "Parte adversa é obrigatória").max(100, "Máximo 100 caracteres"),
+  procedimentoObjeto: z.string().trim().min(1, "Assunto/Tema é obrigatório").max(200, "Máximo 200 caracteres"),
+  valorDisputa: z.number().optional(),
+  economiaGerada: z.number().optional(),
   resumoDecisao: z.string().trim().min(20, "Resumo deve ter pelo menos 20 caracteres").max(2000, "Máximo 2000 caracteres")
 });
 
@@ -60,17 +67,30 @@ const DecisaoJudicialForm = () => {
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
+    autor: "",
+    reu: "",
     comarca: "",
     orgao: "",
     varaTribunal: "",
     nomeCliente: "",
+    poloCliente: "",
     tipoDecisao: "",
+    resultado: "",
+    dataDecisao: "",
     nomeMagistrado: "",
     advogadoInterno: "",
     adverso: "",
     procedimentoObjeto: "",
+    valorDisputa: 0,
+    economiaGerada: 0,
+    percentualExonerado: 0,
+    montanteReconhecido: 0,
     resumoDecisao: ""
   });
+
+  const [arquivoDecisao, setArquivoDecisao] = useState<File | null>(null);
+  const [uploadandoArquivo, setUploadandoArquivo] = useState(false);
+  const [analisandoIA, setAnalisandoIA] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [melhorandoTexto, setMelhorandoTexto] = useState(false);
