@@ -50,6 +50,13 @@ serve(async (req) => {
     // Chamar Lovable AI para análise do texto usando tool calling para garantir estrutura
     const promptAnalise = `Analise o seguinte texto de uma decisão judicial brasileira e extraia todas as informações possíveis.
 
+INSTRUÇÕES CRÍTICAS:
+- Para doutrinadores, precedentes e termos frequentes: TRANSCREVA LITERALMENTE como aparecem no texto
+- NÃO resuma, NÃO parafraseie, NÃO modifique - copie exatamente como está escrito
+- Para termos frequentes: extraia palavras-chave técnicas que aparecem repetidamente no texto original
+- Para doutrinadores: extraia nomes de autores citados EXATAMENTE como aparecem
+- Para precedentes: extraia números e descrições de julgados EXATAMENTE como citados
+
 Texto da decisão:
 ${(baseText || '').slice(0, 20000)}`;
 
@@ -100,41 +107,18 @@ ${(baseText || '').slice(0, 20000)}`;
                 resumo: { type: 'string', description: 'Resumo objetivo da decisão (máximo 500 caracteres)' },
                 termosFrequentes: {
                   type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      termo: { type: 'string' },
-                      frequencia: { type: 'number' }
-                    }
-                  },
-                  description: '10 termos jurídicos mais frequentes'
+                  items: { type: 'string' },
+                  description: 'Array com termos técnico-jurídicos que aparecem repetidamente LITERALMENTE como estão no texto'
                 },
                 doutrinasCitadas: {
                   type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      doutrinador: { type: 'string' },
-                      obra: { type: 'string' },
-                      trecho: { type: 'string' },
-                      fonte: { type: 'string' }
-                    }
-                  },
-                  description: 'Doutrinas citadas no documento'
+                  items: { type: 'string' },
+                  description: 'Array com nomes de doutrinadores/autores citados LITERALMENTE como aparecem no texto (ex: "José Afonso da Silva", "Celso Antônio Bandeira de Mello")'
                 },
                 julgadosCitados: {
                   type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      numeroProcesso: { type: 'string' },
-                      tribunal: { type: 'string' },
-                      data: { type: 'string' },
-                      trecho: { type: 'string' },
-                      fonte: { type: 'string' }
-                    }
-                  },
-                  description: 'Julgados citados no documento'
+                  items: { type: 'string' },
+                  description: 'Array com precedentes/julgados citados LITERALMENTE (número do processo e descrição exata como aparece no texto)'
                 }
               },
               additionalProperties: false

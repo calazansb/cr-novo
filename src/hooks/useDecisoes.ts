@@ -90,18 +90,21 @@ export const useDecisoes = () => {
 
       // Se houver análise de IA, salvar na tabela analises_decisoes
       if (analise_ia) {
+        console.log('Salvando análise IA:', analise_ia);
         const { error: analiseError } = await supabase
           .from('analises_decisoes')
           .insert([{
             decisao_id: data.id,
-            termos_frequentes: analise_ia.termosFrequentes || null,
-            doutrinas_citadas: analise_ia.doutrinasCitadas || null,
-            julgados_citados: analise_ia.julgadosCitados || null,
+            termos_frequentes: analise_ia.termosFrequentes || analise_ia.termos_frequentes || null,
+            doutrinas_citadas: analise_ia.doutrinasCitadas || analise_ia.doutrinas_citadas || null,
+            julgados_citados: analise_ia.julgadosCitados || analise_ia.julgados_citados || null,
             padrao_decisao: analise_ia.resumo || null
           }]);
 
         if (analiseError) {
           console.error('Erro ao salvar análise:', analiseError);
+        } else {
+          console.log('Análise IA salva com sucesso!');
         }
       }
 

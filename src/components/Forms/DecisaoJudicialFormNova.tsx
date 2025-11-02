@@ -346,7 +346,8 @@ const DecisaoJudicialFormNova = () => {
     try {
       setLoading(true);
       
-      await criarDecisao({
+      // Incluir análise IA se disponível
+      const dadosParaSalvar: any = {
         numero_processo: formData.numeroProcesso,
         autor: formData.autor,
         reu: formData.reu,
@@ -366,7 +367,14 @@ const DecisaoJudicialFormNova = () => {
         percentual_exonerado: formData.percentualExonerado,
         montante_reconhecido: formData.montanteReconhecido,
         resumo_decisao: formData.resumoDecisao
-      });
+      };
+
+      // Adicionar análise IA se disponível
+      if (dadosExtraidos) {
+        dadosParaSalvar.analise_ia = dadosExtraidos;
+      }
+      
+      await criarDecisao(dadosParaSalvar);
 
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
     
