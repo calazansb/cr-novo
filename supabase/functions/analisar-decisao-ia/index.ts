@@ -44,45 +44,8 @@ serve(async (req) => {
     
     console.log('Arquivo baixado, tamanho:', fileText.length);
 
-    // Chamar Lovable AI para análise do texto
-    const promptAnalise = `Você é um especialista em análise de decisões judiciais brasileiras. 
-
-Analise o seguinte texto de uma decisão judicial e extraia as seguintes informações em formato JSON:
-
-INFORMAÇÕES BÁSICAS:
-1. numeroProcesso: Número do processo no formato CNJ (ex: 0000000-00.0000.0.00.0000)
-2. autor: Nome completo do autor da ação
-3. reu: Nome completo do réu
-4. adverso: Nome da parte adversa ao cliente (pode ser autor ou réu)
-5. relator: Nome completo do Juiz, Desembargador ou Ministro relator
-6. dataDecisao: Data da decisão no formato YYYY-MM-DD
-7. tribunal: Tribunal (ex: TJSP, TRF3, STJ, STF)
-8. camaraTurma: Câmara ou Turma julgadora (ex: "8ª Câmara de Direito Público")
-9. assunto: Assunto/Tema principal (conciso, máximo 100 caracteres, ex: "Direito Tributário - ICMS")
-
-CLASSIFICAÇÃO DA DECISÃO:
-10. tipoDecisao: Tipo (valores aceitos: "Sentença", "Acórdão", "Decisão Monocrática (Efeito Suspensivo)")
-11. resultado: Resultado para o cliente (valores aceitos: "Favorável", "Parcialmente Favorável", "Desfavorável")
-12. poloCliente: Polo do cliente (valores aceitos: "Ativo" se cliente é autor, "Passivo" se cliente é réu)
-
-VALORES FINANCEIROS (quando disponíveis):
-13. valorDisputa: Valor em disputa no processo (número, apenas dígitos, ex: 150000.50)
-14. economiaGerada: Economia gerada para o cliente com esta decisão (número, apenas dígitos)
-15. percentualExonerado: Percentual exonerado se aplicável (número entre 0 e 100)
-16. montanteReconhecido: Montante reconhecido se aplicável (número, apenas dígitos)
-
-ANÁLISE JURÍDICA:
-17. termosFrequentes: Array com os 10 termos jurídicos mais frequentes no formato [{"termo": "...", "frequencia": N}]
-18. doutrinasCitadas: Array de objetos com as doutrinas citadas no formato [{"doutrinador": "...", "obra": "...", "trecho": "...", "fonte": "..."}]
-19. julgadosCitados: Array de objetos com julgados citados no formato [{"numeroProcesso": "...", "tribunal": "...", "data": "...", "trecho": "...", "fonte": "..."}]
-20. resumo: Resumo objetivo da decisão (máximo 500 caracteres)
-
-IMPORTANTE: 
-- Transcreva IPSIS LITTERIS os trechos de doutrinas e julgados citados
-- Para resultado, analise se a decisão foi favorável, parcialmente favorável ou desfavorável ao cliente
-- Para valores financeiros, extraia apenas números sem símbolos ou formatação
-- Se alguma informação não estiver disponível, use null
-- Retorne APENAS o JSON, sem texto adicional
+    // Chamar Lovable AI para análise do texto usando tool calling para garantir estrutura
+    const promptAnalise = `Analise o seguinte texto de uma decisão judicial brasileira e extraia todas as informações possíveis.
 
 Texto da decisão:
 ${fileText.substring(0, 20000)}`;
@@ -100,14 +63,82 @@ ${fileText.substring(0, 20000)}`;
         messages: [
           {
             role: 'system',
-            content: 'Você é um assistente especializado em análise de documentos jurídicos brasileiros. Retorne sempre respostas em formato JSON válido.'
+            content: 'Você é um assistente especializado em análise de documentos jurídicos brasileiros. Extraia todas as informações possíveis do documento.'
           },
           {
             role: 'user',
             content: promptAnalise
           }
         ],
-        max_tokens: 6000
+        tools: [{
+          type: 'function',
+          function: {
+            name: 'extrair_dados_decisao',
+            description: 'Extrai dados estruturados de uma decisão judicial brasileira',
+            parameters: {
+              type: 'object',
+              properties: {
+                numeroProcesso: { type: 'string', description: 'Número do processo no formato CNJ' },
+                autor: { type: 'string', description: 'Nome completo do autor da ação' },
+                reu: { type: 'string', description: 'Nome completo do réu' },
+                adverso: { type: 'string', description: 'Nome da parte adversa ao cliente' },
+                relator: { type: 'string', description: 'Nome completo do magistrado relator' },
+                dataDecisao: { type: 'string', description: 'Data da decisão no formato YYYY-MM-DD' },
+                tribunal: { type: 'string', description: 'Tribunal (ex: TJSP, TRF3, STJ, STF)' },
+                camaraTurma: { type: 'string', description: 'Câmara ou Turma julgadora' },
+                assunto: { type: 'string', description: 'Assunto/Tema principal (máximo 100 caracteres)' },
+                tipoDecisao: { type: 'string', enum: ['Sentença', 'Acórdão', 'Decisão Monocrática (Efeito Suspensivo)'], description: 'Tipo de decisão' },
+                resultado: { type: 'string', enum: ['Favorável', 'Parcialmente Favorável', 'Desfavorável'], description: 'Resultado para o cliente' },
+                poloCliente: { type: 'string', enum: ['Ativo', 'Passivo'], description: 'Polo do cliente (Ativo se autor, Passivo se réu)' },
+                valorDisputa: { type: 'number', description: 'Valor em disputa (apenas número)' },
+                economiaGerada: { type: 'number', description: 'Economia gerada para o cliente (apenas número)' },
+                percentualExonerado: { type: 'number', description: 'Percentual exonerado (0-100)' },
+                montanteReconhecido: { type: 'number', description: 'Montante reconhecido (apenas número)' },
+                resumo: { type: 'string', description: 'Resumo objetivo da decisão (máximo 500 caracteres)' },
+                termosFrequentes: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      termo: { type: 'string' },
+                      frequencia: { type: 'number' }
+                    }
+                  },
+                  description: '10 termos jurídicos mais frequentes'
+                },
+                doutrinasCitadas: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      doutrinador: { type: 'string' },
+                      obra: { type: 'string' },
+                      trecho: { type: 'string' },
+                      fonte: { type: 'string' }
+                    }
+                  },
+                  description: 'Doutrinas citadas no documento'
+                },
+                julgadosCitados: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      numeroProcesso: { type: 'string' },
+                      tribunal: { type: 'string' },
+                      data: { type: 'string' },
+                      trecho: { type: 'string' },
+                      fonte: { type: 'string' }
+                    }
+                  },
+                  description: 'Julgados citados no documento'
+                }
+              },
+              additionalProperties: false
+            }
+          }
+        }],
+        tool_choice: { type: 'function', function: { name: 'extrair_dados_decisao' } }
       }),
     });
 
@@ -126,30 +157,24 @@ ${fileText.substring(0, 20000)}`;
     }
 
     const aiData = await aiResponse.json();
-    const aiContent = aiData.choices?.[0]?.message?.content;
-
-    if (!aiContent) {
-      throw new Error('Resposta vazia da IA');
-    }
-
     console.log('Resposta da IA recebida');
 
-    // Extrair JSON da resposta (caso venha com texto adicional)
+    // Extrair dados do tool call
+    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    
+    if (!toolCall || !toolCall.function?.arguments) {
+      console.error('Resposta da IA não contém tool call:', JSON.stringify(aiData));
+      throw new Error('IA não retornou dados estruturados');
+    }
+
     let dadosExtraidos;
     try {
-      // Tentar parsear diretamente
-      dadosExtraidos = JSON.parse(aiContent);
-    } catch {
-      // Tentar extrair JSON entre ```json e ```
-      const jsonMatch = aiContent.match(/```json\s*([\s\S]*?)\s*```/) || 
-                        aiContent.match(/```\s*([\s\S]*?)\s*```/) ||
-                        aiContent.match(/\{[\s\S]*\}/);
-      
-      if (jsonMatch) {
-        dadosExtraidos = JSON.parse(jsonMatch[1] || jsonMatch[0]);
-      } else {
-        throw new Error('Não foi possível extrair JSON da resposta da IA');
-      }
+      dadosExtraidos = typeof toolCall.function.arguments === 'string' 
+        ? JSON.parse(toolCall.function.arguments)
+        : toolCall.function.arguments;
+    } catch (error) {
+      console.error('Erro ao parsear argumentos do tool call:', toolCall.function.arguments);
+      throw new Error('Não foi possível parsear os dados extraídos pela IA');
     }
 
     console.log('Dados extraídos com sucesso:', Object.keys(dadosExtraidos));
