@@ -52,14 +52,29 @@ serve(async (req) => {
 
 INSTRUÇÕES CRÍTICAS:
 
-1. TRANSCRIÇÃO LITERAL (Doutrinadores, Precedentes e Termos):
-   - TRANSCREVA LITERALMENTE como aparecem no texto
-   - NÃO resuma, NÃO parafraseie, NÃO modifique - copie exatamente como está escrito
-   - Para termos frequentes: extraia palavras-chave técnicas que aparecem repetidamente
-   - Para doutrinadores: extraia nomes de autores citados EXATAMENTE como aparecem
-   - Para precedentes: extraia números e descrições de julgados EXATAMENTE como citados
+1. CITAÇÕES DOUTRINÁRIAS - COPIAR BLOCOS COMPLETOS:
+   - Localize TODAS as citações de doutrina no texto
+   - COPIE LITERALMENTE o bloco completo de cada citação, incluindo:
+     * Referência bibliográfica COMPLETA (autor, obra, edição, editora, ano, página)
+     * Trecho citado (se houver)
+     * Contexto da citação
+   - NÃO resuma, NÃO modifique, NÃO parafraseie
+   - Exemplo do que copiar: "THEODORO JÚNIOR, Humberto. Curso de Direito Processual Civil. 59ª ed. Rio de Janeiro: Forense, 2018, p. 345: 'O princípio da instrumentalidade das formas...'"
 
-2. RESUMO DA DECISÃO (estrutura obrigatória em 3 partes):
+2. PRECEDENTES/JULGADOS - COPIAR CITAÇÕES COMPLETAS:
+   - Localize TODAS as citações de precedentes/julgados no texto
+   - COPIE LITERALMENTE o bloco completo de cada precedente, incluindo:
+     * Identificação do julgado (tribunal, número, turma, relator, data)
+     * Ementa COMPLETA (se houver)
+     * Trechos relevantes do voto/acórdão citados
+     * Qualquer outro dado que apareça na citação
+   - NÃO resuma, NÃO modifique, NÃO parafraseie
+   - Exemplo do que copiar: "STJ, REsp 1.234.567/SP, Rel. Min. Fulano de Tal, 3ª Turma, j. 15/03/2023, DJe 20/03/2023. EMENTA: PROCESSUAL CIVIL. [...texto completo da ementa...]. Trecho do voto: '[...trecho citado na decisão...]'"
+
+3. TERMOS FREQUENTES:
+   - Extraia palavras-chave técnico-jurídicas que aparecem repetidamente
+
+4. RESUMO DA DECISÃO (estrutura obrigatória em 3 partes):
    
    RELATÓRIO/CASO:
    - Explique qual era o caso concreto
@@ -76,7 +91,7 @@ INSTRUÇÕES CRÍTICAS:
    - Quais as consequências práticas da decisão?
 
 Texto da decisão:
-${(baseText || '').slice(0, 20000)}`;
+${(baseText || '').slice(0, 30000)}`;
 
     console.log('Chamando Lovable AI para análise...');
 
@@ -91,7 +106,7 @@ ${(baseText || '').slice(0, 20000)}`;
         messages: [
           {
             role: 'system',
-            content: 'Você é um assistente especializado em análise de decisões judiciais brasileiras. Ao extrair o RESUMO, você DEVE estruturá-lo em 3 partes: 1) RELATÓRIO (o caso), 2) FUNDAMENTOS (por que decidiram assim), 3) DISPOSITIVO (qual foi a decisão). Para doutrinadores, precedentes e termos, transcreva LITERALMENTE do texto.'
+            content: 'Você é um assistente especializado em análise de decisões judiciais brasileiras. Sua função é COPIAR LITERALMENTE as citações de doutrina e precedentes, preservando toda a formatação, referências bibliográficas, ementas e trechos. NÃO resuma, NÃO parafraseie - copie exatamente como está no texto original.'
           },
           {
             role: 'user',
@@ -134,12 +149,12 @@ ${(baseText || '').slice(0, 20000)}`;
                 doutrinasCitadas: {
                   type: 'array',
                   items: { type: 'string' },
-                  description: 'Array com nomes de doutrinadores/autores citados LITERALMENTE como aparecem no texto (ex: "José Afonso da Silva", "Celso Antônio Bandeira de Mello")'
+                  description: 'Array com citações COMPLETAS de doutrina. Cada item deve conter o bloco completo da citação como aparece no texto: referência bibliográfica (autor, obra, edição, editora, ano, página) + trecho citado (se houver). Copie LITERALMENTE sem modificar. Exemplo: "THEODORO JÚNIOR, Humberto. Curso de Direito Processual Civil. 59ª ed. Rio de Janeiro: Forense, 2018, p. 345: \'O princípio da instrumentalidade...\'"'
                 },
                 julgadosCitados: {
                   type: 'array',
                   items: { type: 'string' },
-                  description: 'Array com precedentes/julgados citados LITERALMENTE (número do processo e descrição exata como aparece no texto)'
+                  description: 'Array com citações COMPLETAS de precedentes/julgados. Cada item deve conter o bloco completo: identificação (tribunal, número, turma, relator, data) + ementa completa + trechos do voto citados. Copie LITERALMENTE sem modificar. Exemplo: "STJ, REsp 1.234.567/SP, Rel. Min. Fulano, 3ª T., j. 15/03/2023. EMENTA: [...ementa completa...]. Trecho: \'[...trecho citado...]\'"'
                 }
               },
               additionalProperties: false

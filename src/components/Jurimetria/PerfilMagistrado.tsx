@@ -84,41 +84,36 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
       .slice(0, 10);
   }, [decisoes]);
 
-  // Doutrinas mais citadas
+  // Doutrinas citadas - agora com citação completa
   const doutrinasPreferenciais = useMemo(() => {
-    const contagem: { [key: string]: number } = {};
+    const citacoesCompletas: string[] = [];
     analises.forEach(analise => {
       if (analise.doutrinas_citadas && Array.isArray(analise.doutrinas_citadas)) {
         analise.doutrinas_citadas.forEach((doutrina: any) => {
-          const nome = typeof doutrina === 'string'
-            ? doutrina.trim()
-            : (doutrina.doutrinador || doutrina.autor || doutrina.nome || 'Desconhecido');
-          if (nome) contagem[nome] = (contagem[nome] || 0) + 1;
+          const citacao = typeof doutrina === 'string' ? doutrina.trim() : '';
+          if (citacao && citacao.length > 10) {
+            citacoesCompletas.push(citacao);
+          }
         });
       }
     });
-    return Object.entries(contagem)
-      .map(([doutrinador, count]) => ({ doutrinador, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    return citacoesCompletas;
   }, [analises]);
 
+  // Precedentes citados - agora com citação completa
   const precedentesMaisUsados = useMemo(() => {
-    const contagem: { [key: string]: number } = {};
+    const citacoesCompletas: string[] = [];
     analises.forEach(analise => {
       if (analise.julgados_citados && Array.isArray(analise.julgados_citados)) {
         analise.julgados_citados.forEach((julgado: any) => {
-          const chave = typeof julgado === 'string'
-            ? julgado.trim()
-            : `${julgado.tribunal || ''} ${julgado.numero_processo || julgado.numeroProcesso || ''}`.trim();
-          if (chave) contagem[chave] = (contagem[chave] || 0) + 1;
+          const citacao = typeof julgado === 'string' ? julgado.trim() : '';
+          if (citacao && citacao.length > 10) {
+            citacoesCompletas.push(citacao);
+          }
         });
       }
     });
-    return Object.entries(contagem)
-      .map(([precedente, count]) => ({ precedente, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    return citacoesCompletas;
   }, [analises]);
 
   const termosFrequentes = useMemo(() => {
@@ -271,21 +266,20 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
               <BookOpen className="h-5 w-5" />
               Doutrinadores Mais Citados
             </CardTitle>
-            <CardDescription>Top 10 autores referenciados nas decisões</CardDescription>
+            <CardDescription>Citações completas prontas para uso em petições</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {doutrinasPreferenciais.length > 0 ? (
-                doutrinasPreferenciais.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                    <span className="text-sm">{item.doutrinador}</span>
-                    <Badge variant="secondary">{item.count}x</Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhuma doutrina analisada ainda</p>
-              )}
-            </div>
+          <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+            {doutrinasPreferenciais.length > 0 ? (
+              doutrinasPreferenciais.map((citacao, index) => (
+                <div key={index} className="p-4 bg-muted/50 rounded-lg border">
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {citacao}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhuma doutrina analisada ainda</p>
+            )}
           </CardContent>
         </Card>
 
@@ -295,21 +289,20 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
               <FileText className="h-5 w-5" />
               Precedentes Mais Utilizados
             </CardTitle>
-            <CardDescription>Top 10 julgados citados como referência</CardDescription>
+            <CardDescription>Citações completas prontas para uso em petições</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {precedentesMaisUsados.length > 0 ? (
-                precedentesMaisUsados.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 bg-muted/50 rounded">
-                    <span className="text-sm truncate">{item.precedente}</span>
-                    <Badge variant="secondary">{item.count}x</Badge>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Nenhum precedente analisado ainda</p>
-              )}
-            </div>
+          <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+            {precedentesMaisUsados.length > 0 ? (
+              precedentesMaisUsados.map((citacao, index) => (
+                <div key={index} className="p-4 bg-muted/50 rounded-lg border">
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {citacao}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">Nenhum precedente analisado ainda</p>
+            )}
           </CardContent>
         </Card>
       </div>
