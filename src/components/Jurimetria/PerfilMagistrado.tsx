@@ -87,55 +87,56 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
   // Doutrinas mais citadas
   const doutrinasPreferenciais = useMemo(() => {
     const contagem: { [key: string]: number } = {};
-    
     analises.forEach(analise => {
       if (analise.doutrinas_citadas && Array.isArray(analise.doutrinas_citadas)) {
         analise.doutrinas_citadas.forEach((doutrina: any) => {
-          const nome = doutrina.doutrinador || 'Desconhecido';
-          contagem[nome] = (contagem[nome] || 0) + 1;
+          const nome = typeof doutrina === 'string'
+            ? doutrina.trim()
+            : (doutrina.doutrinador || doutrina.autor || doutrina.nome || 'Desconhecido');
+          if (nome) contagem[nome] = (contagem[nome] || 0) + 1;
         });
       }
     });
-
     return Object.entries(contagem)
       .map(([doutrinador, count]) => ({ doutrinador, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
   }, [analises]);
 
-  // Precedentes mais utilizados
   const precedentesMaisUsados = useMemo(() => {
     const contagem: { [key: string]: number } = {};
-    
     analises.forEach(analise => {
       if (analise.julgados_citados && Array.isArray(analise.julgados_citados)) {
         analise.julgados_citados.forEach((julgado: any) => {
-          const chave = `${julgado.tribunal} - ${julgado.numero_processo}`;
-          contagem[chave] = (contagem[chave] || 0) + 1;
+          const chave = typeof julgado === 'string'
+            ? julgado.trim()
+            : `${julgado.tribunal || ''} ${julgado.numero_processo || julgado.numeroProcesso || ''}`.trim();
+          if (chave) contagem[chave] = (contagem[chave] || 0) + 1;
         });
       }
     });
-
     return Object.entries(contagem)
       .map(([precedente, count]) => ({ precedente, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
   }, [analises]);
 
-  // Termos mais frequentes (nuvem de palavras)
   const termosFrequentes = useMemo(() => {
     const contagem: { [key: string]: number } = {};
-    
     analises.forEach(analise => {
       if (analise.termos_frequentes && Array.isArray(analise.termos_frequentes)) {
         analise.termos_frequentes.forEach((item: any) => {
-          const termo = item.termo || '';
-          const freq = item.frequencia || 1;
-          contagem[termo] = (contagem[termo] || 0) + freq;
+          if (typeof item === 'string') {
+            const termo = item.trim();
+            if (termo) contagem[termo] = (contagem[termo] || 0) + 1;
+          } else {
+            const termo = item.termo || '';
+            const freq = Number(item.frequencia) || 1;
+            if (termo) contagem[termo] = (contagem[termo] || 0) + freq;
+          }
         });
       }
     });
-
     return Object.entries(contagem)
       .map(([termo, count]) => ({ termo, count }))
       .sort((a, b) => b.count - a.count)
