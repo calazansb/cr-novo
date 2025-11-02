@@ -112,7 +112,13 @@ const DecisaoJudicialFormNova = () => {
 
     try {
       // Upload do arquivo para o Supabase Storage
-      const fileName = `${Date.now()}-${file.name}`;
+      // Remover caracteres especiais do nome do arquivo
+      const sanitizedFileName = file.name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+        .replace(/[^a-zA-Z0-9.-]/g, '_'); // Substitui caracteres especiais por _
+      
+      const fileName = `${Date.now()}-${sanitizedFileName}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('decisoes-judiciais')
         .upload(fileName, file);
