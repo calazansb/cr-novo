@@ -57,7 +57,7 @@ export function Combobox({
             !value && "text-muted-foreground"
           )}>
             {value
-              ? options.find((option) => option.value === value)?.label
+              ? (options.find((option) => option.value === value)?.label ?? value)
               : placeholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

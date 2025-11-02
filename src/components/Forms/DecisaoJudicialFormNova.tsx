@@ -127,6 +127,15 @@ const DecisaoJudicialFormNova = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [dadosExtraidos, setDadosExtraidos] = useState<any>(null);
 
+  // Helpers
+  const toNumber = (v: any, fallback: number) => {
+    if (v === null || v === undefined || v === "") return fallback;
+    if (typeof v === 'number') return isNaN(v) ? fallback : v;
+    const cleaned = String(v).replace(/[^\d.,-]/g, '').replace(/\.(?=.*\.)/g, '').replace(',', '.');
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? fallback : n;
+  };
+
   // Economia gerada agora é campo obrigatório de input manual
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,10 +205,10 @@ const DecisaoJudicialFormNova = () => {
           tipoDecisao: analiseData.dadosExtraidos.tipoDecisao || prev.tipoDecisao,
           resultado: analiseData.dadosExtraidos.resultado || prev.resultado,
           poloCliente: analiseData.dadosExtraidos.poloCliente || prev.poloCliente,
-          valorDisputa: analiseData.dadosExtraidos.valorDisputa || prev.valorDisputa,
-          economiaGerada: analiseData.dadosExtraidos.economiaGerada || prev.economiaGerada,
-          percentualExonerado: analiseData.dadosExtraidos.percentualExonerado || prev.percentualExonerado,
-          montanteReconhecido: analiseData.dadosExtraidos.montanteReconhecido || prev.montanteReconhecido,
+          valorDisputa: toNumber(analiseData.dadosExtraidos.valorDisputa, prev.valorDisputa),
+          economiaGerada: toNumber(analiseData.dadosExtraidos.economiaGerada, prev.economiaGerada),
+          percentualExonerado: toNumber(analiseData.dadosExtraidos.percentualExonerado, prev.percentualExonerado),
+          montanteReconhecido: toNumber(analiseData.dadosExtraidos.montanteReconhecido, prev.montanteReconhecido),
           resumoDecisao: analiseData.dadosExtraidos.resumo || prev.resumoDecisao
         }));
 
