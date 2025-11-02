@@ -2,9 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Scale, TrendingUp, FileText, BookOpen } from 'lucide-react';
+import { ArrowLeft, Scale, TrendingUp, FileText, BookOpen, Copy, Database, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface PerfilMagistradoProps {
   nomeMagistrado: string;
@@ -15,9 +17,19 @@ const COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
 const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onBack }) => {
   const magistradoNome = nomeMagistrado;
+  const navigate = useNavigate();
   const [decisoes, setDecisoes] = useState<any[]>([]);
   const [analises, setAnalises] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const copiarTexto = async (texto: string, tipo: string) => {
+    try {
+      await navigator.clipboard.writeText(texto);
+      toast.success(`${tipo} copiado!`);
+    } catch (error) {
+      toast.error('Erro ao copiar');
+    }
+  };
 
   useEffect(() => {
     carregarDadosMagistrado();
@@ -116,26 +128,40 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
     return citacoesCompletas;
   }, [analises]);
 
-  const termosFrequentes = useMemo(() => {
-    const contagem: { [key: string]: number } = {};
+  const normasLegaisCitadas = useMemo(() => {
+    const normasPorTipo: { [tipo: string]: { [nome: string]: Set<string> } } = {};
+    
     analises.forEach(analise => {
       if (analise.termos_frequentes && Array.isArray(analise.termos_frequentes)) {
         analise.termos_frequentes.forEach((item: any) => {
-          if (typeof item === 'string') {
-            const termo = item.trim();
-            if (termo) contagem[termo] = (contagem[termo] || 0) + 1;
-          } else {
-            const termo = item.termo || '';
-            const freq = Number(item.frequencia) || 1;
-            if (termo) contagem[termo] = (contagem[termo] || 0) + freq;
+          if (typeof item === 'object' && item.tipo && item.nome) {
+            const tipo = item.tipo;
+            const nome = item.nome;
+            
+            if (!normasPorTipo[tipo]) {
+              normasPorTipo[tipo] = {};
+            }
+            if (!normasPorTipo[tipo][nome]) {
+              normasPorTipo[tipo][nome] = new Set();
+            }
+            
+            if (item.artigos && Array.isArray(item.artigos)) {
+              item.artigos.forEach((art: string) => {
+                normasPorTipo[tipo][nome].add(art);
+              });
+            }
           }
         });
       }
     });
-    return Object.entries(contagem)
-      .map(([termo, count]) => ({ termo, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 30);
+
+    return Object.entries(normasPorTipo).map(([tipo, normas]) => ({
+      tipo,
+      normas: Object.entries(normas).map(([nome, artigos]) => ({
+        nome,
+        artigos: Array.from(artigos)
+      }))
+    }));
   }, [analises]);
 
   const dadosGraficoPizza = [
@@ -158,18 +184,24 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Scale className="h-8 w-8" />
-            {magistradoNome}
-          </h1>
-          <p className="text-muted-foreground">Perfil de Jurimetria</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Scale className="h-8 w-8" />
+              {magistradoNome}
+            </h1>
+            <p className="text-muted-foreground">Perfil de Jurimetria</p>
+          </div>
         </div>
+        <Button onClick={() => navigate('/dashboard-decisoes')}>
+          <Database className="h-4 w-4 mr-2" />
+          Banco de Jurisprudências
+        </Button>
       </div>
 
       {/* Cards de Estatísticas */}
@@ -258,84 +290,153 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
         </Card>
       </div>
 
-      {/* Listas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Doutrinadores Mais Citados
-            </CardTitle>
-            <CardDescription>Citações completas prontas para uso em petições</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
-            {doutrinasPreferenciais.length > 0 ? (
-              doutrinasPreferenciais.map((citacao, index) => (
-                <div key={index} className="p-4 bg-muted/50 rounded-lg border">
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {citacao}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">Nenhuma doutrina analisada ainda</p>
-            )}
-          </CardContent>
-        </Card>
+      {/* Doutrinadores Citados */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5" />
+            Doutrinadores Citados
+          </CardTitle>
+          <CardDescription>Citações completas com bibliografia pronta para copiar</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+          {doutrinasPreferenciais.length > 0 ? (
+            doutrinasPreferenciais.map((citacao, index) => (
+              <div key={index} className="p-4 bg-muted/50 rounded-lg border relative group">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => copiarTexto(citacao, 'Citação doutrinária')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed pr-10">
+                  {citacao}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhuma doutrina analisada ainda</p>
+          )}
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Precedentes Mais Utilizados
-            </CardTitle>
-            <CardDescription>Citações completas prontas para uso em petições</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
-            {precedentesMaisUsados.length > 0 ? (
-              precedentesMaisUsados.map((citacao, index) => (
-                <div key={index} className="p-4 bg-muted/50 rounded-lg border">
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                    {citacao}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">Nenhum precedente analisado ainda</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Precedentes Utilizados - Largura completa */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Precedentes Utilizados
+          </CardTitle>
+          <CardDescription>Jurisprudências completas com ementas prontas para copiar</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+          {precedentesMaisUsados.length > 0 ? (
+            precedentesMaisUsados.map((citacao, index) => (
+              <div key={index} className="p-4 bg-muted/50 rounded-lg border relative group">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => copiarTexto(citacao, 'Precedente')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed pr-10">
+                  {citacao}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhum precedente analisado ainda</p>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Nuvem de Palavras */}
+      {/* Normas Legais Citadas */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Termos Mais Frequentes
+            Normas Legais Citadas
           </CardTitle>
-          <CardDescription>Palavras-chave mais utilizadas nas decisões</CardDescription>
+          <CardDescription>Artigos de lei, resoluções e normas organizadas por tipo</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {termosFrequentes.length > 0 ? (
-              termosFrequentes.map((item, index) => (
-                <Badge 
-                  key={index} 
-                  variant="outline"
-                  className="text-sm"
-                  style={{ 
-                    fontSize: `${Math.min(8 + item.count / 2, 16)}px`,
-                    opacity: Math.max(0.5, Math.min(item.count / 20, 1))
-                  }}
-                >
-                  {item.termo} ({item.count})
-                </Badge>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">Nenhum termo analisado ainda</p>
-            )}
-          </div>
+        <CardContent className="space-y-6">
+          {normasLegaisCitadas.length > 0 ? (
+            normasLegaisCitadas.map((categoria, catIndex) => (
+              <div key={catIndex} className="space-y-3">
+                <h4 className="font-semibold text-lg">{categoria.tipo}</h4>
+                {categoria.normas.map((norma, normaIndex) => (
+                  <div key={normaIndex} className="pl-4 border-l-2 border-primary/20">
+                    <p className="font-medium text-sm mb-2">{norma.nome}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {norma.artigos.map((artigo, artigoIndex) => (
+                        <Badge key={artigoIndex} variant="outline">
+                          {artigo}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhuma norma legal analisada ainda</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Decisões do Magistrado */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Scale className="h-5 w-5" />
+            Todas as Decisões Registradas
+          </CardTitle>
+          <CardDescription>Julgados completos deste magistrado no sistema</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 max-h-[600px] overflow-y-auto">
+          {decisoes.length > 0 ? (
+            decisoes.map((decisao) => (
+              <div key={decisao.id} className="p-4 bg-muted/50 rounded-lg border hover:bg-muted/70 transition-colors">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={
+                        decisao.resultado === 'Favorável' ? 'default' : 
+                        decisao.resultado === 'Parcialmente Favorável' ? 'secondary' : 
+                        'destructive'
+                      }>
+                        {decisao.resultado}
+                      </Badge>
+                      <span className="text-sm font-mono text-muted-foreground">{decisao.codigo_unico}</span>
+                    </div>
+                    <p className="text-sm font-medium">{decisao.numero_processo}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {decisao.procedimento_objeto} • {new Date(decisao.data_decisao).toLocaleDateString('pt-BR')}
+                    </p>
+                    {decisao.resumo_decisao && (
+                      <p className="text-xs line-clamp-2">{decisao.resumo_decisao}</p>
+                    )}
+                  </div>
+                  {decisao.arquivo_url && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => window.open(decisao.arquivo_url, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Abrir
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-muted-foreground">Nenhuma decisão registrada ainda</p>
+          )}
         </CardContent>
       </Card>
     </div>

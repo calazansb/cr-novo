@@ -71,8 +71,13 @@ INSTRUÇÕES CRÍTICAS:
    - NÃO resuma, NÃO modifique, NÃO parafraseie
    - Exemplo do que copiar: "STJ, REsp 1.234.567/SP, Rel. Min. Fulano de Tal, 3ª Turma, j. 15/03/2023, DJe 20/03/2023. EMENTA: PROCESSUAL CIVIL. [...texto completo da ementa...]. Trecho do voto: '[...trecho citado na decisão...]'"
 
-3. TERMOS FREQUENTES:
-   - Extraia palavras-chave técnico-jurídicas que aparecem repetidamente
+3. NORMAS LEGAIS CITADAS:
+   - Localize TODAS as leis, resoluções, decretos, portarias, medidas provisórias citadas
+   - Para cada norma, identifique:
+     * Tipo (Lei, Resolução, Decreto, etc.)
+     * Nome completo (ex: "Lei 8.213/91", "Resolução CNJ 123/2015")
+     * TODOS os artigos, parágrafos e incisos citados
+   - Organize por tipo de norma
 
 4. RESUMO DA DECISÃO (estrutura obrigatória em 3 partes):
    
@@ -141,10 +146,21 @@ ${(baseText || '').slice(0, 30000)}`;
                   type: 'string', 
                   description: 'Resumo estruturado da decisão contendo: 1) RELATÓRIO/CASO: explicação do caso, partes envolvidas e o que estava sendo discutido; 2) FUNDAMENTOS: principais argumentos e fundamentos jurídicos que motivaram a decisão; 3) DISPOSITIVO: decisão final (proveram, negaram, deram provimento parcial, etc.). Máximo 1000 caracteres.' 
                 },
-                termosFrequentes: {
+                normasLegaisCitadas: {
                   type: 'array',
-                  items: { type: 'string' },
-                  description: 'Array com termos técnico-jurídicos que aparecem repetidamente LITERALMENTE como estão no texto'
+                  description: 'Array com TODAS as normas legais citadas (leis, resoluções, decretos, etc.) organizadas por tipo',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      tipo: { type: 'string', description: 'Tipo da norma: Lei, Resolução, Decreto, Portaria, Medida Provisória, etc.' },
+                      nome: { type: 'string', description: 'Nome completo da norma (ex: Lei 8.213/91, Resolução CNJ 123/2015)' },
+                      artigos: { 
+                        type: 'array',
+                        items: { type: 'string' },
+                        description: 'Lista de todos os artigos, parágrafos e incisos citados (ex: Art. 42, Art. 42, § 1º, Art. 43, III)'
+                      }
+                    }
+                  }
                 },
                 doutrinasCitadas: {
                   type: 'array',
