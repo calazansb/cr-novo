@@ -51,11 +51,29 @@ serve(async (req) => {
     const promptAnalise = `Analise o seguinte texto de uma decisão judicial brasileira e extraia todas as informações possíveis.
 
 INSTRUÇÕES CRÍTICAS:
-- Para doutrinadores, precedentes e termos frequentes: TRANSCREVA LITERALMENTE como aparecem no texto
-- NÃO resuma, NÃO parafraseie, NÃO modifique - copie exatamente como está escrito
-- Para termos frequentes: extraia palavras-chave técnicas que aparecem repetidamente no texto original
-- Para doutrinadores: extraia nomes de autores citados EXATAMENTE como aparecem
-- Para precedentes: extraia números e descrições de julgados EXATAMENTE como citados
+
+1. TRANSCRIÇÃO LITERAL (Doutrinadores, Precedentes e Termos):
+   - TRANSCREVA LITERALMENTE como aparecem no texto
+   - NÃO resuma, NÃO parafraseie, NÃO modifique - copie exatamente como está escrito
+   - Para termos frequentes: extraia palavras-chave técnicas que aparecem repetidamente
+   - Para doutrinadores: extraia nomes de autores citados EXATAMENTE como aparecem
+   - Para precedentes: extraia números e descrições de julgados EXATAMENTE como citados
+
+2. RESUMO DA DECISÃO (estrutura obrigatória em 3 partes):
+   
+   RELATÓRIO/CASO:
+   - Explique qual era o caso concreto
+   - Identifique as partes envolvidas (autor x réu)
+   - Descreva brevemente o que estava sendo discutido/pedido
+   
+   FUNDAMENTOS:
+   - Resuma os principais argumentos jurídicos apresentados na decisão
+   - Cite as leis, súmulas ou precedentes que fundamentaram a decisão
+   - Explique o raciocínio do magistrado
+   
+   DISPOSITIVO:
+   - Qual foi a decisão final? (ex: "Deram provimento ao recurso", "Negaram provimento", "Deram provimento parcial")
+   - Quais as consequências práticas da decisão?
 
 Texto da decisão:
 ${(baseText || '').slice(0, 20000)}`;
@@ -73,7 +91,7 @@ ${(baseText || '').slice(0, 20000)}`;
         messages: [
           {
             role: 'system',
-            content: 'Você é um assistente especializado em análise de documentos jurídicos brasileiros. Extraia todas as informações possíveis do documento.'
+            content: 'Você é um assistente especializado em análise de decisões judiciais brasileiras. Ao extrair o RESUMO, você DEVE estruturá-lo em 3 partes: 1) RELATÓRIO (o caso), 2) FUNDAMENTOS (por que decidiram assim), 3) DISPOSITIVO (qual foi a decisão). Para doutrinadores, precedentes e termos, transcreva LITERALMENTE do texto.'
           },
           {
             role: 'user',
@@ -104,7 +122,10 @@ ${(baseText || '').slice(0, 20000)}`;
                 economiaGerada: { type: 'number', description: 'Economia gerada para o cliente (apenas número)' },
                 percentualExonerado: { type: 'number', description: 'Percentual exonerado (0-100)' },
                 montanteReconhecido: { type: 'number', description: 'Montante reconhecido (apenas número)' },
-                resumo: { type: 'string', description: 'Resumo objetivo da decisão (máximo 500 caracteres)' },
+                resumo: { 
+                  type: 'string', 
+                  description: 'Resumo estruturado da decisão contendo: 1) RELATÓRIO/CASO: explicação do caso, partes envolvidas e o que estava sendo discutido; 2) FUNDAMENTOS: principais argumentos e fundamentos jurídicos que motivaram a decisão; 3) DISPOSITIVO: decisão final (proveram, negaram, deram provimento parcial, etc.). Máximo 1000 caracteres.' 
+                },
                 termosFrequentes: {
                   type: 'array',
                   items: { type: 'string' },
