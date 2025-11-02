@@ -49,26 +49,43 @@ serve(async (req) => {
 
 Analise o seguinte texto de uma decisão judicial e extraia as seguintes informações em formato JSON:
 
-1. numeroProcesso: Número do processo no formato CNJ
-2. autor: Nome do autor da ação
-3. reu: Nome do réu
-4. relator: Nome do Juiz, Desembargador ou Ministro relator
-5. dataDecisao: Data da decisão no formato YYYY-MM-DD
-6. tribunal: Tribunal (ex: TJSP, TRF3, STJ, STF)
-7. camaraTurma: Câmara ou Turma julgadora
-8. assunto: Assunto/Tema principal (conciso, máximo 100 caracteres)
-9. termosFrequentes: Array com os 10 termos jurídicos mais frequentes no formato [{"termo": "...", "frequencia": N}]
-10. doutrinasCitadas: Array de objetos com as doutrinas citadas no formato [{"doutrinador": "...", "obra": "...", "trecho": "...", "fonte": "..."}]
-11. julgadosCitados: Array de objetos com julgados citados no formato [{"numeroProcesso": "...", "tribunal": "...", "data": "...", "trecho": "...", "fonte": "..."}]
-12. resumo: Resumo objetivo da decisão (máximo 500 caracteres)
+INFORMAÇÕES BÁSICAS:
+1. numeroProcesso: Número do processo no formato CNJ (ex: 0000000-00.0000.0.00.0000)
+2. autor: Nome completo do autor da ação
+3. reu: Nome completo do réu
+4. adverso: Nome da parte adversa ao cliente (pode ser autor ou réu)
+5. relator: Nome completo do Juiz, Desembargador ou Ministro relator
+6. dataDecisao: Data da decisão no formato YYYY-MM-DD
+7. tribunal: Tribunal (ex: TJSP, TRF3, STJ, STF)
+8. camaraTurma: Câmara ou Turma julgadora (ex: "8ª Câmara de Direito Público")
+9. assunto: Assunto/Tema principal (conciso, máximo 100 caracteres, ex: "Direito Tributário - ICMS")
+
+CLASSIFICAÇÃO DA DECISÃO:
+10. tipoDecisao: Tipo (valores aceitos: "Sentença", "Acórdão", "Decisão Monocrática (Efeito Suspensivo)")
+11. resultado: Resultado para o cliente (valores aceitos: "Favorável", "Parcialmente Favorável", "Desfavorável")
+12. poloCliente: Polo do cliente (valores aceitos: "Ativo" se cliente é autor, "Passivo" se cliente é réu)
+
+VALORES FINANCEIROS (quando disponíveis):
+13. valorDisputa: Valor em disputa no processo (número, apenas dígitos, ex: 150000.50)
+14. economiaGerada: Economia gerada para o cliente com esta decisão (número, apenas dígitos)
+15. percentualExonerado: Percentual exonerado se aplicável (número entre 0 e 100)
+16. montanteReconhecido: Montante reconhecido se aplicável (número, apenas dígitos)
+
+ANÁLISE JURÍDICA:
+17. termosFrequentes: Array com os 10 termos jurídicos mais frequentes no formato [{"termo": "...", "frequencia": N}]
+18. doutrinasCitadas: Array de objetos com as doutrinas citadas no formato [{"doutrinador": "...", "obra": "...", "trecho": "...", "fonte": "..."}]
+19. julgadosCitados: Array de objetos com julgados citados no formato [{"numeroProcesso": "...", "tribunal": "...", "data": "...", "trecho": "...", "fonte": "..."}]
+20. resumo: Resumo objetivo da decisão (máximo 500 caracteres)
 
 IMPORTANTE: 
 - Transcreva IPSIS LITTERIS os trechos de doutrinas e julgados citados
+- Para resultado, analise se a decisão foi favorável, parcialmente favorável ou desfavorável ao cliente
+- Para valores financeiros, extraia apenas números sem símbolos ou formatação
 - Se alguma informação não estiver disponível, use null
 - Retorne APENAS o JSON, sem texto adicional
 
 Texto da decisão:
-${fileText.substring(0, 15000)}`;
+${fileText.substring(0, 20000)}`;
 
     console.log('Chamando Lovable AI para análise...');
 
@@ -90,8 +107,7 @@ ${fileText.substring(0, 15000)}`;
             content: promptAnalise
           }
         ],
-        temperature: 0.3,
-        max_tokens: 4000
+        max_tokens: 6000
       }),
     });
 

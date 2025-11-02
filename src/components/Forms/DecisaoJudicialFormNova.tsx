@@ -191,7 +191,15 @@ const DecisaoJudicialFormNova = () => {
           varaTribunal: analiseData.dadosExtraidos.camaraTurma || prev.varaTribunal,
           nomeMagistrado: analiseData.dadosExtraidos.relator || prev.nomeMagistrado,
           dataDecisao: analiseData.dadosExtraidos.dataDecisao || prev.dataDecisao,
+          adverso: analiseData.dadosExtraidos.adverso || prev.adverso,
           procedimentoObjeto: analiseData.dadosExtraidos.assunto || prev.procedimentoObjeto,
+          tipoDecisao: analiseData.dadosExtraidos.tipoDecisao || prev.tipoDecisao,
+          resultado: analiseData.dadosExtraidos.resultado || prev.resultado,
+          poloCliente: analiseData.dadosExtraidos.poloCliente || prev.poloCliente,
+          valorDisputa: analiseData.dadosExtraidos.valorDisputa || prev.valorDisputa,
+          economiaGerada: analiseData.dadosExtraidos.economiaGerada || prev.economiaGerada,
+          percentualExonerado: analiseData.dadosExtraidos.percentualExonerado || prev.percentualExonerado,
+          montanteReconhecido: analiseData.dadosExtraidos.montanteReconhecido || prev.montanteReconhecido,
           resumoDecisao: analiseData.dadosExtraidos.resumo || prev.resumoDecisao
         }));
 
