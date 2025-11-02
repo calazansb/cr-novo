@@ -159,22 +159,44 @@ ${fileText.substring(0, 20000)}`;
     const aiData = await aiResponse.json();
     console.log('Resposta da IA recebida');
 
-    // Extrair dados do tool call
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    
-    if (!toolCall || !toolCall.function?.arguments) {
-      console.error('Resposta da IA não contém tool call:', JSON.stringify(aiData));
-      throw new Error('IA não retornou dados estruturados');
+    // Tentar extrair via tool calling e, se não vier, fazer fallback para JSON no content
+    let dadosExtraidos: any = null;
+    const choice = aiData.choices?.[0];
+    const toolCall = choice?.message?.tool_calls?.[0];
+
+    if (toolCall?.function?.arguments) {
+      try {
+        dadosExtraidos = typeof toolCall.function.arguments === 'string'
+          ? JSON.parse(toolCall.function.arguments)
+          : toolCall.function.arguments;
+      } catch (e) {
+        console.error('Erro ao parsear argumentos do tool call:', toolCall.function.arguments);
+      }
     }
 
-    let dadosExtraidos;
-    try {
-      dadosExtraidos = typeof toolCall.function.arguments === 'string' 
-        ? JSON.parse(toolCall.function.arguments)
-        : toolCall.function.arguments;
-    } catch (error) {
-      console.error('Erro ao parsear argumentos do tool call:', toolCall.function.arguments);
-      throw new Error('Não foi possível parsear os dados extraídos pela IA');
+    if (!dadosExtraidos) {
+      const aiContent = choice?.message?.content;
+      if (aiContent) {
+        try {
+          dadosExtraidos = JSON.parse(aiContent);
+        } catch {
+          const jsonMatch = aiContent.match(/```json\s*([\s\S]*?)\s*```/) || 
+                            aiContent.match(/```\s*([\s\S]*?)\s*```/) ||
+                            aiContent.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            try {
+              dadosExtraidos = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+            } catch (e) {
+              console.error('Erro no fallback de JSON:', e);
+            }
+          }
+        }
+      }
+    }
+
+    if (!dadosExtraidos) {
+      console.error('IA não retornou dados estruturados. Resposta:', JSON.stringify(aiData).slice(0, 1500));
+      throw new Error('IA não retornou dados estruturados');
     }
 
     console.log('Dados extraídos com sucesso:', Object.keys(dadosExtraidos));

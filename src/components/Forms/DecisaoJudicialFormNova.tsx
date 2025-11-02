@@ -135,6 +135,49 @@ const DecisaoJudicialFormNova = () => {
     const n = parseFloat(cleaned);
     return isNaN(n) ? fallback : n;
   };
+  const normalize = (s?: string | null) => (s ?? '').toString().trim();
+  const normalizeTipoDecisao = (s?: string | null) => {
+    const v = normalize(s).toLowerCase();
+    if (!v) return '';
+    if (v.includes('acord')) return 'Acórdão';
+    if (v.includes('senten')) return 'Sentença';
+    if (v.includes('monocr') || v.includes('efeito susp')) return 'Decisão Monocrática (Efeito Suspensivo)';
+    return '';
+  };
+  const normalizeResultado = (s?: string | null) => {
+    const v = normalize(s).toLowerCase();
+    if (!v) return '';
+    if (v.includes('parcial')) return 'Parcialmente Favorável';
+    if (v.includes('desfav') || v.includes('nega')) return 'Desfavorável';
+    if (v.includes('favor')) return 'Favorável';
+    return '';
+  };
+  const normalizePolo = (s?: string | null) => {
+    const v = normalize(s).toLowerCase();
+    if (!v) return '';
+    if (v.includes('ativo') || v.includes('autor')) return 'Ativo';
+    if (v.includes('passivo') || v.includes('réu') || v.includes('reu')) return 'Passivo';
+    return '';
+  };
+  const toISODate = (s?: string | null, fallback = '') => {
+    const v = normalize(s);
+    if (!v) return fallback;
+    // already ISO
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    // dd/mm/yyyy or dd-mm-yyyy
+    const m = v.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})/);
+    if (m) {
+      const [_, d, mo, y] = m;
+      return `${y}-${mo}-${d}`;
+    }
+    // try Date parse
+    const d = new Date(v);
+    if (!isNaN(d.getTime())) {
+      const iso = d.toISOString().slice(0,10);
+      return iso;
+    }
+    return fallback;
+  };
 
   // Economia gerada agora é campo obrigatório de input manual
 
@@ -188,9 +231,10 @@ const DecisaoJudicialFormNova = () => {
       if (analiseError) throw analiseError;
 
       if (analiseData?.dadosExtraidos) {
+        console.log('IA dadosExtraidos:', analiseData.dadosExtraidos);
         setDadosExtraidos(analiseData.dadosExtraidos);
         
-        // Preencher formulário com dados extraídos
+        // Preencher formulário com dados extraídos (com normalizações)
         setFormData(prev => ({
           ...prev,
           numeroProcesso: analiseData.dadosExtraidos.numeroProcesso || prev.numeroProcesso,
@@ -199,12 +243,12 @@ const DecisaoJudicialFormNova = () => {
           orgao: analiseData.dadosExtraidos.tribunal || prev.orgao,
           varaTribunal: analiseData.dadosExtraidos.camaraTurma || prev.varaTribunal,
           nomeMagistrado: analiseData.dadosExtraidos.relator || prev.nomeMagistrado,
-          dataDecisao: analiseData.dadosExtraidos.dataDecisao || prev.dataDecisao,
+          dataDecisao: toISODate(analiseData.dadosExtraidos.dataDecisao, prev.dataDecisao),
           adverso: analiseData.dadosExtraidos.adverso || prev.adverso,
           procedimentoObjeto: analiseData.dadosExtraidos.assunto || prev.procedimentoObjeto,
-          tipoDecisao: analiseData.dadosExtraidos.tipoDecisao || prev.tipoDecisao,
-          resultado: analiseData.dadosExtraidos.resultado || prev.resultado,
-          poloCliente: analiseData.dadosExtraidos.poloCliente || prev.poloCliente,
+          tipoDecisao: normalizeTipoDecisao(analiseData.dadosExtraidos.tipoDecisao) || prev.tipoDecisao,
+          resultado: normalizeResultado(analiseData.dadosExtraidos.resultado) || prev.resultado,
+          poloCliente: normalizePolo(analiseData.dadosExtraidos.poloCliente) || prev.poloCliente,
           valorDisputa: toNumber(analiseData.dadosExtraidos.valorDisputa, prev.valorDisputa),
           economiaGerada: toNumber(analiseData.dadosExtraidos.economiaGerada, prev.economiaGerada),
           percentualExonerado: toNumber(analiseData.dadosExtraidos.percentualExonerado, prev.percentualExonerado),
