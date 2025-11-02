@@ -18,6 +18,10 @@ import { useAuth } from "@/components/Auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useDecisoes } from "@/hooks/useDecisoes";
 import { z } from "zod";
+// PDF text extraction (client-side)
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+GlobalWorkerOptions.workerSrc = workerUrl as unknown as string;
 
 const decisaoSchema = z.object({
   numeroProcesso: z.string().trim().min(1, "Número do processo é obrigatório"),
@@ -178,8 +182,31 @@ const DecisaoJudicialFormNova = () => {
     }
     return fallback;
   };
-
-  // Economia gerada agora é campo obrigatório de input manual
+  // Leitura de texto local para IA
+  const extractTextFromFile = async (file: File): Promise<string | null> => {
+    try {
+      if (file.type === 'application/pdf') {
+        const data = await file.arrayBuffer();
+        const pdf = await getDocument({ data }).promise;
+        let fullText = '';
+        const maxPages = Math.min(pdf.numPages, 50);
+        for (let i = 1; i <= maxPages; i++) {
+          const page = await pdf.getPage(i);
+          const content: any = await page.getTextContent();
+          const pageText = (content.items || []).map((it: any) => it?.str || '').join(' ');
+          fullText += pageText + '\n';
+        }
+        return fullText;
+      }
+      if (file.type.startsWith('text/')) {
+        return await file.text();
+      }
+      return null;
+    } catch (e) {
+      console.warn('Falha ao extrair texto local do arquivo:', e);
+      return null;
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -218,13 +245,15 @@ const DecisaoJudicialFormNova = () => {
         title: "Arquivo enviado",
         description: "Iniciando análise com IA..."
       });
+      const extractedText = await extractTextFromFile(file);
 
       // Chamar edge function para análise com IA
       setAnalisandoIA(true);
       const { data: analiseData, error: analiseError } = await supabase.functions.invoke('analisar-decisao-ia', {
         body: { 
           filePath: uploadData.path,
-          fileName: file.name
+          fileName: file.name,
+          fileText: extractedText?.slice(0, 20000)
         }
       });
 

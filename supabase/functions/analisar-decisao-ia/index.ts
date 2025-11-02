@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { filePath, fileName } = await req.json();
+    const { filePath, fileName, fileText: providedText } = await req.json();
     
     if (!filePath) {
       throw new Error('filePath é obrigatório');
@@ -29,26 +29,29 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Baixar o arquivo do storage
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('decisoes-judiciais')
-      .download(filePath);
+    // Usar o texto fornecido pelo cliente quando disponível; caso contrário, baixar do storage
+    let baseText: string | null = (providedText && typeof providedText === 'string' ? providedText : null);
 
-    if (downloadError) {
-      console.error('Erro ao baixar arquivo:', downloadError);
-      throw new Error(`Erro ao baixar arquivo: ${downloadError.message}`);
+    if (!baseText || baseText.length < 200) {
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('decisoes-judiciais')
+        .download(filePath);
+
+      if (downloadError) {
+        console.error('Erro ao baixar arquivo:', downloadError);
+        throw new Error(`Erro ao baixar arquivo: ${downloadError.message}`);
+      }
+
+      baseText = await fileData.text();
     }
-
-    // Converter o arquivo para texto (simplificado - em produção usar OCR para PDFs)
-    const fileText = await fileData.text();
     
-    console.log('Arquivo baixado, tamanho:', fileText.length);
+    console.log('Tamanho do texto para IA:', baseText?.length || 0);
 
     // Chamar Lovable AI para análise do texto usando tool calling para garantir estrutura
     const promptAnalise = `Analise o seguinte texto de uma decisão judicial brasileira e extraia todas as informações possíveis.
 
 Texto da decisão:
-${fileText.substring(0, 20000)}`;
+${(baseText || '').slice(0, 20000)}`;
 
     console.log('Chamando Lovable AI para análise...');
 
