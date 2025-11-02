@@ -10,7 +10,9 @@ import { LoadingButton } from "@/components/ui/loading-button";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SelectWithAdminEdit } from "@/components/Admin/SelectWithAdminEdit";
+import { Combobox } from "@/components/ui/combobox";
 import { useClientes } from "@/hooks/useClientes";
+import { useUsuarios } from "@/hooks/useUsuarios";
 import { openWhatsApp } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,10 +42,13 @@ const decisaoSchema = z.object({
 const DecisaoJudicialFormNova = () => {
   const { toast } = useToast();
   const { clientes } = useClientes();
+  const { usuarios } = useUsuarios();
   const { user } = useAuth();
   const { criarDecisao } = useDecisoes();
   
   const [isAdmin, setIsAdmin] = useState(false);
+  const [camarasDisponiveis, setCamarasDisponiveis] = useState<string[]>([]);
+  const [magistradosDisponiveis, setMagistradosDisponiveis] = useState<string[]>([]);
   
   useEffect(() => {
     const checkAdmin = async () => {
@@ -60,6 +65,38 @@ const DecisaoJudicialFormNova = () => {
     };
     checkAdmin();
   }, [user?.id]);
+
+  // Carregar câmaras/turmas únicas do banco
+  useEffect(() => {
+    const fetchCamaras = async () => {
+      const { data } = await supabase
+        .from('decisoes_judiciais')
+        .select('vara_tribunal')
+        .not('vara_tribunal', 'is', null);
+      
+      if (data) {
+        const camarasUnicas = [...new Set(data.map(d => d.vara_tribunal).filter(Boolean))];
+        setCamarasDisponiveis(camarasUnicas.sort());
+      }
+    };
+    fetchCamaras();
+  }, []);
+
+  // Carregar magistrados únicos do banco
+  useEffect(() => {
+    const fetchMagistrados = async () => {
+      const { data } = await supabase
+        .from('decisoes_judiciais')
+        .select('nome_magistrado')
+        .not('nome_magistrado', 'is', null);
+      
+      if (data) {
+        const magistradosUnicos = [...new Set(data.map(d => d.nome_magistrado).filter(Boolean))];
+        setMagistradosDisponiveis(magistradosUnicos.sort());
+      }
+    };
+    fetchMagistrados();
+  }, []);
   
   const [formData, setFormData] = useState({
     numeroProcesso: "",
@@ -415,11 +452,13 @@ ${formData.resumoDecisao}
               <Label htmlFor="varaTribunal">
                 Câmara / Turma <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="varaTribunal"
+              <Combobox
+                options={camarasDisponiveis.map(c => ({ value: c, label: c }))}
                 value={formData.varaTribunal}
-                onChange={(e) => handleInputChange('varaTribunal', e.target.value)}
-                placeholder="Ex: 8ª Câmara de Direito Público"
+                onValueChange={(value) => handleInputChange('varaTribunal', value)}
+                placeholder="Buscar ou digitar câmara/turma..."
+                searchPlaceholder="Buscar câmara/turma..."
+                emptyMessage="Nenhuma câmara encontrada. Digite para adicionar."
               />
             </div>
 
@@ -427,11 +466,13 @@ ${formData.resumoDecisao}
               <Label htmlFor="nomeMagistrado">
                 Relator (Juiz/Desembargador/Ministro) <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="nomeMagistrado"
+              <Combobox
+                options={magistradosDisponiveis.map(m => ({ value: m, label: m }))}
                 value={formData.nomeMagistrado}
-                onChange={(e) => handleInputChange('nomeMagistrado', e.target.value)}
-                placeholder="Nome do magistrado relator"
+                onValueChange={(value) => handleInputChange('nomeMagistrado', value)}
+                placeholder="Buscar ou digitar nome do magistrado..."
+                searchPlaceholder="Buscar magistrado..."
+                emptyMessage="Nenhum magistrado encontrado. Digite para adicionar."
               />
             </div>
 
@@ -439,18 +480,14 @@ ${formData.resumoDecisao}
               <Label htmlFor="nomeCliente">
                 Cliente <span className="text-destructive">*</span>
               </Label>
-              <Select value={formData.nomeCliente} onValueChange={(value) => handleInputChange('nomeCliente', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clientes.map(cliente => (
-                    <SelectItem key={cliente} value={cliente}>
-                      {cliente}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox
+                options={clientes.map(c => ({ value: c, label: c }))}
+                value={formData.nomeCliente}
+                onValueChange={(value) => handleInputChange('nomeCliente', value)}
+                placeholder="Buscar cliente..."
+                searchPlaceholder="Buscar cliente..."
+                emptyMessage="Nenhum cliente encontrado."
+              />
             </div>
 
             <div className="space-y-2">
@@ -504,11 +541,13 @@ ${formData.resumoDecisao}
               <Label htmlFor="advogadoInterno">
                 Advogado Interno <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="advogadoInterno"
+              <Combobox
+                options={usuarios.map(u => ({ value: u.nome, label: u.nome }))}
                 value={formData.advogadoInterno}
-                onChange={(e) => handleInputChange('advogadoInterno', e.target.value)}
-                placeholder="Nome do advogado responsável"
+                onValueChange={(value) => handleInputChange('advogadoInterno', value)}
+                placeholder="Buscar advogado..."
+                searchPlaceholder="Buscar advogado..."
+                emptyMessage="Nenhum usuário encontrado."
               />
             </div>
 
