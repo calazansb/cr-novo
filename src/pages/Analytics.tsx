@@ -84,8 +84,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
       'Tipo Decisão': f.tipo_decisao,
       'Tema': f.tema,
       'Polo Cliente': f.polo_cliente,
-      'Valor em Disputa': f.valor_em_disputa_brl || 0,
-      'Economia Gerada': f.economia_gerada_brl || 0,
+      'Valor em Disputa': typeof f.valor_em_disputa_brl === 'number' && !isNaN(f.valor_em_disputa_brl) ? f.valor_em_disputa_brl : 0,
+      'Economia Gerada': typeof f.economia_gerada_brl === 'number' && !isNaN(f.economia_gerada_brl) ? f.economia_gerada_brl : 0,
       'Resultado': f.count_favoravel ? 'Favorável' : f.count_parcial ? 'Parcial' : 'Desfavorável',
       'Taxa Êxito': `${(f.percentual_exito * 100).toFixed(1)}%`
     }));
@@ -123,8 +123,14 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
     const favoraveis = dadosFiltrados.reduce((acc, f) => acc + f.count_favoravel, 0);
     const parciais = dadosFiltrados.reduce((acc, f) => acc + f.count_parcial, 0);
     const taxaExito = total > 0 ? ((favoraveis + (parciais * 0.5)) / total) * 100 : 0;
-    const economiaTotal = dadosFiltrados.reduce((acc, f) => acc + (f.economia_gerada_brl || 0), 0);
-    const valorMedio = total > 0 ? dadosFiltrados.reduce((acc, f) => acc + (f.valor_em_disputa_brl || 0), 0) / total : 0;
+    const economiaTotal = dadosFiltrados.reduce((acc, f) => {
+      const economia = typeof f.economia_gerada_brl === 'number' && !isNaN(f.economia_gerada_brl) ? f.economia_gerada_brl : 0;
+      return acc + economia;
+    }, 0);
+    const valorMedio = total > 0 ? dadosFiltrados.reduce((acc, f) => {
+      const valor = typeof f.valor_em_disputa_brl === 'number' && !isNaN(f.valor_em_disputa_brl) ? f.valor_em_disputa_brl : 0;
+      return acc + valor;
+    }, 0) / total : 0;
 
     return { total, taxaExito, economiaTotal, valorMedio };
   }, [dadosFiltrados]);
@@ -181,7 +187,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
   const economiaPorTribunal = useMemo(() => {
     const economia: { [key: string]: number } = {};
     dadosFiltrados.forEach(f => {
-      economia[f.tribunal] = (economia[f.tribunal] || 0) + (f.economia_gerada_brl || 0);
+      const valor = typeof f.economia_gerada_brl === 'number' && !isNaN(f.economia_gerada_brl) ? f.economia_gerada_brl : 0;
+      economia[f.tribunal] = (economia[f.tribunal] || 0) + valor;
     });
 
     return Object.entries(economia)
@@ -211,8 +218,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
       if (!stats[f.tema]) {
         stats[f.tema] = { valor: 0, economia: 0 };
       }
-      stats[f.tema].valor += f.valor_em_disputa_brl || 0;
-      stats[f.tema].economia += f.economia_gerada_brl || 0;
+      const valor = typeof f.valor_em_disputa_brl === 'number' && !isNaN(f.valor_em_disputa_brl) ? f.valor_em_disputa_brl : 0;
+      const economia = typeof f.economia_gerada_brl === 'number' && !isNaN(f.economia_gerada_brl) ? f.economia_gerada_brl : 0;
+      stats[f.tema].valor += valor;
+      stats[f.tema].economia += economia;
     });
 
     return Object.entries(stats)
