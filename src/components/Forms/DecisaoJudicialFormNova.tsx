@@ -374,7 +374,57 @@ const DecisaoJudicialFormNova = () => {
         dadosParaSalvar.analise_ia = dadosExtraidos;
       }
       
-      await criarDecisao(dadosParaSalvar);
+      const decisaoCriada = await criarDecisao(dadosParaSalvar);
+
+      // Arquivar no SharePoint em background (não bloqueia a UI)
+      if (decisaoCriada && arquivoDecisao) {
+        // Obter o path do arquivo do storage
+        const sanitizedFileName = arquivoDecisao.name
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9.-]/g, '_');
+        const arquivoPath = `${Date.now()}-${sanitizedFileName}`;
+
+        const metadados = {
+          tema: formData.procedimentoObjeto || 'Outros',
+          tribunal: formData.orgao || 'Tribunal',
+          camaraTurma: formData.varaTribunal || 'Vara',
+          ano: formData.dataDecisao ? new Date(formData.dataDecisao).getFullYear().toString() : new Date().getFullYear().toString(),
+          numeroProcesso: formData.numeroProcesso || 'SEM-NUMERO',
+          relator: formData.nomeMagistrado || 'Relator Não Informado'
+        };
+
+        console.log('Iniciando arquivamento no SharePoint...', {
+          decisaoId: decisaoCriada.id,
+          arquivoPath,
+          metadados
+        });
+
+        // Chamar edge function em background
+        supabase.functions.invoke('arquivar-sharepoint', {
+          body: {
+            decisaoId: decisaoCriada.id,
+            filePath: arquivoPath,
+            fileName: arquivoDecisao.name,
+            metadados
+          }
+        }).then(({ data, error }) => {
+          if (error) {
+            console.error('Erro ao arquivar no SharePoint:', error);
+            toast({
+              title: "Aviso",
+              description: "Decisão salva, mas houve erro ao arquivar no SharePoint.",
+              variant: "default",
+            });
+          } else {
+            console.log('Arquivado no SharePoint com sucesso:', data);
+            toast({
+              title: "Sucesso completo! ✅",
+              description: "Decisão salva e arquivada no SharePoint!",
+            });
+          }
+        });
+      }
 
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
     

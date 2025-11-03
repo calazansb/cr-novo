@@ -68,8 +68,15 @@ serve(async (req) => {
     
     const folderPath = `Banco de Jurisprudências/${sanitize(tema)}/${sanitize(tribunal)}/${sanitize(camaraTurma)}/${ano}`;
     
-    // Criar pastas (Microsoft Graph cria automaticamente se não existir)
-    const driveId = 'YOUR_DRIVE_ID'; // Deve ser configurado
+    // Obter Drive ID das variáveis de ambiente
+    const driveId = Deno.env.get('SHAREPOINT_DRIVE_ID');
+    if (!driveId) {
+      throw new Error('SHAREPOINT_DRIVE_ID não configurado nas variáveis de ambiente');
+    }
+    
+    console.log('Drive ID:', driveId);
+    console.log('Folder Path:', folderPath);
+    
     const createFolderUrl = `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodeURIComponent(folderPath)}:/children`;
 
     // 4. Renomear arquivo conforme padrão: [Número CNJ] - [Relator].pdf
@@ -80,6 +87,9 @@ serve(async (req) => {
     const arrayBuffer = await fileData.arrayBuffer();
     
     const uploadUrl = `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${encodeURIComponent(folderPath)}/${encodeURIComponent(newFileName)}:/content`;
+    
+    console.log('Upload URL:', uploadUrl);
+    console.log('File name:', newFileName);
     
     const uploadResponse = await fetch(uploadUrl, {
       method: 'PUT',
@@ -93,10 +103,12 @@ serve(async (req) => {
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
       console.error('Erro no upload:', errorText);
-      throw new Error('Falha ao fazer upload para SharePoint');
+      console.error('Status:', uploadResponse.status);
+      throw new Error(`Falha ao fazer upload para SharePoint: ${uploadResponse.status}`);
     }
 
     const uploadData = await uploadResponse.json();
+    console.log('Upload bem-sucedido:', uploadData.webUrl);
 
     // 6. Atualizar decisão com informações do SharePoint
     const { error: updateError } = await supabase
