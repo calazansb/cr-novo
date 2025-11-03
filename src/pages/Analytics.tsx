@@ -270,6 +270,14 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
             <p className="text-muted-foreground">Dashboards analíticos de decisões judiciais</p>
           </div>
         </div>
+        <Button 
+          onClick={() => window.open('https://calazansrossi.sharepoint.com', '_blank')}
+          variant="default"
+          className="flex items-center gap-2"
+        >
+          <Scale className="h-4 w-4" />
+          Banco de Jurisprudências
+        </Button>
       </div>
 
       {/* Filtros Globais */}

@@ -186,6 +186,14 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
           </div>
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={() => window.open('https://calazansrossi.sharepoint.com', '_blank')}
+            variant="default"
+            className="flex items-center gap-2"
+          >
+            <Scale className="h-4 w-4" />
+            Banco de Jurisprudências
+          </Button>
           <Button onClick={exportarParaCSV} variant="outline" className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             CSV
