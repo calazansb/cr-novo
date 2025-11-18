@@ -101,6 +101,54 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          changed_fields: string[] | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_data: Json | null
+          old_data: Json | null
+          operation: Database["public"]["Enums"]["audit_operation"]
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+          user_ip: string | null
+        }
+        Insert: {
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation: Database["public"]["Enums"]["audit_operation"]
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Update: {
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: Database["public"]["Enums"]["audit_operation"]
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_ip?: string | null
+        }
+        Relationships: []
+      }
       bloqueios_judiciais: {
         Row: {
           agencia: string | null
@@ -886,6 +934,17 @@ export type Database = {
       }
     }
     Views: {
+      audit_summary: {
+        Row: {
+          first_operation: string | null
+          last_operation: string | null
+          operation: Database["public"]["Enums"]["audit_operation"] | null
+          table_name: string | null
+          total_operations: number | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
       dim_magistrado: {
         Row: {
           camara_turma: string | null
@@ -975,6 +1034,10 @@ export type Database = {
       }
     }
     Functions: {
+      clean_old_audit_logs: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -986,6 +1049,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "advogado" | "cliente"
+      audit_operation: "INSERT" | "UPDATE" | "DELETE" | "SELECT"
       option_audit_action:
         | "CREATE"
         | "UPDATE"
@@ -1122,6 +1186,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "advogado", "cliente"],
+      audit_operation: ["INSERT", "UPDATE", "DELETE", "SELECT"],
       option_audit_action: [
         "CREATE",
         "UPDATE",
