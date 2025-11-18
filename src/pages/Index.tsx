@@ -12,6 +12,7 @@ import CalculoPrazosForm from "../components/Forms/CalculoPrazosForm";
 import DashboardControladoria from "./DashboardControladoria";
 import DashboardDecisoes from "./DashboardDecisoes";
 import DashboardHapvida from "./DashboardHapvida";
+import DashboardExecutivo from "./DashboardExecutivo";
 import DashboardSugestoesErros from "./DashboardSugestoesErros";
 import DashboardAssistenciaTecnica from "./DashboardAssistenciaTecnica";
 import CustomizableDashboard from "@/components/Dashboard/CustomizableDashboard";
@@ -22,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
 import Jurimetria from "./Jurimetria";
 import Analytics from "./Analytics";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -61,6 +62,8 @@ const Index = () => {
           </div>;
       case 'decisoes':
         return <DecisaoJudicialFormNova />;
+      case 'dashboard-executivo':
+        return <DashboardExecutivo />;
       case 'dashboard-decisoes':
         return <DashboardDecisoes onBack={() => setActiveSection('decisoes')} />;
       case 'jurimetria':
