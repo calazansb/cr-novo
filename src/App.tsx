@@ -13,6 +13,7 @@ import ResetPasswordForm from "@/components/Auth/ResetPasswordForm";
 import { seedObjetoProcedimento } from "@/lib/seed-objeto-procedimento";
 import OneDriveCallback from "./pages/OneDriveCallback";
 import DashboardExecutivo from "./pages/DashboardExecutivo";
+import DashboardAuditoria from "./pages/DashboardAuditoria";
 
 console.log('🎯 App.tsx carregado!');
 
@@ -54,6 +55,11 @@ const App = () => {
               <Route path="/dashboard-executivo" element={
                 <ProtectedRoute>
                   <DashboardExecutivo />
+                </ProtectedRoute>
+              } />
+              <Route path="/auditoria" element={
+                <ProtectedRoute>
+                  <DashboardAuditoria />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
