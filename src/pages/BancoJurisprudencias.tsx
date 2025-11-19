@@ -213,7 +213,6 @@ export default function BancoJurisprudencias() {
             )}
           </div>
         </div>
-      </div>
     </div>
   );
 }
