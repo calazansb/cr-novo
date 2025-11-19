@@ -35,7 +35,8 @@ export default function BancoJurisprudencias() {
       <div className="flex">
         <ModernSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
         
-        <div className="flex-1 container mx-auto px-4 py-8 space-y-6">
+        <div className="flex-1 ml-16 lg:ml-72 transition-all duration-300">
+          <div className="container mx-auto px-4 py-8 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -217,6 +218,7 @@ export default function BancoJurisprudencias() {
               ))
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>
