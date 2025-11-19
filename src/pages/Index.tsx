@@ -14,6 +14,7 @@ import DashboardDecisoes from "./DashboardDecisoes";
 import DashboardHapvida from "./DashboardHapvida";
 import DashboardExecutivo from "./DashboardExecutivo";
 import DashboardAuditoria from "./DashboardAuditoria";
+import AutomacoesJuridicas from "./AutomacoesJuridicas";
 import DashboardSugestoesErros from "./DashboardSugestoesErros";
 import DashboardAssistenciaTecnica from "./DashboardAssistenciaTecnica";
 import CustomizableDashboard from "@/components/Dashboard/CustomizableDashboard";
@@ -24,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
 import Jurimetria from "./Jurimetria";
 import Analytics from "./Analytics";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -67,6 +68,8 @@ const Index = () => {
         return <DashboardExecutivo />;
       case 'dashboard-auditoria':
         return <DashboardAuditoria />;
+      case 'automacoes-juridicas':
+        return <AutomacoesJuridicas />;
       case 'dashboard-decisoes':
         return <DashboardDecisoes onBack={() => setActiveSection('decisoes')} />;
       case 'jurimetria':

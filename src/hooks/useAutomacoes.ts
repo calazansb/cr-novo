@@ -66,11 +66,17 @@ export const useAutomacoes = () => {
 
       const { data, error } = await supabase
         .from('automacoes_juridicas')
-        .insert({
-          ...automacao,
+        .insert([{
+          nome: automacao.nome || '',
+          descricao: automacao.descricao,
+          tipo_automacao: automacao.tipo_automacao || 'consulta_cnj',
+          status: automacao.status || 'ativa',
+          frequencia: automacao.frequencia || 'diaria',
+          parametros: automacao.parametros,
+          proxima_execucao: automacao.proxima_execucao,
           user_id: session.session.user.id,
-          codigo_unico: '', // Será gerado pelo trigger
-        })
+          codigo_unico: '',
+        }])
         .select()
         .single();
 

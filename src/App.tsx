@@ -14,6 +14,7 @@ import { seedObjetoProcedimento } from "@/lib/seed-objeto-procedimento";
 import OneDriveCallback from "./pages/OneDriveCallback";
 import DashboardExecutivo from "./pages/DashboardExecutivo";
 import DashboardAuditoria from "./pages/DashboardAuditoria";
+import AutomacoesJuridicas from "./pages/AutomacoesJuridicas";
 
 console.log('🎯 App.tsx carregado!');
 
@@ -60,6 +61,11 @@ const App = () => {
               <Route path="/auditoria" element={
                 <ProtectedRoute>
                   <DashboardAuditoria />
+                </ProtectedRoute>
+              } />
+              <Route path="/automacoes-juridicas" element={
+                <ProtectedRoute>
+                  <AutomacoesJuridicas />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
