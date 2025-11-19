@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions."arquivar-sharepoint"]
 verify_jwt = true
+
+[functions."executar-automacoes"]
+verify_jwt = false
