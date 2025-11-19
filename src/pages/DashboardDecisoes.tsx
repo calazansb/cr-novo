@@ -187,7 +187,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
         </div>
         <div className="flex gap-2">
           <Button 
-            onClick={() => window.open('https://calazansrossi.sharepoint.com', '_blank')}
+            onClick={() => window.location.href = '/banco-jurisprudencias'}
             variant="default"
             className="flex items-center gap-2"
           >

@@ -271,7 +271,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ onBack }) => {
           </div>
         </div>
         <Button 
-          onClick={() => window.open('https://calazansrossi.sharepoint.com', '_blank')}
+          onClick={() => window.location.href = '/banco-jurisprudencias'}
           variant="default"
           className="flex items-center gap-2"
         >

@@ -15,6 +15,7 @@ import OneDriveCallback from "./pages/OneDriveCallback";
 import DashboardExecutivo from "./pages/DashboardExecutivo";
 import DashboardAuditoria from "./pages/DashboardAuditoria";
 import AutomacoesJuridicas from "./pages/AutomacoesJuridicas";
+import BancoJurisprudencias from "./pages/BancoJurisprudencias";
 
 console.log('🎯 App.tsx carregado!');
 
@@ -66,6 +67,11 @@ const App = () => {
               <Route path="/automacoes-juridicas" element={
                 <ProtectedRoute>
                   <AutomacoesJuridicas />
+                </ProtectedRoute>
+              } />
+              <Route path="/banco-jurisprudencias" element={
+                <ProtectedRoute>
+                  <BancoJurisprudencias />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
