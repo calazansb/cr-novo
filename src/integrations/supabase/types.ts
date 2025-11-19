@@ -149,6 +149,57 @@ export type Database = {
         }
         Relationships: []
       }
+      automacoes_juridicas: {
+        Row: {
+          codigo_unico: string
+          created_at: string | null
+          descricao: string | null
+          frequencia: string
+          id: string
+          nome: string
+          parametros: Json | null
+          proxima_execucao: string | null
+          status: string | null
+          tipo_automacao: string
+          total_execucoes: number | null
+          ultima_execucao: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          codigo_unico: string
+          created_at?: string | null
+          descricao?: string | null
+          frequencia: string
+          id?: string
+          nome: string
+          parametros?: Json | null
+          proxima_execucao?: string | null
+          status?: string | null
+          tipo_automacao: string
+          total_execucoes?: number | null
+          ultima_execucao?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          codigo_unico?: string
+          created_at?: string | null
+          descricao?: string | null
+          frequencia?: string
+          id?: string
+          nome?: string
+          parametros?: Json | null
+          proxima_execucao?: string | null
+          status?: string | null
+          tipo_automacao?: string
+          total_execucoes?: number | null
+          ultima_execucao?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       bloqueios_judiciais: {
         Row: {
           agencia: string | null
@@ -405,6 +456,44 @@ export type Database = {
             columns: ["analise_id"]
             isOneToOne: false
             referencedRelation: "analises_decisoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      execucoes_automacoes: {
+        Row: {
+          automacao_id: string
+          dados_retorno: Json | null
+          executado_em: string | null
+          id: string
+          mensagem: string | null
+          status: string
+          tempo_execucao_ms: number | null
+        }
+        Insert: {
+          automacao_id: string
+          dados_retorno?: Json | null
+          executado_em?: string | null
+          id?: string
+          mensagem?: string | null
+          status: string
+          tempo_execucao_ms?: number | null
+        }
+        Update: {
+          automacao_id?: string
+          dados_retorno?: Json | null
+          executado_em?: string | null
+          id?: string
+          mensagem?: string | null
+          status?: string
+          tempo_execucao_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "execucoes_automacoes_automacao_id_fkey"
+            columns: ["automacao_id"]
+            isOneToOne: false
+            referencedRelation: "automacoes_juridicas"
             referencedColumns: ["id"]
           },
         ]
@@ -735,6 +824,51 @@ export type Database = {
           updated_at?: string | null
           valor_causa?: number | null
           vara?: string | null
+        }
+        Relationships: []
+      }
+      processos_monitorados: {
+        Row: {
+          cliente: string | null
+          created_at: string | null
+          dados_atuais: Json | null
+          id: string
+          notificacoes_enviadas: number | null
+          numero_processo: string
+          orgao: string | null
+          status: string | null
+          ultima_atualizacao_detectada: string | null
+          ultima_verificacao: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cliente?: string | null
+          created_at?: string | null
+          dados_atuais?: Json | null
+          id?: string
+          notificacoes_enviadas?: number | null
+          numero_processo: string
+          orgao?: string | null
+          status?: string | null
+          ultima_atualizacao_detectada?: string | null
+          ultima_verificacao?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cliente?: string | null
+          created_at?: string | null
+          dados_atuais?: Json | null
+          id?: string
+          notificacoes_enviadas?: number | null
+          numero_processo?: string
+          orgao?: string | null
+          status?: string | null
+          ultima_atualizacao_detectada?: string | null
+          ultima_verificacao?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
