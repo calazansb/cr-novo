@@ -539,6 +539,57 @@ export type Database = {
           },
         ]
       }
+      jurisprudencias: {
+        Row: {
+          area: string
+          arquivo_nome: string | null
+          arquivo_url: string | null
+          codigo_unico: string
+          created_at: string
+          data_julgamento: string | null
+          ementa: string
+          id: string
+          numero_processo: string
+          relator: string | null
+          resultado: string | null
+          tribunal: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          area: string
+          arquivo_nome?: string | null
+          arquivo_url?: string | null
+          codigo_unico: string
+          created_at?: string
+          data_julgamento?: string | null
+          ementa: string
+          id?: string
+          numero_processo: string
+          relator?: string | null
+          resultado?: string | null
+          tribunal: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          area?: string
+          arquivo_nome?: string | null
+          arquivo_url?: string | null
+          codigo_unico?: string
+          created_at?: string
+          data_julgamento?: string | null
+          ementa?: string
+          id?: string
+          numero_processo?: string
+          relator?: string | null
+          resultado?: string | null
+          tribunal?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       option_audit_logs: {
         Row: {
           action: Database["public"]["Enums"]["option_audit_action"]

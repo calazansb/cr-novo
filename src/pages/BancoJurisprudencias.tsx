@@ -4,52 +4,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Scale, Search, Filter, Calendar, Building2, FileText, ExternalLink } from "lucide-react";
+import { Scale, Search, Filter, Calendar, Building2, FileText, ExternalLink, Eye, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useJurisprudencias } from "@/hooks/useJurisprudencias";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BancoJurisprudencias() {
   const [searchTerm, setSearchTerm] = useState("");
   const [tribunalFilter, setTribunalFilter] = useState("todos");
   const [areaFilter, setAreaFilter] = useState("todas");
-
-  // Dados de exemplo - em produção viriam do banco de dados
-  const jurisprudencias = [
-    {
-      id: "1",
-      numeroProcesso: "1234567-89.2024.8.26.0100",
-      tribunal: "TJSP",
-      area: "Direito Civil",
-      ementa: "Ação de cobrança. Contrato de prestação de serviços. Inadimplemento. Procedência do pedido.",
-      dataJulgamento: "2024-11-15",
-      relator: "Des. João Silva",
-      resultado: "Favorável"
-    },
-    {
-      id: "2",
-      numeroProcesso: "9876543-21.2024.5.02.0001",
-      tribunal: "TRT-2",
-      area: "Direito Trabalhista",
-      ementa: "Reclamação trabalhista. Horas extras. Reconhecimento do direito. Procedência parcial.",
-      dataJulgamento: "2024-11-10",
-      relator: "Des. Maria Santos",
-      resultado: "Parcial"
-    },
-    {
-      id: "3",
-      numeroProcesso: "5555555-55.2024.4.03.6100",
-      tribunal: "TRF-3",
-      area: "Direito Tributário",
-      ementa: "Mandado de segurança. ICMS. Ilegitimidade da cobrança. Segurança concedida.",
-      dataJulgamento: "2024-11-05",
-      relator: "Des. Carlos Oliveira",
-      resultado: "Favorável"
-    }
-  ];
+  const { jurisprudencias, loading, visualizarArquivo, baixarArquivo } = useJurisprudencias();
 
   const filteredJurisprudencias = jurisprudencias.filter(j => {
     const matchesSearch = searchTerm === "" || 
       j.ementa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      j.numeroProcesso.includes(searchTerm);
+      j.numero_processo.includes(searchTerm);
     
     const matchesTribunal = tribunalFilter === "todos" || j.tribunal === tribunalFilter;
     const matchesArea = areaFilter === "todas" || j.area === areaFilter;
@@ -187,49 +156,82 @@ export default function BancoJurisprudencias() {
               </CardContent>
             </Card>
           ) : (
-            filteredJurisprudencias.map((jurisprudencia) => (
-              <Card key={jurisprudencia.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="font-mono">
-                          {jurisprudencia.numeroProcesso}
-                        </Badge>
-                        <Badge className="bg-purple-500/10 text-purple-700 hover:bg-purple-500/20">
-                          {jurisprudencia.tribunal}
-                        </Badge>
-                        <Badge variant="secondary">
-                          {jurisprudencia.area}
-                        </Badge>
-                        <Badge 
-                          className={
-                            jurisprudencia.resultado === "Favorável" 
-                              ? "bg-green-500/10 text-green-700 hover:bg-green-500/20"
-                              : jurisprudencia.resultado === "Parcial"
-                              ? "bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20"
-                              : "bg-red-500/10 text-red-700 hover:bg-red-500/20"
-                          }
-                        >
-                          {jurisprudencia.resultado}
-                        </Badge>
+            loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-20 w-full" />
+                  </CardHeader>
+                </Card>
+              ))
+            ) : (
+              filteredJurisprudencias.map((jurisprudencia) => (
+                <Card key={jurisprudencia.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="font-mono">
+                            {jurisprudencia.numero_processo}
+                          </Badge>
+                          <Badge className="bg-purple-500/10 text-purple-700 hover:bg-purple-500/20">
+                            {jurisprudencia.tribunal}
+                          </Badge>
+                          <Badge variant="secondary">
+                            {jurisprudencia.area}
+                          </Badge>
+                          {jurisprudencia.resultado && (
+                            <Badge 
+                              className={
+                                jurisprudencia.resultado === "Favorável" 
+                                  ? "bg-green-500/10 text-green-700 hover:bg-green-500/20"
+                                  : jurisprudencia.resultado === "Parcial"
+                                  ? "bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20"
+                                  : "bg-red-500/10 text-red-700 hover:bg-red-500/20"
+                              }
+                            >
+                              {jurisprudencia.resultado}
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-lg">{jurisprudencia.ementa}</CardTitle>
+                        <CardDescription className="flex items-center gap-4 text-sm flex-wrap">
+                          {jurisprudencia.data_julgamento && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(jurisprudencia.data_julgamento).toLocaleDateString('pt-BR')}
+                            </span>
+                          )}
+                          {jurisprudencia.relator && (
+                            <span>Relator: {jurisprudencia.relator}</span>
+                          )}
+                        </CardDescription>
                       </div>
-                      <CardTitle className="text-lg">{jurisprudencia.ementa}</CardTitle>
-                      <CardDescription className="flex items-center gap-4 text-sm">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(jurisprudencia.dataJulgamento).toLocaleDateString('pt-BR')}
-                        </span>
-                        <span>Relator: {jurisprudencia.relator}</span>
-                      </CardDescription>
+                      {jurisprudencia.arquivo_url && (
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => visualizarArquivo(jurisprudencia.arquivo_url!)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => baixarArquivo(jurisprudencia.arquivo_url!, jurisprudencia.arquivo_nome || 'arquivo.pdf')}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Baixar
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    <Button variant="ghost" size="icon">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))
+                  </CardHeader>
+                </Card>
+              ))
+            )
           )}
         </div>
       </div>
