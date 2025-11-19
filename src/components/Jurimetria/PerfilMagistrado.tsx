@@ -198,7 +198,7 @@ const PerfilMagistrado: React.FC<PerfilMagistradoProps> = ({ nomeMagistrado, onB
             <p className="text-muted-foreground">Perfil de Jurimetria</p>
           </div>
         </div>
-        <Button onClick={() => window.dispatchEvent(new CustomEvent('navigate-to', { detail: 'dashboard-decisoes' }))}>
+        <Button onClick={() => window.location.href = '/banco-jurisprudencias'}>
           <Database className="h-4 w-4 mr-2" />
           Banco de Jurisprudências
         </Button>
