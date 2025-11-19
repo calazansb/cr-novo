@@ -1,5 +1,8 @@
 project_id = "szioctpwyczsdeeypnnv"
 
+[functions."migrar-decisoes-sharepoint"]
+verify_jwt = false
+
 [functions."upload-decisao-sharepoint"]
 verify_jwt = false
 
