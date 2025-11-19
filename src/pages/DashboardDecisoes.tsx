@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useDecisoes } from '@/hooks/useDecisoes';
-import { SharePointLinkButton } from "@/components/Admin/SharePointLinkButton";
+import { DecisoesFolderButton } from "@/components/Admin/DecisoesFolderButton";
 import { ArrowLeft, Download, Eye, Trash2, FileText, TrendingUp, Scale, Users, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -187,7 +187,7 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
           </div>
         </div>
         <div className="flex gap-2">
-          <SharePointLinkButton />
+          <DecisoesFolderButton />
           <Button 
             onClick={() => window.location.href = '/banco-jurisprudencias'}
             variant="default"

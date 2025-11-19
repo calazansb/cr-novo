@@ -1,193 +1,131 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.78.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Iniciando upload de decisão para SharePoint');
-
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const metadados = JSON.parse(formData.get('metadados') as string);
-
-    if (!file) {
-      throw new Error('Arquivo não fornecido');
-    }
-
-    console.log('Arquivo recebido:', file.name, 'Tamanho:', file.size);
-    console.log('Metadados:', metadados);
-
-    // Credenciais do SharePoint e Microsoft
-    const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
-    const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
-    const driveId = Deno.env.get('SHAREPOINT_DRIVE_ID');
-
-    if (!clientId || !clientSecret || !driveId) {
-      throw new Error('Credenciais do Microsoft/SharePoint não configuradas');
-    }
-
-    // 1. Autenticar com Microsoft Graph
-    console.log('Autenticando com Microsoft Graph...');
-    const tokenResponse = await fetch(
-      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: clientId,
-          client_secret: clientSecret,
-          scope: 'https://graph.microsoft.com/.default',
-          grant_type: 'client_credentials',
-        }),
-      }
-    );
-
-    if (!tokenResponse.ok) {
-      const error = await tokenResponse.text();
-      throw new Error(`Falha na autenticação Microsoft: ${error}`);
-    }
-
-    const { access_token } = await tokenResponse.json();
-    console.log('Autenticação bem-sucedida');
-
-    // 2. Criar estrutura de pastas no SharePoint
-    const clienteNome = metadados.nome_cliente?.replace(/[^a-zA-Z0-9]/g, '_') || 'Cliente';
-    const processoNum = metadados.numero_processo?.replace(/[^0-9]/g, '') || 'Processo';
-    const ano = new Date().getFullYear();
+    const metadataStr = formData.get('metadata') as string;
     
-    const folderPath = `Decisoes_Judiciais/${ano}/${clienteNome}/${processoNum}`;
-    console.log('Criando estrutura de pastas:', folderPath);
-
-    // 3. Renomear arquivo com padrão
-    const dataAtual = new Date().toISOString().split('T')[0];
-    const tipoDecisao = metadados.tipo_decisao?.replace(/\s+/g, '_') || 'Decisao';
-    const fileExtension = file.name.split('.').pop();
-    const novoNomeArquivo = `${tipoDecisao}_${processoNum}_${dataAtual}.${fileExtension}`;
-    
-    console.log('Novo nome do arquivo:', novoNomeArquivo);
-
-    // 4. Upload do arquivo para SharePoint
-    const fileArrayBuffer = await file.arrayBuffer();
-    const uploadUrl = `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${folderPath}/${novoNomeArquivo}:/content`;
-    
-    console.log('Fazendo upload para SharePoint...');
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${access_token}`,
-        'Content-Type': file.type || 'application/pdf',
-      },
-      body: fileArrayBuffer,
-    });
-
-    if (!uploadResponse.ok) {
-      const error = await uploadResponse.text();
-      throw new Error(`Falha no upload para SharePoint: ${error}`);
+    if (!file || !metadataStr) {
+      throw new Error('Arquivo e metadados são obrigatórios');
     }
 
-    const uploadResult = await uploadResponse.json();
-    console.log('Upload para SharePoint concluído:', uploadResult.id);
+    const metadata = JSON.parse(metadataStr);
+    const { nomeCliente, numeroProcesso, ano } = metadata;
 
-    // 5. Extrair texto do arquivo para análise de IA
-    console.log('Extraindo texto do arquivo...');
-    let textoExtraido = '';
-    
-    try {
-      if (file.type === 'application/pdf') {
-        // Para PDFs, usar biblioteca de extração
-        const pdfText = await extractTextFromPDF(fileArrayBuffer);
-        textoExtraido = pdfText;
-      } else {
-        // Para arquivos de texto
-        const decoder = new TextDecoder('utf-8');
-        textoExtraido = decoder.decode(fileArrayBuffer);
-      }
-      console.log('Texto extraído com sucesso, tamanho:', textoExtraido.length);
-    } catch (error) {
-      console.error('Erro ao extrair texto:', error);
-      textoExtraido = 'Erro ao extrair texto do documento';
-    }
-
-    // 6. Chamar IA para análise (Gemini)
-    console.log('Iniciando análise com IA...');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    const { data: aiAnalysis, error: aiError } = await createClient(
-      supabaseUrl,
-      supabaseKey
-    ).functions.invoke('analisar-decisao-ia', {
-      body: {
-        texto: textoExtraido,
-        nomeArquivo: novoNomeArquivo,
-      },
-    });
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    if (aiError) {
-      console.error('Erro na análise de IA:', aiError);
+    // Criar estrutura de pastas: ANO/CLIENTE/PROCESSO/arquivo.pdf
+    const sanitize = (str: string) => str.replace(/[<>:"/\\|?*]/g, '_').trim();
+    
+    const folderPath = `${ano}/${sanitize(nomeCliente)}/${sanitize(numeroProcesso)}`;
+    const fileName = `decisao_${sanitize(numeroProcesso)}.pdf`;
+    const fullPath = `${folderPath}/${fileName}`;
+
+    console.log('Fazendo upload para:', fullPath);
+
+    // Upload do arquivo para Supabase Storage
+    const arrayBuffer = await file.arrayBuffer();
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('decisoes-judiciais')
+      .upload(fullPath, arrayBuffer, {
+        contentType: file.type || 'application/pdf',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('Erro no upload:', uploadError);
+      throw new Error(`Falha ao fazer upload: ${uploadError.message}`);
     }
 
-    console.log('Análise de IA concluída');
+    console.log('Upload bem-sucedido:', uploadData.path);
 
-    // 7. Retornar resultado
+    // Gerar URL pública do arquivo
+    const { data: urlData } = supabase.storage
+      .from('decisoes-judiciais')
+      .getPublicUrl(fullPath);
+
+    // Extrair texto do arquivo para análise de IA
+    const texto = await extractTextFromFile(arrayBuffer, file.type);
+
+    // Invocar função de análise de IA
+    let analiseIA = null;
+    try {
+      const { data: analiseData, error: analiseError } = await supabase.functions.invoke('analisar-decisao-ia', {
+        body: { 
+          texto,
+          nomeArquivo: fileName
+        }
+      });
+
+      if (analiseError) {
+        console.error('Erro na análise de IA:', analiseError);
+      } else {
+        analiseIA = analiseData;
+        console.log('Análise de IA concluída com sucesso');
+      }
+    } catch (error) {
+      console.error('Erro ao invocar análise de IA:', error);
+    }
+
     return new Response(
-      JSON.stringify({
+      JSON.stringify({ 
         success: true,
-        sharepoint: {
-          fileId: uploadResult.id,
-          driveId: driveId,
-          webUrl: uploadResult.webUrl,
-          fileName: novoNomeArquivo,
-          filePath: folderPath,
-        },
-        analise: aiAnalysis || null,
+        fileUrl: urlData.publicUrl,
+        fileName: fileName,
+        filePath: fullPath,
+        analiseIA: analiseIA
       }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200 
       }
     );
+
   } catch (error) {
-    console.error('Erro no upload para SharePoint:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    console.error('Erro na função upload-decisao:', error);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: errorMessage,
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
       }),
-      {
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 500 
       }
     );
   }
 });
 
-// Função auxiliar para extrair texto de PDF
-async function extractTextFromPDF(arrayBuffer: ArrayBuffer): Promise<string> {
-  try {
-    // Implementação básica - em produção, usar biblioteca como pdf-parse
-    // Por enquanto, retornar indicação de que é um PDF
-    const decoder = new TextDecoder('utf-8');
+async function extractTextFromFile(arrayBuffer: ArrayBuffer, fileType: string): Promise<string> {
+  const decoder = new TextDecoder('utf-8');
+  
+  if (fileType === 'application/pdf') {
+    // Para PDFs, extrair texto básico
     const text = decoder.decode(arrayBuffer);
+    const cleanText = text
+      .replace(/[^\x20-\x7E\n]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     
-    // Tentar extrair algum texto visível
-    const cleanText = text.replace(/[^\x20-\x7E\n]/g, '').trim();
-    
-    if (cleanText.length > 100) {
-      return cleanText;
-    }
-    
-    return 'Documento PDF - análise de conteúdo limitada. Verifique o arquivo no SharePoint.';
-  } catch (error) {
-    console.error('Erro ao extrair texto do PDF:', error);
-    return 'Erro ao processar PDF';
+    return cleanText.substring(0, 50000);
+  } else if (fileType === 'text/plain' || fileType === 'text/html') {
+    return decoder.decode(arrayBuffer).substring(0, 50000);
   }
+  
+  return 'Conteúdo do arquivo anexado para análise.';
 }
