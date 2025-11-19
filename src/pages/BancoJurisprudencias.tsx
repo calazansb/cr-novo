@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ModernHeader from "@/components/Layout/ModernHeader";
 import ModernSidebar from "@/components/Layout/ModernSidebar";
+import LocationCard from "@/components/Auth/LocationCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export default function BancoJurisprudencias() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LocationCard />
       <ModernHeader />
       
       <div className="flex">
