@@ -1,5 +1,8 @@
 project_id = "szioctpwyczsdeeypnnv"
 
+[functions."upload-decisao-sharepoint"]
+verify_jwt = false
+
 [functions."onedrive-auth"]
 verify_jwt = false
 

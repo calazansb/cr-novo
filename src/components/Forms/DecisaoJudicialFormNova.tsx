@@ -121,7 +121,9 @@ const DecisaoJudicialFormNova = () => {
     economiaGerada: 0,
     percentualExonerado: 0,
     montanteReconhecido: 0,
-    resumoDecisao: ""
+    resumoDecisao: "",
+    sharepointDriveId: "",
+    sharepointItemId: ""
   });
 
   const [arquivoDecisao, setArquivoDecisao] = useState<File | null>(null);
@@ -130,6 +132,8 @@ const DecisaoJudicialFormNova = () => {
   const [loading, setLoading] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [dadosExtraidos, setDadosExtraidos] = useState<any>(null);
+  const [urlArquivoSharePoint, setUrlArquivoSharePoint] = useState<string>("");
+  const [nomeArquivoSharePoint, setNomeArquivoSharePoint] = useState<string>("");
 
   // Helpers
   const toNumber = (v: any, fallback: number) => {
@@ -227,62 +231,79 @@ const DecisaoJudicialFormNova = () => {
     setUploadandoArquivo(true);
 
     try {
-      // Upload do arquivo para o Supabase Storage
-      // Remover caracteres especiais do nome do arquivo
-      const sanitizedFileName = file.name
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-        .replace(/[^a-zA-Z0-9.-]/g, '_'); // Substitui caracteres especiais por _
-      
-      const fileName = `${Date.now()}-${sanitizedFileName}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('decisoes-judiciais')
-        .upload(fileName, file);
+      // Preparar metadados para o SharePoint
+      const metadados = {
+        nome_cliente: formData.nomeCliente || 'Cliente',
+        numero_processo: formData.numeroProcesso || 'Processo',
+        tipo_decisao: formData.tipoDecisao || 'Decisao',
+      };
+
+      // Criar FormData para envio
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('metadados', JSON.stringify(metadados));
+
+      toast({
+        title: "Enviando para SharePoint",
+        description: "Fazendo upload do arquivo..."
+      });
+
+      // Fazer upload direto para SharePoint via edge function
+      const { data: uploadData, error: uploadError } = await supabase.functions.invoke(
+        'upload-decisao-sharepoint',
+        {
+          body: uploadFormData,
+        }
+      );
 
       if (uploadError) throw uploadError;
 
+      if (!uploadData?.success) {
+        throw new Error(uploadData?.error || "Erro desconhecido no upload");
+      }
+
+      console.log('Upload para SharePoint concluído:', uploadData);
+
+      // Armazenar URL do SharePoint
+      setUrlArquivoSharePoint(uploadData.sharepoint.webUrl);
+      setNomeArquivoSharePoint(uploadData.sharepoint.fileName);
+
       toast({
-        title: "Arquivo enviado",
-        description: "Iniciando análise com IA..."
+        title: "Arquivo enviado ao SharePoint",
+        description: "Analisando documento com IA..."
       });
-      const extractedText = await extractTextFromFile(file);
 
-      // Chamar edge function para análise com IA
       setAnalisandoIA(true);
-      const { data: analiseData, error: analiseError } = await supabase.functions.invoke('analisar-decisao-ia', {
-        body: { 
-          filePath: uploadData.path,
-          fileName: file.name,
-          fileText: extractedText?.slice(0, 20000)
-        }
-      });
 
-      if (analiseError) throw analiseError;
-
-      if (analiseData?.dadosExtraidos) {
-        console.log('IA dadosExtraidos:', analiseData.dadosExtraidos);
-        setDadosExtraidos(analiseData.dadosExtraidos);
+      // Preencher formulário com dados da análise de IA
+      if (uploadData?.analise?.dadosExtraidos) {
+        console.log('IA dadosExtraidos:', uploadData.analise.dadosExtraidos);
+        setDadosExtraidos(uploadData.analise.dadosExtraidos);
+        
+        const analise = uploadData.analise.dadosExtraidos;
         
         // Preencher formulário com dados extraídos (com normalizações)
         setFormData(prev => ({
           ...prev,
-          numeroProcesso: analiseData.dadosExtraidos.numeroProcesso || prev.numeroProcesso,
-          autor: analiseData.dadosExtraidos.autor || prev.autor,
-          reu: analiseData.dadosExtraidos.reu || prev.reu,
-          orgao: analiseData.dadosExtraidos.tribunal || prev.orgao,
-          varaTribunal: analiseData.dadosExtraidos.camaraTurma || prev.varaTribunal,
-          nomeMagistrado: analiseData.dadosExtraidos.relator || prev.nomeMagistrado,
-          dataDecisao: toISODate(analiseData.dadosExtraidos.dataDecisao, prev.dataDecisao),
-          adverso: analiseData.dadosExtraidos.adverso || prev.adverso,
-          procedimentoObjeto: analiseData.dadosExtraidos.assunto || prev.procedimentoObjeto,
-          tipoDecisao: normalizeTipoDecisao(analiseData.dadosExtraidos.tipoDecisao) || prev.tipoDecisao,
-          resultado: normalizeResultado(analiseData.dadosExtraidos.resultado) || prev.resultado,
-          poloCliente: normalizePolo(analiseData.dadosExtraidos.poloCliente) || prev.poloCliente,
-          valorDisputa: toNumber(analiseData.dadosExtraidos.valorDisputa, prev.valorDisputa),
-          economiaGerada: toNumber(analiseData.dadosExtraidos.economiaGerada, prev.economiaGerada),
-          percentualExonerado: toNumber(analiseData.dadosExtraidos.percentualExonerado, prev.percentualExonerado),
-          montanteReconhecido: toNumber(analiseData.dadosExtraidos.montanteReconhecido, prev.montanteReconhecido),
-          resumoDecisao: analiseData.dadosExtraidos.resumo || prev.resumoDecisao
+          numeroProcesso: analise.numeroProcesso || prev.numeroProcesso,
+          autor: analise.autor || prev.autor,
+          reu: analise.reu || prev.reu,
+          orgao: analise.tribunal || prev.orgao,
+          varaTribunal: analise.camaraTurma || prev.varaTribunal,
+          nomeMagistrado: analise.relator || prev.nomeMagistrado,
+          dataDecisao: toISODate(analise.dataDecisao, prev.dataDecisao),
+          adverso: analise.adverso || prev.adverso,
+          procedimentoObjeto: analise.assunto || prev.procedimentoObjeto,
+          tipoDecisao: normalizeTipoDecisao(analise.tipoDecisao) || prev.tipoDecisao,
+          resultado: normalizeResultado(analise.resultado) || prev.resultado,
+          poloCliente: normalizePolo(analise.poloCliente) || prev.poloCliente,
+          valorDisputa: toNumber(analise.valorDisputa, prev.valorDisputa),
+          economiaGerada: toNumber(analise.economiaGerada, prev.economiaGerada),
+          percentualExonerado: toNumber(analise.percentualExonerado, prev.percentualExonerado),
+          montanteReconhecido: toNumber(analise.montanteReconhecido, prev.montanteReconhecido),
+          resumoDecisao: analise.resumo || prev.resumoDecisao,
+          sharepointDriveId: uploadData.sharepoint.driveId,
+          sharepointItemId: uploadData.sharepoint.fileId,
         }));
 
         toast({
@@ -346,7 +367,7 @@ const DecisaoJudicialFormNova = () => {
     try {
       setLoading(true);
       
-      // Incluir análise IA se disponível
+      // Incluir análise IA se disponível e dados do SharePoint
       const dadosParaSalvar: any = {
         numero_processo: formData.numeroProcesso,
         autor: formData.autor,
@@ -366,7 +387,11 @@ const DecisaoJudicialFormNova = () => {
         economia_gerada: formData.economiaGerada,
         percentual_exonerado: formData.percentualExonerado,
         montante_reconhecido: formData.montanteReconhecido,
-        resumo_decisao: formData.resumoDecisao
+        resumo_decisao: formData.resumoDecisao,
+        arquivo_url: urlArquivoSharePoint,
+        arquivo_nome: nomeArquivoSharePoint,
+        sharepoint_drive_id: formData.sharepointDriveId,
+        sharepoint_item_id: formData.sharepointItemId
       };
 
       // Adicionar análise IA se disponível
@@ -374,57 +399,7 @@ const DecisaoJudicialFormNova = () => {
         dadosParaSalvar.analise_ia = dadosExtraidos;
       }
       
-      const decisaoCriada = await criarDecisao(dadosParaSalvar);
-
-      // Arquivar no SharePoint em background (não bloqueia a UI)
-      if (decisaoCriada && arquivoDecisao) {
-        // Obter o path do arquivo do storage
-        const sanitizedFileName = arquivoDecisao.name
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-zA-Z0-9.-]/g, '_');
-        const arquivoPath = `${Date.now()}-${sanitizedFileName}`;
-
-        const metadados = {
-          tema: formData.procedimentoObjeto || 'Outros',
-          tribunal: formData.orgao || 'Tribunal',
-          camaraTurma: formData.varaTribunal || 'Vara',
-          ano: formData.dataDecisao ? new Date(formData.dataDecisao).getFullYear().toString() : new Date().getFullYear().toString(),
-          numeroProcesso: formData.numeroProcesso || 'SEM-NUMERO',
-          relator: formData.nomeMagistrado || 'Relator Não Informado'
-        };
-
-        console.log('Iniciando arquivamento no SharePoint...', {
-          decisaoId: decisaoCriada.id,
-          arquivoPath,
-          metadados
-        });
-
-        // Chamar edge function em background
-        supabase.functions.invoke('arquivar-sharepoint', {
-          body: {
-            decisaoId: decisaoCriada.id,
-            filePath: arquivoPath,
-            fileName: arquivoDecisao.name,
-            metadados
-          }
-        }).then(({ data, error }) => {
-          if (error) {
-            console.error('Erro ao arquivar no SharePoint:', error);
-            toast({
-              title: "Aviso",
-              description: "Decisão salva, mas houve erro ao arquivar no SharePoint.",
-              variant: "default",
-            });
-          } else {
-            console.log('Arquivado no SharePoint com sucesso:', data);
-            toast({
-              title: "Sucesso completo! ✅",
-              description: "Decisão salva e arquivada no SharePoint!",
-            });
-          }
-        });
-      }
+      await criarDecisao(dadosParaSalvar);
 
       const message = `*DECISÃO JUDICIAL - CALAZANS ROSSI ADVOGADOS*
     
@@ -447,7 +422,7 @@ ${formData.resumoDecisao}
       setIsConfirmDialogOpen(false);
       toast({
         title: "Sucesso",
-        description: "Decisão registrada com sucesso!",
+        description: "Decisão registrada e arquivo salvo no SharePoint!",
       });
       
       // Limpar formulário
@@ -470,9 +445,14 @@ ${formData.resumoDecisao}
         economiaGerada: 0,
         percentualExonerado: 0,
         montanteReconhecido: 0,
-        resumoDecisao: ""
+        resumoDecisao: "",
+        sharepointDriveId: "",
+        sharepointItemId: ""
       });
       setArquivoDecisao(null);
+      setUrlArquivoSharePoint("");
+      setNomeArquivoSharePoint("");
+      setDadosExtraidos(null);
     } catch (error) {
       console.error('Erro ao salvar decisão:', error);
       toast({
