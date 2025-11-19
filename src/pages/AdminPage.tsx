@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MapPin, Scale, Gavel } from "lucide-react";
+import { Settings, Users, MapPin, Scale, Gavel, Cloud } from "lucide-react";
 import UserManagement from "@/components/Admin/UserManagement";
 import { OptionAdminModal } from "@/components/Admin/OptionAdminModal";
+import { MigracaoSharePoint } from "@/components/Admin/MigracaoSharePoint";
 import { Button } from "@/components/ui/button";
 
 export default function AdminPage() {
@@ -24,7 +25,7 @@ export default function AdminPage() {
       </div>
 
       <Tabs defaultValue="comarcas" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
           <TabsTrigger value="comarcas" className="gap-2">
             <MapPin className="h-4 w-4" />
             Comarcas
@@ -38,8 +39,12 @@ export default function AdminPage() {
             Magistrados
           </TabsTrigger>
           <TabsTrigger value="usuarios-clientes" className="gap-2">
+            <TabsTrigger value="sharepoint" className="gap-2">
+            <Cloud className="h-4 w-4" />
+            SharePoint
+          </TabsTrigger>
             <Users className="h-4 w-4" />
-            Usuários e Clientes
+            Usuários
           </TabsTrigger>
         </TabsList>
 
@@ -92,6 +97,10 @@ export default function AdminPage() {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="sharepoint" className="mt-6">
+          <MigracaoSharePoint />
         </TabsContent>
 
         <TabsContent value="usuarios-clientes" className="mt-6">
