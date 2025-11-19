@@ -47,7 +47,7 @@ const LocationCard = () => {
   }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-20 w-[342px] h-[184px] rounded-2xl overflow-hidden shadow-2xl bg-white">
+    <div className="fixed top-6 right-6 z-20 w-[342px] h-[184px] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border">
       {/* Cloud decoration */}
       <div className="absolute right-0 top-0 opacity-10">
         <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
