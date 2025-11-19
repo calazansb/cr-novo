@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ModernHeader from "@/components/Layout/ModernHeader";
+import ModernSidebar from "@/components/Layout/ModernSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,8 +30,11 @@ export default function BancoJurisprudencias() {
   return (
     <div className="min-h-screen bg-background">
       <ModernHeader />
+      
+      <div className="flex">
+        <ModernSidebar />
         
-        <div className="container mx-auto px-4 py-8 space-y-6">
+        <div className="flex-1 container mx-auto px-4 py-8 space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -213,6 +217,7 @@ export default function BancoJurisprudencias() {
             )}
           </div>
         </div>
+      </div>
     </div>
   );
 }
