@@ -48,55 +48,82 @@ serve(async (req) => {
     console.log('Tamanho do texto para IA:', baseText?.length || 0);
 
     // Chamar Lovable AI para análise do texto usando tool calling para garantir estrutura
-    const promptAnalise = `Analise o seguinte texto de uma decisão judicial brasileira e extraia todas as informações possíveis.
+    const promptAnalise = `Você é um especialista em análise de decisões judiciais brasileiras. Analise CUIDADOSAMENTE o texto abaixo e extraia TODAS as informações solicitadas.
 
-INSTRUÇÕES CRÍTICAS:
+REGRAS CRÍTICAS DE EXTRAÇÃO:
 
-1. CITAÇÕES DOUTRINÁRIAS - COPIAR BLOCOS COMPLETOS:
-   - Localize TODAS as citações de doutrina no texto
-   - COPIE LITERALMENTE o bloco completo de cada citação, incluindo:
-     * Referência bibliográfica COMPLETA (autor, obra, edição, editora, ano, página)
-     * Trecho citado (se houver)
-     * Contexto da citação
-   - NÃO resuma, NÃO modifique, NÃO parafraseie
-   - Exemplo do que copiar: "THEODORO JÚNIOR, Humberto. Curso de Direito Processual Civil. 59ª ed. Rio de Janeiro: Forense, 2018, p. 345: 'O princípio da instrumentalidade das formas...'"
+1. NÚMERO DO PROCESSO:
+   - Procure pelo padrão: 7 dígitos-2 dígitos.4 dígitos.1 dígito.2 dígitos.4 dígitos
+   - Exemplo: 0001234-56.2023.8.13.0024
+   - Procure também formatos como: 1.0000.22.136607-3/002
 
-2. PRECEDENTES/JULGADOS - COPIAR CITAÇÕES COMPLETAS:
-   - Localize TODAS as citações de precedentes/julgados no texto
-   - COPIE LITERALMENTE o bloco completo de cada precedente, incluindo:
-     * Identificação do julgado (tribunal, número, turma, relator, data)
-     * Ementa COMPLETA (se houver)
-     * Trechos relevantes do voto/acórdão citados
-     * Qualquer outro dado que apareça na citação
-   - NÃO resuma, NÃO modifique, NÃO parafraseie
-   - Exemplo do que copiar: "STJ, REsp 1.234.567/SP, Rel. Min. Fulano de Tal, 3ª Turma, j. 15/03/2023, DJe 20/03/2023. EMENTA: PROCESSUAL CIVIL. [...texto completo da ementa...]. Trecho do voto: '[...trecho citado na decisão...]'"
+2. PARTES (AUTOR e RÉU):
+   - Procure por "AUTOR:" ou "REQUERENTE:" ou "APELANTE:" ou início do texto
+   - Procure por "RÉU:" ou "REQUERIDO:" ou "APELADO:"
+   - IGNORE prefixos como "EXMO. SR. DR.", "MM. JUIZ", etc.
+   - Extraia APENAS o nome da pessoa/empresa
 
-3. NORMAS LEGAIS CITADAS:
-   - Localize TODAS as leis, resoluções, decretos, portarias, medidas provisórias citadas
-   - Para cada norma, identifique:
-     * Tipo (Lei, Resolução, Decreto, etc.)
-     * Nome completo (ex: "Lei 8.213/91", "Resolução CNJ 123/2015")
-     * TODOS os artigos, parágrafos e incisos citados
-   - Organize por tipo de norma
+3. MAGISTRADO/RELATOR:
+   - Procure por "Relator:", "Relatora:", "Juiz:", "Juíza:", "Desembargador:", "Desembargadora:"
+   - Extraia o nome completo SEM título (sem "Des.", "Dra.", etc.)
 
-4. RESUMO DA DECISÃO (estrutura obrigatória em 3 partes):
-   
-   RELATÓRIO/CASO:
-   - Explique qual era o caso concreto
-   - Identifique as partes envolvidas (autor x réu)
-   - Descreva brevemente o que estava sendo discutido/pedido
-   
-   FUNDAMENTOS:
-   - Resuma os principais argumentos jurídicos apresentados na decisão
-   - Cite as leis, súmulas ou precedentes que fundamentaram a decisão
-   - Explique o raciocínio do magistrado
-   
-   DISPOSITIVO:
-   - Qual foi a decisão final? (ex: "Deram provimento ao recurso", "Negaram provimento", "Deram provimento parcial")
-   - Quais as consequências práticas da decisão?
+4. TRIBUNAL E CÂMARA:
+   - Tribunal: TJSP, TJMG, TRF1, TRF3, STJ, STF, etc.
+   - Câmara/Turma: "10ª CÂMARA CÍVEL", "3ª Turma", "7ª Vara Cível", etc.
 
-Texto da decisão:
-${(baseText || '').slice(0, 30000)}`;
+5. DATA DA DECISÃO:
+   - Procure por "julgado em", "decidido em", "data do julgamento"
+   - Formato: YYYY-MM-DD (converta se necessário)
+
+6. TIPO DE DECISÃO:
+   - Se menciona "acórdão" ou "câmara" ou "turma" → "Acórdão"
+   - Se menciona "sentença" ou é de primeira instância → "Sentença"
+   - Se menciona "decisão monocrática" → "Decisão Monocrática (Efeito Suspensivo)"
+
+7. RESULTADO:
+   - Leia o DISPOSITIVO final da decisão
+   - "deram provimento" ou "procedente" → "Favorável"
+   - "negaram provimento" ou "improcedente" → "Desfavorável"
+   - "deram provimento parcial" ou "parcialmente procedente" → "Parcialmente Favorável"
+
+8. VALORES MONETÁRIOS:
+   - Procure por "R$", "reais", valores em litígio
+   - Extraia APENAS números (converta milhares/milhões se necessário)
+   - valorDisputa: valor total em discussão
+   - economiaGerada: economia/benefício para o cliente
+   - montanteReconhecido: valor reconhecido na decisão
+
+9. ASSUNTO/TEMA:
+   - Identifique o tema principal (máx 100 caracteres)
+   - Exemplos: "Plano de saúde - negativa de cobertura", "INSS - auxílio-doença", etc.
+
+10. POLO DO CLIENTE:
+    - Se o cliente é AUTOR/APELANTE → "Ativo"
+    - Se o cliente é RÉU/APELADO → "Passivo"
+
+11. CITAÇÕES (copiar LITERALMENTE):
+    - Doutrinas: copie a referência bibliográfica COMPLETA + trecho
+    - Julgados: copie tribunal, número, ementa e trechos citados
+    - Normas: liste TODAS as leis/artigos citados
+
+12. RESUMO ESTRUTURADO (obrigatório em 3 seções):
+    
+    **RELATÓRIO/CASO:**
+    [Explique: Quem processou quem? Por quê? O que foi pedido?]
+    
+    **FUNDAMENTOS:**
+    [Quais leis/precedentes foram usados? Qual o raciocínio do juiz?]
+    
+    **DISPOSITIVO:**
+    [Qual foi a decisão? Proveram/Negaram? Consequências práticas?]
+
+IMPORTANTE: Se NÃO encontrar uma informação no texto, deixe em branco ou null. NÃO invente dados.
+
+===== TEXTO DA DECISÃO =====
+
+${(baseText || '').slice(0, 40000)}`;
+
+    console.log('Chamando Lovable AI para análise...');
 
     console.log('Chamando Lovable AI para análise...');
 
@@ -107,11 +134,11 @@ ${(baseText || '').slice(0, 30000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-pro-preview',
+        model: 'google/gemini-2.5-pro',
         messages: [
           {
             role: 'system',
-            content: 'Você é um assistente especializado em análise de decisões judiciais brasileiras. Sua função é COPIAR LITERALMENTE as citações de doutrina e precedentes, preservando toda a formatação, referências bibliográficas, ementas e trechos. NÃO resuma, NÃO parafraseie - copie exatamente como está no texto original.'
+            content: 'Você é um assistente jurídico especializado em análise de decisões judiciais brasileiras. Sua função é extrair dados com MÁXIMA PRECISÃO. Procure CUIDADOSAMENTE por cada informação no texto. Se não encontrar, deixe em branco. NUNCA invente dados. Ao copiar citações de doutrina e precedentes, copie LITERALMENTE como está no texto original.'
           },
           {
             role: 'user',
@@ -126,22 +153,73 @@ ${(baseText || '').slice(0, 30000)}`;
             parameters: {
               type: 'object',
               properties: {
-                numeroProcesso: { type: 'string', description: 'Número do processo no formato CNJ' },
-                autor: { type: 'string', description: 'Nome completo do autor da ação' },
-                reu: { type: 'string', description: 'Nome completo do réu' },
-                adverso: { type: 'string', description: 'Nome da parte adversa ao cliente' },
-                relator: { type: 'string', description: 'Nome completo do magistrado relator' },
-                dataDecisao: { type: 'string', description: 'Data da decisão no formato YYYY-MM-DD' },
-                tribunal: { type: 'string', description: 'Tribunal (ex: TJSP, TRF3, STJ, STF)' },
-                camaraTurma: { type: 'string', description: 'Câmara ou Turma julgadora' },
-                assunto: { type: 'string', description: 'Assunto/Tema principal (máximo 100 caracteres)' },
-                tipoDecisao: { type: 'string', enum: ['Sentença', 'Acórdão', 'Decisão Monocrática (Efeito Suspensivo)'], description: 'Tipo de decisão' },
-                resultado: { type: 'string', enum: ['Favorável', 'Parcialmente Favorável', 'Desfavorável'], description: 'Resultado para o cliente' },
-                poloCliente: { type: 'string', enum: ['Ativo', 'Passivo'], description: 'Polo do cliente (Ativo se autor, Passivo se réu)' },
-                valorDisputa: { type: 'number', description: 'Valor em disputa (apenas número)' },
-                economiaGerada: { type: 'number', description: 'Economia gerada para o cliente (apenas número)' },
-                percentualExonerado: { type: 'number', description: 'Percentual exonerado (0-100)' },
-                montanteReconhecido: { type: 'number', description: 'Montante reconhecido (apenas número)' },
+                numeroProcesso: { 
+                  type: 'string', 
+                  description: 'Número do processo no formato CNJ (ex: 0001234-56.2023.8.13.0024 ou 1.0000.22.136607-3/002). Procure por padrões com hífens, pontos e barras.'
+                },
+                autor: { 
+                  type: 'string', 
+                  description: 'Nome completo do autor/apelante/requerente da ação. Procure após "AUTOR:", "APELANTE:", "REQUERENTE:". Remova títulos como "EXMO.", "SR.", "DRA."'
+                },
+                reu: { 
+                  type: 'string', 
+                  description: 'Nome completo do réu/apelado/requerido. Procure após "RÉU:", "APELADO:", "REQUERIDO:". Remova títulos.'
+                },
+                adverso: { 
+                  type: 'string', 
+                  description: 'Nome da parte contrária ao cliente (geralmente o mesmo que réu ou autor, dependendo do polo)'
+                },
+                relator: { 
+                  type: 'string', 
+                  description: 'Nome completo do magistrado relator/juiz. Procure após "Relator:", "Juiz:", "Desembargador:". Remova "Des.", "Dra.", "Dr."'
+                },
+                dataDecisao: { 
+                  type: 'string', 
+                  description: 'Data da decisão no formato YYYY-MM-DD. Procure por "julgado em", "decidido em", data no cabeçalho. Converta datas em formato brasileiro (DD/MM/YYYY) para ISO.'
+                },
+                tribunal: { 
+                  type: 'string', 
+                  description: 'Sigla do tribunal: TJSP, TJMG, TJRJ, TRF1, TRF3, STJ, STF, TST, etc. Procure no cabeçalho ou rodapé.'
+                },
+                camaraTurma: { 
+                  type: 'string', 
+                  description: 'Câmara, Turma ou Vara julgadora (ex: "10ª CÂMARA CÍVEL", "3ª Turma", "7ª Vara Cível de Belo Horizonte"). Procure no cabeçalho.'
+                },
+                assunto: { 
+                  type: 'string', 
+                  description: 'Tema/assunto principal da decisão. Máximo 100 caracteres. Ex: "Plano de saúde - negativa de cobertura de exame", "INSS - auxílio-doença"'
+                },
+                tipoDecisao: { 
+                  type: 'string', 
+                  enum: ['Sentença', 'Acórdão', 'Decisão Monocrática (Efeito Suspensivo)'], 
+                  description: 'Se menciona "acórdão" ou vem de câmara/turma = Acórdão. Se menciona "sentença" ou é 1ª instância = Sentença. Se "monocrática" = Decisão Monocrática (Efeito Suspensivo)'
+                },
+                resultado: { 
+                  type: 'string', 
+                  enum: ['Favorável', 'Parcialmente Favorável', 'Desfavorável'], 
+                  description: 'Leia o DISPOSITIVO. "provimento" ou "procedente" = Favorável. "negaram provimento" ou "improcedente" = Desfavorável. "parcial" = Parcialmente Favorável'
+                },
+                poloCliente: { 
+                  type: 'string', 
+                  enum: ['Ativo', 'Passivo'], 
+                  description: 'Se o cliente é autor/apelante = Ativo. Se é réu/apelado = Passivo. Verifique quem é o cliente na descrição do caso.'
+                },
+                valorDisputa: { 
+                  type: 'number', 
+                  description: 'Valor total em disputa/discussão em REAIS (apenas número, sem R$ ou pontos). Procure por "valor da causa", "valor em litígio". Ex: 50000.00'
+                },
+                economiaGerada: { 
+                  type: 'number', 
+                  description: 'Economia/benefício gerado para o cliente em REAIS (apenas número). Calcule baseado no resultado. Ex: 25000.00'
+                },
+                percentualExonerado: { 
+                  type: 'number', 
+                  description: 'Percentual exonerado/reduzido (0-100). Ex: se reduziu de 100% para 30%, percentualExonerado = 70'
+                },
+                montanteReconhecido: { 
+                  type: 'number', 
+                  description: 'Valor monetário reconhecido na decisão em REAIS (apenas número). Ex: 15000.00'
+                },
                 resumo: { 
                   type: 'string', 
                   description: 'Resumo estruturado da decisão contendo: 1) RELATÓRIO/CASO: explicação do caso, partes envolvidas e o que estava sendo discutido; 2) FUNDAMENTOS: principais argumentos e fundamentos jurídicos que motivaram a decisão; 3) DISPOSITIVO: decisão final (proveram, negaram, deram provimento parcial, etc.). Máximo 1000 caracteres.' 
