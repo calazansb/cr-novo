@@ -38,6 +38,22 @@ export const useClientesCadastro = () => {
 
   const criarCliente = async (cliente: Omit<ClienteCadastro, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Verificar se a abreviação já existe
+      if (cliente.abreviacao) {
+        const { data: existente, error: checkError } = await supabase
+          .from('clientes')
+          .select('id, nome')
+          .eq('abreviacao', cliente.abreviacao)
+          .maybeSingle();
+        
+        if (checkError) throw checkError;
+        
+        if (existente) {
+          toast.error(`A abreviação "${cliente.abreviacao}" já está sendo usada pelo cliente "${existente.nome}"`);
+          return null;
+        }
+      }
+      
       const { data, error } = await supabase
         .from('clientes')
         .insert([cliente])
@@ -58,6 +74,23 @@ export const useClientesCadastro = () => {
 
   const atualizarCliente = async (id: string, cliente: Partial<ClienteCadastro>) => {
     try {
+      // Verificar se a abreviação já existe em outro cliente
+      if (cliente.abreviacao) {
+        const { data: existente, error: checkError } = await supabase
+          .from('clientes')
+          .select('id, nome')
+          .eq('abreviacao', cliente.abreviacao)
+          .neq('id', id)
+          .maybeSingle();
+        
+        if (checkError) throw checkError;
+        
+        if (existente) {
+          toast.error(`A abreviação "${cliente.abreviacao}" já está sendo usada pelo cliente "${existente.nome}"`);
+          return;
+        }
+      }
+      
       const { error } = await supabase
         .from('clientes')
         .update(cliente)
