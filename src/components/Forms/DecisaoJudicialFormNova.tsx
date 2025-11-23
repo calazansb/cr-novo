@@ -280,23 +280,23 @@ const DecisaoJudicialFormNova = () => {
 
       console.log('Upload para SharePoint concluído:', uploadData);
 
-      // Armazenar URL do SharePoint
-      setUrlArquivoSharePoint(uploadData.sharepoint.webUrl);
-      setNomeArquivoSharePoint(uploadData.sharepoint.fileName);
+      // Armazenar URL do arquivo
+      setUrlArquivoSharePoint(uploadData.fileUrl || '');
+      setNomeArquivoSharePoint(uploadData.fileName || '');
 
       toast({
-        title: "Arquivo enviado ao SharePoint",
+        title: "Arquivo enviado",
         description: "Analisando documento com IA..."
       });
 
       setAnalisandoIA(true);
 
       // Preencher formulário com dados da análise de IA
-      if (uploadData?.analise?.dadosExtraidos) {
-        console.log('IA dadosExtraidos:', uploadData.analise.dadosExtraidos);
-        setDadosExtraidos(uploadData.analise.dadosExtraidos);
+      if (uploadData?.analiseIA?.dadosExtraidos) {
+        console.log('IA dadosExtraidos:', uploadData.analiseIA.dadosExtraidos);
+        setDadosExtraidos(uploadData.analiseIA.dadosExtraidos);
         
-        const analise = uploadData.analise.dadosExtraidos;
+        const analise = uploadData.analiseIA.dadosExtraidos;
         
         // Preencher formulário com dados extraídos (com normalizações)
         setFormData(prev => ({
@@ -318,18 +318,22 @@ const DecisaoJudicialFormNova = () => {
           percentualExonerado: toNumber(analise.percentualExonerado, prev.percentualExonerado),
           montanteReconhecido: toNumber(analise.montanteReconhecido, prev.montanteReconhecido),
           resumoDecisao: analise.resumo || prev.resumoDecisao,
-          sharepointDriveId: uploadData.sharepoint.driveId,
-          sharepointItemId: uploadData.sharepoint.fileId,
         }));
 
         toast({
           title: "Análise concluída!",
           description: "Dados extraídos do documento. Revise e complete as informações.",
         });
-        
-        // Mostrar formulário após análise
-        setMostrarFormulario(true);
+      } else {
+        toast({
+          title: "Upload concluído",
+          description: "Análise de IA não disponível. Preencha os campos manualmente.",
+          variant: "default",
+        });
       }
+      
+      // Mostrar formulário após upload
+      setMostrarFormulario(true);
     } catch (error) {
       console.error('Erro ao processar arquivo:', error);
       toast({
