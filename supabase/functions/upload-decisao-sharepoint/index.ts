@@ -35,10 +35,17 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Criar estrutura de pastas: Decisões Judiciais/ANO/CLIENTE/PROCESSO/arquivo.pdf
-    const sanitize = (str: string) => str.replace(/[<>:"/\\|?*]/g, '_').trim();
+    // Criar estrutura de pastas: Decisoes-Judiciais/ANO/CLIENTE/PROCESSO/arquivo.pdf
+    const sanitize = (str: string) => {
+      return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+        .replace(/[<>:"/\\|?*]/g, '_') // Remove caracteres especiais
+        .replace(/\s+/g, '-') // Substitui espaços por hífen
+        .trim();
+    };
     
-    const folderPath = `Decisões Judiciais/${ano}/${sanitize(nomeCliente)}/${sanitize(numeroProcesso)}`;
+    const folderPath = `Decisoes-Judiciais/${ano}/${sanitize(nomeCliente)}/${sanitize(numeroProcesso)}`;
     
     // Nomenclatura: Cliente_NumeroProcesso_DataCriacao_IniciaisAdvogado
     const dataFormatada = dataCriacao.replace(/\//g, '-');
