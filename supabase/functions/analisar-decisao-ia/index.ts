@@ -83,6 +83,7 @@ ${(baseText || '').slice(0, 50000)}
 ===== FIM DO TEXTO =====
 
 Agora preencha TODOS os campos acima com base no texto.
+`;
 
     console.log('Chamando Lovable AI...');
 
