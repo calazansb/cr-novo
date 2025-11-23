@@ -40,60 +40,27 @@ export function openEmail(subject: string, body: string, to?: string) {
 
 // Função para abrir WhatsApp com prioridade para o app nativo (evita api.whatsapp.com bloqueado)
 export function openWhatsApp(message: string, phoneNumber?: string) {
+  // Copia mensagem para área de transferência
+  navigator.clipboard?.writeText(message).catch(() => {
+    console.error('Erro ao copiar mensagem');
+  });
+
+  // Abre WhatsApp Web sem número específico para selecionar contato
   const encodedMessage = encodeURIComponent(message);
-  const cleanedPhone = (phoneNumber || '').replace(/[^\d]/g, "");
-  const hasPhone = !!cleanedPhone;
-
-  const schemeUrl = hasPhone
-    ? `whatsapp://send?phone=${cleanedPhone}&text=${encodedMessage}`
-    : `whatsapp://send?text=${encodedMessage}`;
-
-  const webUrl = hasPhone
-    ? `https://web.whatsapp.com/send?phone=${cleanedPhone}&text=${encodedMessage}`
-    : `https://web.whatsapp.com/send?text=${encodedMessage}`;
-
-  const waUrl = hasPhone
-    ? `https://wa.me/${cleanedPhone}?text=${encodedMessage}`
-    : `https://wa.me/?text=${encodedMessage}`;
-
-  let opened = false;
-  let timer: number;
-
-  const cleanup = () => {
-    window.removeEventListener('blur', markOpened);
-    document.removeEventListener('visibilitychange', onVisibilityChange);
-    if (timer) window.clearTimeout(timer);
-  };
-
-  const markOpened = () => { opened = true; cleanup(); };
-  const onVisibilityChange = () => { if (document.hidden) markOpened(); };
-
-  window.addEventListener('blur', markOpened);
-  document.addEventListener('visibilitychange', onVisibilityChange);
-
-  // 1) Tenta abrir o app nativo (desktop e mobile)
-  try {
-    window.location.href = schemeUrl;
-  } catch {}
-
-  // 2) Se não abrir o app em ~1.2s, tenta web.whatsapp.com e depois wa.me
-  timer = window.setTimeout(() => {
-    if (!opened && !document.hidden) {
-      const winWeb = window.open(webUrl, '_blank', 'noopener,noreferrer');
-      if (!winWeb || winWeb.closed) {
-        const winWa = window.open(waUrl, '_blank', 'noopener,noreferrer');
-        if (!winWa || winWa.closed) {
-          // 3) Último recurso: copiar mensagem
-          navigator.clipboard?.writeText(message).then(() => {
-            alert('Não foi possível abrir o WhatsApp automaticamente. A mensagem foi copiada; cole no seu WhatsApp.');
-          }).catch(() => {
-            alert('Não foi possível abrir o WhatsApp. Por favor, abra o app e cole a mensagem.');
-          });
-        }
-      }
+  const whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+  
+  // Abre em nova aba
+  const win = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  
+  // Se bloqueado por popup blocker, tenta método alternativo
+  if (!win || win.closed) {
+    // Tenta app nativo
+    try {
+      window.location.href = `whatsapp://send?text=${encodedMessage}`;
+    } catch {
+      alert('A mensagem foi copiada. Por favor, abra o WhatsApp e cole manualmente.');
     }
-    cleanup();
-  }, 1200);
+  }
 }
 
 // Função para abrir grupo do WhatsApp e copiar mensagem
