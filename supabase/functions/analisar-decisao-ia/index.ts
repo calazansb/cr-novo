@@ -47,48 +47,42 @@ serve(async (req) => {
     
     console.log('Tamanho do texto para IA:', baseText?.length || 0);
 
-    const promptAnalise = `Você deve extrair informações de uma decisão judicial brasileira. Leia o texto COM ATENÇÃO e preencha os campos abaixo.
+    const promptAnalise = `Analise esta decisão judicial e PREENCHA TODOS OS CAMPOS abaixo. Leia TODO o texto COM ATENÇÃO.
 
-INSTRUÇÕES SIMPLES:
+CAMPOS OBRIGATÓRIOS (preencha TODOS):
 
-1. NÚMERO DO PROCESSO: Procure padrões como "0001234-56.2023.8.13.0024" ou "1.0000.22.136607-3/002". Copie exatamente.
+numeroProcesso: [procure padrão 0000000-00.0000.0.00.0000 ou similar]
+autor: [procure "AUTOR:", "APELANTE:", "REQUERENTE:" - apenas o nome]
+reu: [procure "RÉU:", "APELADO:", "REQUERIDO:" - apenas o nome]
+adverso: [parte contrária ao cliente]
+relator: [procure "Relator:", "Juiz:" - apenas o nome, sem título]
+dataDecisao: [formato YYYY-MM-DD]
+tribunal: [TJMG, TJSP, STJ, etc]
+camaraTurma: [ex: "10ª CÂMARA CÍVEL", "3ª Turma"]
+assunto: [tema principal em até 100 caracteres]
+tipoDecisao: [escolha: "Sentença", "Acórdão", ou "Decisão Monocrática (Efeito Suspensivo)"]
+resultado: [escolha: "Favorável", "Parcialmente Favorável", ou "Desfavorável"]
+poloCliente: [escolha: "Ativo" ou "Passivo"]
+valorDisputa: [valor em reais, apenas número]
+economiaGerada: [economia em reais, apenas número]
+percentualExonerado: [percentual 0-100]
+montanteReconhecido: [valor em reais, apenas número]
+resumo: [faça um resumo em 3 partes: RELATÓRIO/CASO, FUNDAMENTOS, DISPOSITIVO]
 
-2. AUTOR: Procure "AUTOR:", "APELANTE:", "REQUERENTE:". Pegue só o nome (sem "Dr.", "Dra.", "Exmo.").
+IMPORTANTE:
+- Leia TODO o texto antes de responder
+- Procure CADA informação solicitada
+- Se não encontrar algo específico, deixe vazio ou null
+- NÃO invente informações
+- Seja PRECISO
 
-3. RÉU: Procure "RÉU:", "APELADO:", "REQUERIDO:". Pegue só o nome (sem títulos).
+===== TEXTO COMPLETO DA DECISÃO =====
 
-4. RELATOR/JUIZ: Procure "Relator:", "Juiz:", "Desembargador:". Pegue o nome SEM título.
+${(baseText || '').slice(0, 50000)}
 
-5. DATA: Procure "julgado em" ou datas no formato DD/MM/YYYY. Converta para YYYY-MM-DD.
+===== FIM DO TEXTO =====
 
-6. TRIBUNAL: TJMG, TJSP, TRF3, STJ, etc. Procure no cabeçalho.
-
-7. CÂMARA/VARA: "10ª CÂMARA CÍVEL", "3ª Turma", "7ª Vara Cível", etc.
-
-8. TIPO DE DECISÃO:
-   - Se menciona "acórdão" ou tem "câmara/turma" → "Acórdão"
-   - Se menciona "sentença" → "Sentença"
-   - Se menciona "monocrática" → "Decisão Monocrática (Efeito Suspensivo)"
-
-9. RESULTADO (leia a parte final/dispositivo):
-   - "deram provimento" ou "procedente" → "Favorável"
-   - "negaram provimento" ou "improcedente" → "Desfavorável"  
-   - "parcial" → "Parcialmente Favorável"
-
-10. VALORES: Procure "R$". Extraia apenas números (ex: 50000.00).
-
-11. ASSUNTO: Resuma o tema em até 100 caracteres (ex: "Plano de saúde - negativa de cobertura").
-
-12. RESUMO: Faça em 3 partes:
-    - RELATÓRIO/CASO: Quem processou quem e por quê
-    - FUNDAMENTOS: Leis e argumentos usados
-    - DISPOSITIVO: Decisão final (proveram/negaram)
-
-SE NÃO ENCONTRAR ALGO, DEIXE VAZIO. NÃO INVENTE.
-
-===== TEXTO DA DECISÃO =====
-
-${(baseText || '').slice(0, 50000)}`;
+Agora preencha TODOS os campos acima com base no texto.
 
     console.log('Chamando Lovable AI...');
 
@@ -99,11 +93,11 @@ ${(baseText || '').slice(0, 50000)}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-pro',
+        model: 'openai/gpt-5-mini',
         messages: [
           {
             role: 'system',
-            content: 'Você é especialista em extrair dados de decisões judiciais. Leia COM ATENÇÃO e seja PRECISO. Se não encontrar algo, deixe vazio. NUNCA invente.'
+            content: 'Você DEVE preencher TODOS os campos solicitados. Leia o texto INTEIRO com ATENÇÃO. Procure cada informação com CUIDADO. Se não encontrar, deixe null, mas TENTE ENCONTRAR primeiro.'
           },
           {
             role: 'user',
