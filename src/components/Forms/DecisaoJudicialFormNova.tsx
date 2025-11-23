@@ -232,32 +232,47 @@ const DecisaoJudicialFormNova = () => {
     setUploadandoArquivo(true);
 
     try {
-      // Preparar metadados para o SharePoint
-      const metadados = {
-        nome_cliente: formData.nomeCliente || 'Cliente',
-        numero_processo: formData.numeroProcesso || 'Processo',
-        tipo_decisao: formData.tipoDecisao || 'Decisao',
+      // Preparar metadados para SharePoint
+      const metadata = {
+        nomeCliente: formData.nomeCliente || 'Cliente',
+        numeroProcesso: formData.numeroProcesso || 'Processo',
+        tipoDecisao: formData.tipoDecisao || 'Decisao',
+        ano: new Date().getFullYear().toString(),
+        dataCriacao: new Date().toLocaleDateString('pt-BR'),
+        iniciaisAdvogado: user?.user_metadata?.nome?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'XX'
       };
 
       // Criar FormData para envio
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
-      uploadFormData.append('metadados', JSON.stringify(metadados));
+      uploadFormData.append('metadata', JSON.stringify(metadata));
 
       toast({
         title: "Enviando para SharePoint",
         description: "Fazendo upload do arquivo..."
       });
 
-      // Fazer upload direto para SharePoint via edge function
-      const { data: uploadData, error: uploadError } = await supabase.functions.invoke(
-        'upload-decisao-sharepoint',
+      // Fazer upload direto para SharePoint via edge function usando fetch
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/upload-decisao-sharepoint`,
         {
-          body: uploadFormData,
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+          },
+          body: uploadFormData
         }
       );
 
-      if (uploadError) throw uploadError;
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        throw new Error(errorData.error || 'Erro no upload');
+      }
+
+      const uploadData = await response.json();
 
       if (!uploadData?.success) {
         throw new Error(uploadData?.error || "Erro desconhecido no upload");
