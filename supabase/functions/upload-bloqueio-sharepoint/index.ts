@@ -29,6 +29,7 @@ serve(async (req) => {
       juizo,
       numeroProcesso, 
       dataCriacao,
+      dataBloqueio,
       iniciaisAdvogado
     } = metadata;
 
@@ -37,10 +38,15 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Criar estrutura de pastas: Bloqueios Judiciais/CLIENTE/TEMA/TRIBUNAL/JUÍZO/arquivo.pdf
+    // Criar estrutura de pastas: Bloqueios Judiciais/CLIENTE/ANO/MÊS/TEMA/TRIBUNAL/JUÍZO/arquivo.pdf
     const sanitize = (str: string) => str.replace(/[<>:"/\\|?*]/g, '_').trim();
     
-    const folderPath = `Bloqueios Judiciais/${sanitize(nomeCliente)}/${sanitize(tema)}/${sanitize(tribunal)}/${sanitize(juizo)}`;
+    // Extrair ano e mês da data de bloqueio (formato: DD/MM/YYYY)
+    const [dia, mes, ano] = dataBloqueio.split('/');
+    const nomeMes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][parseInt(mes) - 1];
+    
+    const folderPath = `Bloqueios Judiciais/${sanitize(nomeCliente)}/${ano}/${nomeMes}/${sanitize(tema)}/${sanitize(tribunal)}/${sanitize(juizo)}`;
     
     // Nomenclatura: Cliente_NumeroProcesso_DataCriacao_IniciaisAdvogado
     const dataFormatada = dataCriacao.replace(/\//g, '-');

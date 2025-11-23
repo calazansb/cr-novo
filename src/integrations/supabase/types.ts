@@ -262,6 +262,7 @@ export type Database = {
       }
       clientes: {
         Row: {
+          abreviacao: string | null
           cpf_cnpj: string | null
           created_at: string
           email: string | null
@@ -273,6 +274,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          abreviacao?: string | null
           cpf_cnpj?: string | null
           created_at?: string
           email?: string | null
@@ -284,6 +286,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          abreviacao?: string | null
           cpf_cnpj?: string | null
           created_at?: string
           email?: string | null
