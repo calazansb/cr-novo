@@ -26,7 +26,8 @@ serve(async (req) => {
       nomeCliente, 
       tema,
       tribunal,
-      juizo,
+      camaraTurma,
+      relator,
       numeroProcesso, 
       dataCriacao,
       iniciaisAdvogado
@@ -37,10 +38,10 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Criar estrutura de pastas: Jurisprudências/CLIENTE/TEMA/TRIBUNAL/JUÍZO/arquivo.pdf
+    // Criar estrutura de pastas: Jurisprudências/CLIENTE/TEMA/TRIBUNAL/CÂMARA_TURMA/RELATOR/arquivo.pdf
     const sanitize = (str: string) => str.replace(/[<>:"/\\|?*]/g, '_').trim();
     
-    const folderPath = `Jurisprudências/${sanitize(nomeCliente)}/${sanitize(tema)}/${sanitize(tribunal)}/${sanitize(juizo)}`;
+    const folderPath = `Jurisprudências/${sanitize(nomeCliente)}/${sanitize(tema)}/${sanitize(tribunal)}/${sanitize(camaraTurma)}/${sanitize(relator)}`;
     
     // Nomenclatura: Cliente_NumeroProcesso_DataCriacao_IniciaisAdvogado
     const dataFormatada = dataCriacao.replace(/\//g, '-');
