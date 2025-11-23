@@ -14,7 +14,7 @@ export default function BancoJurisprudencias() {
   const [searchTerm, setSearchTerm] = useState("");
   const [tribunalFilter, setTribunalFilter] = useState("todos");
   const [areaFilter, setAreaFilter] = useState("todas");
-  const [activeSection, setActiveSection] = useState<'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios'>('custom-dashboard');
+  const [activeSection, setActiveSection] = useState<'custom-dashboard' | 'teste-twilio' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios'>('custom-dashboard');
   const { jurisprudencias, loading, visualizarArquivo, baixarArquivo } = useJurisprudencias();
 
   const filteredJurisprudencias = jurisprudencias.filter(j => {

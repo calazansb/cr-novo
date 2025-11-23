@@ -5,7 +5,7 @@ import { Users, Building, BarChart3, Scale, Lightbulb, AlertTriangle, Settings, 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+type ActiveSection = 'custom-dashboard' | 'teste-twilio' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 interface ModernSidebarProps {
   activeSection: ActiveSection;
   onSectionChange: (section: ActiveSection) => void;
@@ -67,6 +67,12 @@ const ModernSidebar = ({
   // Adiciona item de Administração apenas para admins
   const navigationItems = isAdmin 
     ? [...baseNavigationItems, {
+        id: 'teste-twilio' as ActiveSection,
+        title: "🧪 Teste WhatsApp",
+        icon: Settings,
+        color: "text-green-500",
+        bgHover: "hover:bg-green-500/10"
+      }, {
         id: 'admin-usuarios' as ActiveSection,
         title: "Administração",
         icon: Settings,
