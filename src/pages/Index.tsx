@@ -25,7 +25,9 @@ import { Button } from "@/components/ui/button";
 import HapvidaModule from "@/components/Modules/HapvidaModule";
 import Jurimetria from "./Jurimetria";
 import Analytics from "./Analytics";
-type ActiveSection = 'custom-dashboard' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
+import { TesteTwilioWhatsApp } from "@/components/TesteTwilioWhatsApp";
+
+type ActiveSection = 'custom-dashboard' | 'teste-twilio' | 'decisoes' | 'dashboard-decisoes' | 'dashboard-executivo' | 'dashboard-auditoria' | 'automacoes-juridicas' | 'jurimetria' | 'analytics' | 'pendencias' | 'calculo-prazos' | 'sugestoes-erros' | 'dashboard-sugestoes-erros' | 'assistencia' | 'dashboard-assistencia' | 'balcao' | 'dashboard-controladoria' | 'dashboard-hapvida' | 'admin-usuarios' | 'bulk-users' | 'hapvida' | 'hapvida-pendencias' | 'hapvida-solicitacoes' | 'hapvida-relatorios';
 const Index = () => {
   const [activeSection, setActiveSection] = useState<ActiveSection>('custom-dashboard');
   const {
@@ -45,6 +47,8 @@ const Index = () => {
   }, []);
   const renderContent = () => {
     switch (activeSection) {
+      case 'teste-twilio':
+        return <TesteTwilioWhatsApp />;
       case 'custom-dashboard':
         return <CustomizableDashboard />;
       case 'dashboard-hapvida':
