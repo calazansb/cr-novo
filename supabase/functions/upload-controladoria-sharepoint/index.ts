@@ -23,11 +23,13 @@ serve(async (req) => {
 
     const metadata = JSON.parse(metadataStr);
     const { 
+      codigoProtocolo,
       nomeCliente, 
       numeroProcesso, 
-      ano,
       dataCriacao,
-      iniciaisAdvogado
+      iniciaisAdvogado,
+      mes,
+      ano
     } = metadata;
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -35,10 +37,10 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Criar estrutura de pastas: Decisões Judiciais/ANO/CLIENTE/PROCESSO/arquivo.pdf
+    // Criar estrutura de pastas: Controladoria/ANO/MÊS/CLIENTE/arquivo.pdf
     const sanitize = (str: string) => str.replace(/[<>:"/\\|?*]/g, '_').trim();
     
-    const folderPath = `Decisões Judiciais/${ano}/${sanitize(nomeCliente)}/${sanitize(numeroProcesso)}`;
+    const folderPath = `Controladoria/${ano}/${mes}/${sanitize(nomeCliente)}`;
     
     // Nomenclatura: Cliente_NumeroProcesso_DataCriacao_IniciaisAdvogado
     const dataFormatada = dataCriacao.replace(/\//g, '-');
@@ -69,36 +71,12 @@ serve(async (req) => {
       .from('decisoes-judiciais')
       .getPublicUrl(fullPath);
 
-    // Extrair texto do arquivo para análise de IA
-    const texto = await extractTextFromFile(arrayBuffer, file.type);
-
-    // Invocar função de análise de IA
-    let analiseIA = null;
-    try {
-      const { data: analiseData, error: analiseError } = await supabase.functions.invoke('analisar-decisao-ia', {
-        body: { 
-          texto,
-          nomeArquivo: fileName
-        }
-      });
-
-      if (analiseError) {
-        console.error('Erro na análise de IA:', analiseError);
-      } else {
-        analiseIA = analiseData;
-        console.log('Análise de IA concluída com sucesso');
-      }
-    } catch (error) {
-      console.error('Erro ao invocar análise de IA:', error);
-    }
-
     return new Response(
       JSON.stringify({ 
         success: true,
         fileUrl: urlData.publicUrl,
         fileName: fileName,
-        filePath: fullPath,
-        analiseIA: analiseIA
+        filePath: fullPath
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -107,7 +85,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Erro na função upload-decisao:', error);
+    console.error('Erro na função upload-controladoria:', error);
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -119,22 +97,3 @@ serve(async (req) => {
     );
   }
 });
-
-async function extractTextFromFile(arrayBuffer: ArrayBuffer, fileType: string): Promise<string> {
-  const decoder = new TextDecoder('utf-8');
-  
-  if (fileType === 'application/pdf') {
-    // Para PDFs, extrair texto básico
-    const text = decoder.decode(arrayBuffer);
-    const cleanText = text
-      .replace(/[^\x20-\x7E\n]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    
-    return cleanText.substring(0, 50000);
-  } else if (fileType === 'text/plain' || fileType === 'text/html') {
-    return decoder.decode(arrayBuffer).substring(0, 50000);
-  }
-  
-  return 'Conteúdo do arquivo anexado para análise.';
-}
