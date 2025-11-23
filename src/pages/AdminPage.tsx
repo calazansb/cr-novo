@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Users, MapPin, Scale, Gavel, Cloud } from "lucide-react";
+import { Settings, Users, MapPin, Scale, Gavel, Building2 } from "lucide-react";
 import UserManagement from "@/components/Admin/UserManagement";
 import { OptionAdminModal } from "@/components/Admin/OptionAdminModal";
-
+import { ClientesCadastro } from "@/components/Admin/ClientesCadastro";
 import { Button } from "@/components/ui/button";
 
 export default function AdminPage() {
@@ -24,8 +24,12 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="comarcas" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+      <Tabs defaultValue="clientes" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+          <TabsTrigger value="clientes" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            Clientes
+          </TabsTrigger>
           <TabsTrigger value="comarcas" className="gap-2">
             <MapPin className="h-4 w-4" />
             Comarcas
@@ -43,6 +47,20 @@ export default function AdminPage() {
             Usuários
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="clientes" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gerenciar Clientes</CardTitle>
+              <CardDescription>
+                Cadastre clientes com abreviações automáticas para organização de arquivos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ClientesCadastro />
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="comarcas" className="mt-6">
           <Card>
