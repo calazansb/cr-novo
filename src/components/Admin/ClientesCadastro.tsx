@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,8 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Pencil, Trash2, Sparkles } from 'lucide-react';
 import { useClientesCadastro } from '@/hooks/useClientesCadastro';
+import { gerarSugestoesAbreviacao, validarAbreviacao } from '@/lib/abreviacoes';
 
 export const ClientesCadastro = () => {
   const { clientes, loading, criarCliente, atualizarCliente, deletarCliente } = useClientesCadastro();
@@ -34,9 +36,45 @@ export const ClientesCadastro = () => {
     endereco: '',
     observacoes: ''
   });
+  const [sugestoesAbreviacao, setSugestoesAbreviacao] = useState<string[]>([]);
+  const [erroAbreviacao, setErroAbreviacao] = useState<string>('');
+
+  // Gerar sugestões quando o nome mudar
+  useEffect(() => {
+    if (formData.nome && formData.nome.length >= 3) {
+      const sugestoes = gerarSugestoesAbreviacao(formData.nome);
+      setSugestoesAbreviacao(sugestoes);
+      
+      // Se não houver abreviação definida, usar a primeira sugestão
+      if (!formData.abreviacao && sugestoes.length > 0) {
+        setFormData(prev => ({ ...prev, abreviacao: sugestoes[0] }));
+      }
+    } else {
+      setSugestoesAbreviacao([]);
+    }
+  }, [formData.nome]);
+
+  // Validar abreviação quando mudar
+  useEffect(() => {
+    if (formData.abreviacao) {
+      const resultado = validarAbreviacao(formData.abreviacao);
+      setErroAbreviacao(resultado.valido ? '' : resultado.erro || '');
+    } else {
+      setErroAbreviacao('');
+    }
+  }, [formData.abreviacao]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar abreviação antes de enviar
+    if (formData.abreviacao) {
+      const resultado = validarAbreviacao(formData.abreviacao);
+      if (!resultado.valido) {
+        setErroAbreviacao(resultado.erro || 'Abreviação inválida');
+        return;
+      }
+    }
     
     if (editando) {
       await atualizarCliente(editando, formData);
@@ -58,6 +96,8 @@ export const ClientesCadastro = () => {
       endereco: '',
       observacoes: ''
     });
+    setSugestoesAbreviacao([]);
+    setErroAbreviacao('');
     setEditando(null);
   };
 
@@ -113,14 +153,40 @@ export const ClientesCadastro = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="abreviacao">Abreviação</Label>
+                  <Label htmlFor="abreviacao">
+                    Abreviação
+                    <Sparkles className="inline-block ml-1 h-3 w-3 text-primary" />
+                  </Label>
                   <Input
                     id="abreviacao"
                     value={formData.abreviacao}
-                    onChange={(e) => setFormData({ ...formData, abreviacao: e.target.value })}
-                    placeholder="Ex: HVD, CEMIG, etc"
+                    onChange={(e) => setFormData({ ...formData, abreviacao: e.target.value.toUpperCase() })}
+                    placeholder="Ex: HAP, CEMIG, etc"
                     maxLength={10}
+                    className={erroAbreviacao ? 'border-destructive' : ''}
                   />
+                  {erroAbreviacao && (
+                    <p className="text-xs text-destructive">{erroAbreviacao}</p>
+                  )}
+                  {sugestoesAbreviacao.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">
+                        Sugestões automáticas:
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {sugestoesAbreviacao.map((sugestao) => (
+                          <Badge
+                            key={sugestao}
+                            variant={formData.abreviacao === sugestao ? 'default' : 'outline'}
+                            className="cursor-pointer hover:bg-primary/20"
+                            onClick={() => setFormData({ ...formData, abreviacao: sugestao })}
+                          >
+                            {sugestao}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Usado em nomes de arquivos e pastas no SharePoint
                   </p>
