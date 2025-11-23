@@ -134,6 +134,7 @@ const DecisaoJudicialFormNova = () => {
   const [dadosExtraidos, setDadosExtraidos] = useState<any>(null);
   const [urlArquivoSharePoint, setUrlArquivoSharePoint] = useState<string>("");
   const [nomeArquivoSharePoint, setNomeArquivoSharePoint] = useState<string>("");
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   // Helpers
   const toNumber = (v: any, fallback: number) => {
@@ -285,15 +286,15 @@ const DecisaoJudicialFormNova = () => {
         // Preencher formulário com dados extraídos (com normalizações)
         setFormData(prev => ({
           ...prev,
-          numeroProcesso: analise.numeroProcesso || prev.numeroProcesso,
-          autor: analise.autor || prev.autor,
-          reu: analise.reu || prev.reu,
-          orgao: analise.tribunal || prev.orgao,
-          varaTribunal: analise.camaraTurma || prev.varaTribunal,
-          nomeMagistrado: analise.relator || prev.nomeMagistrado,
+          numeroProcesso: normalize(analise.numeroProcesso) || prev.numeroProcesso,
+          autor: normalize(analise.autor) || prev.autor,
+          reu: normalize(analise.reu) || prev.reu,
+          orgao: normalize(analise.tribunal) || prev.orgao,
+          varaTribunal: normalize(analise.camaraTurma) || prev.varaTribunal,
+          nomeMagistrado: normalize(analise.relator) || prev.nomeMagistrado,
           dataDecisao: toISODate(analise.dataDecisao, prev.dataDecisao),
-          adverso: analise.adverso || prev.adverso,
-          procedimentoObjeto: analise.assunto || prev.procedimentoObjeto,
+          adverso: normalize(analise.adverso) || prev.adverso,
+          procedimentoObjeto: normalize(analise.assunto) || prev.procedimentoObjeto,
           tipoDecisao: normalizeTipoDecisao(analise.tipoDecisao) || prev.tipoDecisao,
           resultado: normalizeResultado(analise.resultado) || prev.resultado,
           poloCliente: normalizePolo(analise.poloCliente) || prev.poloCliente,
@@ -310,6 +311,9 @@ const DecisaoJudicialFormNova = () => {
           title: "Análise concluída!",
           description: "Dados extraídos do documento. Revise e complete as informações.",
         });
+        
+        // Mostrar formulário após análise
+        setMostrarFormulario(true);
       }
     } catch (error) {
       console.error('Erro ao processar arquivo:', error);
@@ -483,37 +487,76 @@ ${formData.resumoDecisao}
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Upload de Arquivo */}
-          <div className="space-y-2 border-2 border-dashed border-primary/50 rounded-lg p-6 bg-primary/5">
-            <Label htmlFor="arquivo" className="flex items-center gap-2 text-lg font-semibold">
-              <Upload className="h-5 w-5" />
-              Upload da Decisão (PDF, DOCX, HTML) <span className="text-destructive">* OBRIGATÓRIO</span>
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              O arquivo da decisão é necessário para alimentar o Power BI e a Jurimetria
-            </p>
-            <Input
-              id="arquivo"
-              type="file"
-              accept=".pdf,.docx,.html"
-              onChange={handleFileUpload}
-              disabled={uploadandoArquivo || analisandoIA}
-            />
-            {analisandoIA && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                <Sparkles className="h-4 w-4 animate-spin" />
-                Analisando documento com IA...
+          {/* Upload de Arquivo - PRIORIDADE MÁXIMA */}
+          <div className="space-y-4 border-4 border-primary rounded-xl p-8 bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary rounded-lg">
+                <Upload className="h-8 w-8 text-primary-foreground" />
               </div>
-            )}
-            {arquivoDecisao && !analisandoIA && (
-              <p className="text-sm text-success mt-2">
-                ✓ Arquivo carregado: {arquivoDecisao.name}
-              </p>
-            )}
+              <div>
+                <Label htmlFor="arquivo" className="text-2xl font-bold text-primary">
+                  1º PASSO: Upload da Decisão Judicial
+                </Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  A IA irá analisar o documento e preencher automaticamente os campos abaixo
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <Input
+                id="arquivo"
+                type="file"
+                accept=".pdf,.docx,.html"
+                onChange={handleFileUpload}
+                disabled={uploadandoArquivo || analisandoIA}
+                className="text-lg p-6 cursor-pointer border-2 border-primary"
+              />
+              
+              {(uploadandoArquivo || analisandoIA) && (
+                <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg">
+                  <Sparkles className="h-6 w-6 text-primary animate-spin" />
+                  <div>
+                    <p className="font-semibold text-primary">
+                      {uploadandoArquivo ? 'Enviando documento...' : 'Analisando com IA...'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Aguarde enquanto processamos o documento
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {arquivoDecisao && !analisandoIA && !uploadandoArquivo && (
+                <div className="flex items-center gap-3 p-4 bg-success/10 rounded-lg border-2 border-success">
+                  <div className="h-12 w-12 rounded-full bg-success flex items-center justify-center">
+                    <svg className="h-6 w-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                      <path d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-success">Documento processado com sucesso!</p>
+                    <p className="text-sm text-muted-foreground">
+                      Arquivo: {arquivoDecisao.name}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Dados do Processo */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Formulário - Só aparece após upload e análise */}
+          {mostrarFormulario && (
+            <>
+              <div className="p-4 bg-primary/10 rounded-lg border-l-4 border-primary">
+                <p className="font-semibold text-primary">2º PASSO: Revisar e Completar Informações</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Os campos foram preenchidos automaticamente pela IA. Revise e ajuste conforme necessário.
+                </p>
+              </div>
+
+              {/* Dados do Processo */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="numeroProcesso">
                 Número do Processo (CNJ) <span className="text-destructive">*</span>
@@ -766,16 +809,18 @@ ${formData.resumoDecisao}
             />
           </div>
 
-          {/* Botão de Enviar */}
-          <div className="flex justify-end gap-4 pt-4">
-            <LoadingButton
-              onClick={handleSubmit}
-              loading={loading}
-              className="w-full md:w-auto"
-            >
-              Registrar Decisão
-            </LoadingButton>
-          </div>
+              {/* Botão de Enviar */}
+              <div className="flex justify-end gap-4 pt-4">
+                <LoadingButton
+                  onClick={handleSubmit}
+                  loading={loading}
+                  className="w-full md:w-auto"
+                >
+                  Registrar Decisão
+                </LoadingButton>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
