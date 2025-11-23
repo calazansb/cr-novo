@@ -82,18 +82,22 @@ serve(async (req) => {
     // Invocar função de análise de IA
     let analiseIA = null;
     try {
+      console.log('Iniciando análise de IA do arquivo...');
       const { data: analiseData, error: analiseError } = await supabase.functions.invoke('analisar-decisao-ia', {
         body: { 
-          texto,
-          nomeArquivo: fileName
+          filePath: fullPath,
+          fileName: fileName,
+          fileText: texto
         }
       });
 
       if (analiseError) {
         console.error('Erro na análise de IA:', analiseError);
-      } else {
+      } else if (analiseData?.dadosExtraidos) {
         analiseIA = analiseData;
         console.log('Análise de IA concluída com sucesso');
+      } else {
+        console.warn('Análise de IA não retornou dados estruturados');
       }
     } catch (error) {
       console.error('Erro ao invocar análise de IA:', error);
