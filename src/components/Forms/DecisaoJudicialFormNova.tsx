@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Upload, Sparkles, Calculator } from "lucide-react";
+import { Building2, Upload, Sparkles, Calculator, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,8 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { SelectWithAdminEdit } from "@/components/Admin/SelectWithAdminEdit";
 import { Combobox } from "@/components/ui/combobox";
+import { DragDropUpload } from "./DragDropUpload";
+import { PdfPreview } from "./PdfPreview";
 import { useClientes } from "@/hooks/useClientes";
 import { useUsuarios } from "@/hooks/useUsuarios";
 import { openWhatsApp } from "@/lib/utils";
@@ -128,13 +131,39 @@ const DecisaoJudicialFormNova = () => {
 
   const [arquivoDecisao, setArquivoDecisao] = useState<File | null>(null);
   const [uploadandoArquivo, setUploadandoArquivo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [analisandoIA, setAnalisandoIA] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [dadosExtraidos, setDadosExtraidos] = useState<any>(null);
+  const [scoresConfianca, setScoresConfianca] = useState<Record<string, number>>({});
   const [urlArquivoSharePoint, setUrlArquivoSharePoint] = useState<string>("");
   const [nomeArquivoSharePoint, setNomeArquivoSharePoint] = useState<string>("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+  // Helper para renderizar badge de confiança
+  const renderConfidenceBadge = (fieldName: string, value: any) => {
+    const confidence = scoresConfianca[`${fieldName}Confianca`];
+    if (!confidence || !value) return null;
+    
+    const getColor = (score: number) => {
+      if (score >= 0.9) return 'bg-green-500/10 text-green-700 border-green-200';
+      if (score >= 0.7) return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
+      return 'bg-red-500/10 text-red-700 border-red-200';
+    };
+    
+    const getIcon = (score: number) => {
+      if (score >= 0.9) return '✓';
+      if (score >= 0.7) return '⚠';
+      return '!';
+    };
+    
+    return (
+      <Badge variant="outline" className={`ml-2 ${getColor(confidence)}`}>
+        {getIcon(confidence)} {Math.round(confidence * 100)}%
+      </Badge>
+    );
+  };
 
   // Helpers
   const toNumber = (v: any, fallback: number) => {
@@ -213,23 +242,10 @@ const DecisaoJudicialFormNova = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validar tipo de arquivo
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/html'];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Arquivo inválido",
-        description: "Por favor, envie um arquivo PDF, DOCX ou HTML.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleFileSelect = async (file: File) => {
     setArquivoDecisao(file);
     setUploadandoArquivo(true);
+    setUploadProgress(0);
 
     try {
       // Preparar metadados para SharePoint
@@ -252,6 +268,8 @@ const DecisaoJudicialFormNova = () => {
         description: "Fazendo upload do arquivo..."
       });
 
+      setUploadProgress(30);
+
       // Fazer upload direto para SharePoint via edge function usando fetch
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -267,6 +285,8 @@ const DecisaoJudicialFormNova = () => {
         }
       );
 
+      setUploadProgress(60);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
         throw new Error(errorData.error || 'Erro no upload');
@@ -279,6 +299,7 @@ const DecisaoJudicialFormNova = () => {
       }
 
       console.log('Upload para SharePoint concluído:', uploadData);
+      setUploadProgress(80);
 
       // Armazenar URL do arquivo
       setUrlArquivoSharePoint(uploadData.fileUrl || '');
@@ -290,6 +311,7 @@ const DecisaoJudicialFormNova = () => {
       });
 
       setAnalisandoIA(true);
+      setUploadProgress(90);
 
       // Preencher formulário com dados da análise de IA
       if (uploadData?.analiseIA?.dadosExtraidos) {
@@ -297,6 +319,15 @@ const DecisaoJudicialFormNova = () => {
         setDadosExtraidos(uploadData.analiseIA.dadosExtraidos);
         
         const analise = uploadData.analiseIA.dadosExtraidos;
+        
+        // Extrair scores de confiança
+        const scores: Record<string, number> = {};
+        Object.keys(analise).forEach(key => {
+          if (key.endsWith('Confianca')) {
+            scores[key] = analise[key];
+          }
+        });
+        setScoresConfianca(scores);
         
         // Preencher formulário com dados extraídos (com normalizações)
         setFormData(prev => ({
@@ -320,11 +351,13 @@ const DecisaoJudicialFormNova = () => {
           resumoDecisao: analise.resumo || prev.resumoDecisao,
         }));
 
+        setUploadProgress(100);
         toast({
           title: "Análise concluída!",
           description: "Dados extraídos do documento. Revise e complete as informações.",
         });
       } else {
+        setUploadProgress(100);
         toast({
           title: "Upload concluído",
           description: "Análise de IA não disponível. Preencha os campos manualmente.",
@@ -345,6 +378,16 @@ const DecisaoJudicialFormNova = () => {
       setUploadandoArquivo(false);
       setAnalisandoIA(false);
     }
+  };
+
+  const handleRemoveFile = () => {
+    setArquivoDecisao(null);
+    setUrlArquivoSharePoint("");
+    setNomeArquivoSharePoint("");
+    setDadosExtraidos(null);
+    setScoresConfianca({});
+    setMostrarFormulario(false);
+    setUploadProgress(0);
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -506,14 +549,14 @@ ${formData.resumoDecisao}
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Upload de Arquivo - PRIORIDADE MÁXIMA */}
-          <div className="space-y-4 border-4 border-primary rounded-xl p-8 bg-gradient-to-br from-primary/10 to-primary/5 shadow-lg">
+          {/* Upload de Arquivo com Drag & Drop */}
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-primary rounded-lg">
                 <Upload className="h-8 w-8 text-primary-foreground" />
               </div>
               <div>
-                <Label htmlFor="arquivo" className="text-2xl font-bold text-primary">
+                <Label className="text-2xl font-bold text-primary">
                   1º PASSO: Upload da Decisão Judicial
                 </Label>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -522,47 +565,49 @@ ${formData.resumoDecisao}
               </div>
             </div>
             
-            <div className="space-y-3">
-              <Input
-                id="arquivo"
-                type="file"
-                accept=".pdf,.docx,.html"
-                onChange={handleFileUpload}
-                disabled={uploadandoArquivo || analisandoIA}
-                className="text-lg p-6 cursor-pointer border-2 border-primary"
-              />
-              
-              {(uploadandoArquivo || analisandoIA) && (
-                <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg">
-                  <Sparkles className="h-6 w-6 text-primary animate-spin" />
+            <DragDropUpload
+              onFileSelect={handleFileSelect}
+              onUploadProgress={setUploadProgress}
+              currentFile={arquivoDecisao}
+              onRemoveFile={handleRemoveFile}
+              accept=".pdf,.docx,.html"
+              maxSize={20}
+            />
+            
+            {(uploadandoArquivo || analisandoIA) && (
+              <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-lg">
+                <Sparkles className="h-6 w-6 text-primary animate-spin" />
+                <div className="flex-1">
+                  <p className="font-semibold text-primary">
+                    {uploadandoArquivo ? 'Enviando documento...' : 'Analisando com IA...'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {uploadProgress}% completo
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {dadosExtraidos && Object.keys(scoresConfianca).length > 0 && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-primary">
-                      {uploadandoArquivo ? 'Enviando documento...' : 'Analisando com IA...'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Aguarde enquanto processamos o documento
-                    </p>
-                  </div>
-                </div>
-              )}
-              
-              {arquivoDecisao && !analisandoIA && !uploadandoArquivo && (
-                <div className="flex items-center gap-3 p-4 bg-success/10 rounded-lg border-2 border-success">
-                  <div className="h-12 w-12 rounded-full bg-success flex items-center justify-center">
-                    <svg className="h-6 w-6 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
-                      <path d="M5 13l4 4L19 7"></path>
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-success">Documento processado com sucesso!</p>
-                    <p className="text-sm text-muted-foreground">
-                      Arquivo: {arquivoDecisao.name}
+                    <p className="font-semibold text-blue-900">Análise de IA Concluída</p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Os campos foram preenchidos automaticamente. Revise os dados com atenção, 
+                      especialmente aqueles com confiança baixa (marcados em amarelo ou vermelho).
                     </p>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
+
+          {/* Preview do PDF */}
+          {arquivoDecisao && mostrarFormulario && (
+            <PdfPreview file={arquivoDecisao} />
+          )}
 
           {/* Formulário - Só aparece após upload e análise */}
           {mostrarFormulario && (
@@ -576,9 +621,10 @@ ${formData.resumoDecisao}
 
               {/* Dados do Processo */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="numeroProcesso">
+                <div className="space-y-2">
+                  <Label htmlFor="numeroProcesso">
                 Número do Processo (CNJ) <span className="text-destructive">*</span>
+                {renderConfidenceBadge('numeroProcesso', formData.numeroProcesso)}
               </Label>
               <Input
                 id="numeroProcesso"
@@ -591,6 +637,7 @@ ${formData.resumoDecisao}
             <div className="space-y-2">
               <Label htmlFor="dataDecisao">
                 Data da Decisão <span className="text-destructive">*</span>
+                {renderConfidenceBadge('dataDecisao', formData.dataDecisao)}
               </Label>
               <Input
                 id="dataDecisao"
@@ -603,6 +650,7 @@ ${formData.resumoDecisao}
             <div className="space-y-2">
               <Label htmlFor="autor">
                 Autor <span className="text-destructive">*</span>
+                {renderConfidenceBadge('autor', formData.autor)}
               </Label>
               <Input
                 id="autor"
@@ -615,6 +663,7 @@ ${formData.resumoDecisao}
             <div className="space-y-2">
               <Label htmlFor="reu">
                 Réu <span className="text-destructive">*</span>
+                {renderConfidenceBadge('reu', formData.reu)}
               </Label>
               <Input
                 id="reu"

@@ -47,43 +47,114 @@ serve(async (req) => {
     
     console.log('Tamanho do texto para IA:', baseText?.length || 0);
 
-    const promptAnalise = `Analise esta decisão judicial e PREENCHA TODOS OS CAMPOS abaixo. Leia TODO o texto COM ATENÇÃO.
+    const promptAnalise = `Você é um assistente especializado em análise de decisões judiciais brasileiras. 
+Sua tarefa é extrair informações estruturadas de decisões judiciais com MÁXIMA PRECISÃO e CONFIANÇA.
 
-CAMPOS OBRIGATÓRIOS (preencha TODOS):
+INSTRUÇÕES CRÍTICAS:
+1. Leia TODA a decisão cuidadosamente antes de extrair dados
+2. Para cada campo extraído, avalie sua confiança (0.0 a 1.0)
+3. Se um campo não for encontrado ou você não tiver certeza, retorne null e confiança baixa
+4. Normalize valores monetários para números (ex: "R$ 1.234,56" → 1234.56)
+5. Normalize datas para formato ISO (ex: "15/03/2024" → "2024-03-15")
+6. Identifique padrões de nomes completos de magistrados (não apenas sobrenomes)
+7. Extraia números de processo no formato CNJ quando possível
+8. Para valores disputados e economia gerada, busque por termos como "valor da causa", "montante", "condenação", "economia"
 
-numeroProcesso: [procure padrão 0000000-00.0000.0.00.0000 ou similar]
-autor: [procure "AUTOR:", "APELANTE:", "REQUERENTE:" - apenas o nome]
-reu: [procure "RÉU:", "APELADO:", "REQUERIDO:" - apenas o nome]
-adverso: [parte contrária ao cliente]
-relator: [procure "Relator:", "Juiz:" - apenas o nome, sem título]
-dataDecisao: [formato YYYY-MM-DD]
-tribunal: [TJMG, TJSP, STJ, etc]
-camaraTurma: [ex: "10ª CÂMARA CÍVEL", "3ª Turma"]
-assunto: [tema principal em até 100 caracteres]
-tipoDecisao: [escolha: "Sentença", "Acórdão", ou "Decisão Monocrática (Efeito Suspensivo)"]
-resultado: [escolha: "Favorável", "Parcialmente Favorável", ou "Desfavorável"]
-poloCliente: [escolha: "Ativo" ou "Passivo"]
-valorDisputa: [valor em reais, apenas número]
-economiaGerada: [economia em reais, apenas número]
-percentualExonerado: [percentual 0-100]
-montanteReconhecido: [valor em reais, apenas número]
-resumo: [faça um resumo em 3 partes: RELATÓRIO/CASO, FUNDAMENTOS, DISPOSITIVO]
+EXEMPLOS DE EXTRAÇÃO:
 
-IMPORTANTE:
-- Leia TODO o texto antes de responder
-- Procure CADA informação solicitada
-- Se não encontrar algo específico, deixe vazio ou null
-- NÃO invente informações
-- Seja PRECISO
+Exemplo 1 - Acórdão com informações completas:
+ENTRADA: "APELAÇÃO CÍVEL Nº 1234567-89.2023.8.26.0100. Relator: Des. João da Silva. Tribunal de Justiça de São Paulo. 10ª Câmara de Direito Público. Julgamento em 15/03/2024. Apelante: EMPRESA XYZ LTDA. Apelado: FAZENDA PÚBLICA DO ESTADO DE SÃO PAULO. Valor da causa: R$ 500.000,00. DECISÃO: Negaram provimento ao recurso. Mantida a condenação de R$ 200.000,00."
 
-===== TEXTO COMPLETO DA DECISÃO =====
+SAÍDA ESPERADA:
+{
+  "numeroProcesso": "1234567-89.2023.8.26.0100",
+  "numeroProcessoConfianca": 1.0,
+  "tipoDecisao": "Acórdão",
+  "tipoDecisaoConfianca": 1.0,
+  "tribunal": "Tribunal de Justiça de São Paulo",
+  "tribunalConfianca": 1.0,
+  "camaraTurma": "10ª Câmara de Direito Público",
+  "camaraTurmaConfianca": 1.0,
+  "relator": "Des. João da Silva",
+  "relatorConfianca": 1.0,
+  "dataDecisao": "2024-03-15",
+  "dataDecisaoConfianca": 1.0,
+  "autor": "EMPRESA XYZ LTDA",
+  "autorConfianca": 0.95,
+  "reu": "FAZENDA PÚBLICA DO ESTADO DE SÃO PAULO",
+  "reuConfianca": 0.95,
+  "poloCliente": "Ativo",
+  "poloClienteConfianca": 0.9,
+  "resultado": "Desfavorável",
+  "resultadoConfianca": 0.95,
+  "valorDisputa": 500000.00,
+  "valorDisputaConfianca": 1.0,
+  "economiaGerada": 0.00,
+  "economiaGeradaConfianca": 0.8,
+  "assunto": "Apelação Cível - Direito Público",
+  "assuntoConfianca": 0.9,
+  "resumo": "Recurso de apelação negado. Mantida condenação de R$ 200.000,00.",
+  "resumoConfianca": 0.95
+}
 
+Exemplo 2 - Sentença parcial:
+ENTRADA: "SENTENÇA - Processo 9876543-21.2023.5.02.0001. Juiz: Dr. Maria Santos. 1ª Vara do Trabalho de São Paulo. Reclamante: João Oliveira. Reclamada: CONSTRUTORA ABC S/A. Julgado em 20/05/2024. JULGO PARCIALMENTE PROCEDENTE o pedido para condenar a ré ao pagamento de R$ 50.000,00 a título de danos morais, de um total pedido de R$ 150.000,00."
+
+SAÍDA ESPERADA:
+{
+  "numeroProcesso": "9876543-21.2023.5.02.0001",
+  "numeroProcessoConfianca": 1.0,
+  "tipoDecisao": "Sentença",
+  "tipoDecisaoConfianca": 1.0,
+  "tribunal": "Tribunal Regional do Trabalho da 2ª Região",
+  "tribunalConfianca": 0.85,
+  "camaraTurma": "1ª Vara do Trabalho de São Paulo",
+  "camaraTurmaConfianca": 1.0,
+  "relator": "Dr. Maria Santos",
+  "relatorConfianca": 1.0,
+  "dataDecisao": "2024-05-20",
+  "dataDecisaoConfianca": 1.0,
+  "autor": "João Oliveira",
+  "autorConfianca": 1.0,
+  "reu": "CONSTRUTORA ABC S/A",
+  "reuConfianca": 1.0,
+  "poloCliente": "Passivo",
+  "poloClienteConfianca": 0.9,
+  "resultado": "Parcialmente Favorável",
+  "resultadoConfianca": 0.95,
+  "valorDisputa": 150000.00,
+  "valorDisputaConfianca": 0.9,
+  "economiaGerada": 100000.00,
+  "economiaGeradaConfianca": 0.85,
+  "montanteReconhecido": 50000.00,
+  "montanteReconhecidoConfianca": 1.0,
+  "percentualExonerado": 66.67,
+  "percentualExoneradoConfianca": 0.9,
+  "assunto": "Danos Morais - Direito do Trabalho",
+  "assuntoConfianca": 0.9,
+  "resumo": "Sentença parcialmente procedente. Condenação de R$ 50.000,00 em danos morais, de um pedido inicial de R$ 150.000,00, gerando economia de R$ 100.000,00.",
+  "resumoConfianca": 0.95
+}
+
+REGRAS DE NORMALIZAÇÃO:
+- Tipo de Decisão: "Acórdão", "Sentença", "Decisão Monocrática (Efeito Suspensivo)", ou "Decisão Interlocutória"
+- Resultado: "Favorável", "Parcialmente Favorável", "Desfavorável"
+- Polo Cliente: "Ativo" (autor/apelante/recorrente) ou "Passivo" (réu/apelado/recorrido)
+- Valores: sempre em número decimal (ex: 1234.56), nunca string com formatação
+- Datas: sempre no formato "YYYY-MM-DD"
+- Percentuais: número decimal de 0 a 100 (ex: 66.67 para 66,67%)
+
+CÁLCULOS AUTOMÁTICOS:
+- Se encontrar "valor pedido" e "valor condenado", calcule:
+  * economiaGerada = valorPedido - valorCondenado (se cliente é réu/passivo)
+  * percentualExonerado = (economiaGerada / valorPedido) * 100
+- Se o cliente for autor e ganhou, economiaGerada = 0 (cliente recebeu, não economizou)
+
+===== TEXTO DA DECISÃO =====
 ${(baseText || '').slice(0, 50000)}
-
 ===== FIM DO TEXTO =====
 
-Agora preencha TODOS os campos acima com base no texto.
-`;
+Agora extraia TODOS os campos com seus respectivos scores de confiança.`;
 
     console.log('Chamando Lovable AI...');
 
@@ -109,27 +180,44 @@ Agora preencha TODOS os campos acima com base no texto.
           type: 'function',
           function: {
             name: 'extrair_dados_decisao',
-            description: 'Extrai dados de decisão judicial',
+            description: 'Extrai dados de decisão judicial com scores de confiança',
             parameters: {
               type: 'object',
               properties: {
                 numeroProcesso: { type: 'string' },
+                numeroProcessoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 autor: { type: 'string' },
+                autorConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 reu: { type: 'string' },
+                reuConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 adverso: { type: 'string' },
+                adversoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 relator: { type: 'string' },
+                relatorConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 dataDecisao: { type: 'string' },
+                dataDecisaoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 tribunal: { type: 'string' },
+                tribunalConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 camaraTurma: { type: 'string' },
+                camaraTurmaConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 assunto: { type: 'string' },
-                tipoDecisao: { type: 'string', enum: ['Sentença', 'Acórdão', 'Decisão Monocrática (Efeito Suspensivo)'] },
+                assuntoConfianca: { type: 'number', minimum: 0, maximum: 1 },
+                tipoDecisao: { type: 'string', enum: ['Sentença', 'Acórdão', 'Decisão Monocrática (Efeito Suspensivo)', 'Decisão Interlocutória'] },
+                tipoDecisaoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 resultado: { type: 'string', enum: ['Favorável', 'Parcialmente Favorável', 'Desfavorável'] },
+                resultadoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 poloCliente: { type: 'string', enum: ['Ativo', 'Passivo'] },
+                poloClienteConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 valorDisputa: { type: 'number' },
+                valorDisputaConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 economiaGerada: { type: 'number' },
+                economiaGeradaConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 percentualExonerado: { type: 'number' },
+                percentualExoneradoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 montanteReconhecido: { type: 'number' },
+                montanteReconhecidoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 resumo: { type: 'string' },
+                resumoConfianca: { type: 'number', minimum: 0, maximum: 1 },
                 normasLegaisCitadas: {
                   type: 'array',
                   items: {
