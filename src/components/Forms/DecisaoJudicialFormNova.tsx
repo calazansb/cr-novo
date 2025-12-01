@@ -144,6 +144,46 @@ const DecisaoJudicialFormNova = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [buscandoProcesso, setBuscandoProcesso] = useState(false);
 
+  // Limpar formulário ao montar o componente (simula atualização de página)
+  useEffect(() => {
+    limparFormulario();
+  }, []);
+
+  // Função para limpar todos os campos
+  const limparFormulario = () => {
+    setFormData({
+      numeroProcesso: "",
+      autor: "",
+      reu: "",
+      orgao: "",
+      varaTribunal: "",
+      nomeCliente: "",
+      poloCliente: "",
+      tipoDecisao: "",
+      resultado: "",
+      dataDecisao: "",
+      nomeMagistrado: "",
+      advogadoInterno: "",
+      adverso: "",
+      procedimentoObjeto: "",
+      valorDisputa: 0,
+      economiaGerada: 0,
+      percentualExonerado: 0,
+      montanteReconhecido: 0,
+      resumoDecisao: "",
+      sharepointDriveId: "",
+      sharepointItemId: ""
+    });
+    setArquivoDecisao(null);
+    setUrlArquivoSharePoint("");
+    setNomeArquivoSharePoint("");
+    setDadosExtraidos(null);
+    setScoresConfianca({});
+    setMostrarFormulario(false);
+    setUploadProgress(0);
+    setBuscandoProcesso(false);
+  };
+
   // Busca automática de processo quando número é digitado
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -423,6 +463,16 @@ const DecisaoJudicialFormNova = () => {
     setUploadProgress(0);
   };
 
+  const handleLimparCampos = () => {
+    if (window.confirm('Tem certeza que deseja limpar todos os campos? Esta ação não pode ser desfeita.')) {
+      limparFormulario();
+      toast({
+        title: "Campos limpos",
+        description: "Todos os campos foram resetados.",
+      });
+    }
+  };
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -524,34 +574,8 @@ ${formData.resumoDecisao}
         description: "Decisão registrada e arquivo salvo no SharePoint!",
       });
       
-      // Limpar formulário
-      setFormData({
-        numeroProcesso: "",
-        autor: "",
-        reu: "",
-        orgao: "",
-        varaTribunal: "",
-        nomeCliente: "",
-        poloCliente: "",
-        tipoDecisao: "",
-        resultado: "",
-        dataDecisao: "",
-        nomeMagistrado: "",
-        advogadoInterno: "",
-        adverso: "",
-        procedimentoObjeto: "",
-        valorDisputa: 0,
-        economiaGerada: 0,
-        percentualExonerado: 0,
-        montanteReconhecido: 0,
-        resumoDecisao: "",
-        sharepointDriveId: "",
-        sharepointItemId: ""
-      });
-      setArquivoDecisao(null);
-      setUrlArquivoSharePoint("");
-      setNomeArquivoSharePoint("");
-      setDadosExtraidos(null);
+      // Limpar formulário após sucesso
+      limparFormulario();
     } catch (error) {
       console.error('Erro ao salvar decisão:', error);
       toast({
@@ -567,7 +591,20 @@ ${formData.resumoDecisao}
   return (
     <div className="animate-fade-in space-y-6">
       <Card className="shadow-elevated">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative">
+          {/* Botão Limpar Campos no canto superior direito */}
+          <div className="absolute top-6 right-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLimparCampos}
+              className="gap-2"
+            >
+              <AlertCircle className="h-4 w-4" />
+              Limpar Campos
+            </Button>
+          </div>
+          
           <div className="flex justify-center mb-4">
             <div className="p-4 hero-gradient rounded-xl shadow-glow">
               <Building2 className="h-12 w-12 text-primary-foreground" />
