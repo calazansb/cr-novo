@@ -144,11 +144,6 @@ const DecisaoJudicialFormNova = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [buscandoProcesso, setBuscandoProcesso] = useState(false);
 
-  // Limpar formulário ao montar o componente (simula atualização de página)
-  useEffect(() => {
-    limparFormulario();
-  }, []);
-
   // Função para limpar todos os campos
   const limparFormulario = () => {
     setFormData({
