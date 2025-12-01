@@ -28,6 +28,8 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
   const [filtroOrgao, setFiltroOrgao] = useState<string>('todos');
   const [filtroAdvogado, setFiltroAdvogado] = useState<string>('todos');
   const [filtroBusca, setFiltroBusca] = useState('');
+  const [filtroDataInicio, setFiltroDataInicio] = useState<string>('');
+  const [filtroDataFim, setFiltroDataFim] = useState<string>('');
   
   // Ordenação
   const [sortField, setSortField] = useState<'codigo' | 'data' | 'magistrado' | 'cliente' | 'advogado' | null>(null);
@@ -69,6 +71,19 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
       if (filtroAdvogado !== 'todos' && d.profiles?.nome !== filtroAdvogado) return false;
       if (filtroBusca && !d.numero_processo.toLowerCase().includes(filtroBusca.toLowerCase()) &&
           !d.codigo_unico.toLowerCase().includes(filtroBusca.toLowerCase())) return false;
+      
+      // Filtros de data
+      if (filtroDataInicio) {
+        const dataDecisao = d.data_decisao ? new Date(d.data_decisao) : new Date(d.data_criacao);
+        const dataInicio = new Date(filtroDataInicio);
+        if (dataDecisao < dataInicio) return false;
+      }
+      if (filtroDataFim) {
+        const dataDecisao = d.data_decisao ? new Date(d.data_decisao) : new Date(d.data_criacao);
+        const dataFim = new Date(filtroDataFim);
+        if (dataDecisao > dataFim) return false;
+      }
+      
       return true;
     });
 
@@ -170,6 +185,8 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
     setFiltroOrgao('todos');
     setFiltroAdvogado('todos');
     setFiltroBusca('');
+    setFiltroDataInicio('');
+    setFiltroDataFim('');
   };
 
   return (
@@ -322,8 +339,24 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div className="space-y-2">
+              <label className="text-sm font-medium">Data Início</label>
+              <Input
+                type="date"
+                value={filtroDataInicio}
+                onChange={(e) => setFiltroDataInicio(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Fim</label>
+              <Input
+                type="date"
+                value={filtroDataFim}
+                onChange={(e) => setFiltroDataFim(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
               <label className="text-sm font-medium">Buscar</label>
               <Input
                 placeholder="Protocolo ou processo..."
@@ -331,6 +364,9 @@ const DashboardDecisoes: React.FC<DashboardDecisoesProps> = ({ onBack }) => {
                 onChange={(e) => setFiltroBusca(e.target.value)}
               />
             </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Magistrado</label>
