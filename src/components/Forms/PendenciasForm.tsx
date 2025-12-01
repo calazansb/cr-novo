@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DateField } from "@/components/ui/date-field";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, MessageCircle, Sparkles } from "lucide-react";
+import { AlertTriangle, MessageCircle, Sparkles, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientes } from "@/hooks/useClientes";
 import { ORGAOS_LIST } from "@/data/orgaos";
@@ -55,6 +55,28 @@ const PendenciasForm = ({ clienteFilter }: PendenciasFormProps = {}) => {
   const [showClienteOutro, setShowClienteOutro] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [textoMelhorado, setTextoMelhorado] = useState('');
+
+  // Função para limpar todos os campos
+  const limparFormulario = () => {
+    setFormData({
+      numeroProcesso: "",
+      orgao: "",
+      tipoUrgencia: "",
+      prazoLimite: "",
+      responsavel: "",
+      descricao: "",
+      cliente: clienteFilter || "",
+      observacoes: ""
+    });
+    setClienteOutro("");
+    setShowClienteOutro(false);
+    setTextoMelhorado('');
+  };
+
+  // Limpar formulário ao montar o componente (atualização de página)
+  useEffect(() => {
+    limparFormulario();
+  }, []);
 
   const handleInputChange = async (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -246,10 +268,33 @@ ${validatedData.observacoes ? `*Observações:*\n${validatedData.observacoes}` :
     }
   };
 
+  const handleLimparCampos = () => {
+    if (window.confirm('Tem certeza que deseja limpar todos os campos? Esta ação não pode ser desfeita.')) {
+      limparFormulario();
+      toast({
+        title: "Campos limpos",
+        description: "Todos os campos foram resetados.",
+      });
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <Card className="shadow-elevated bg-gradient-card">
-        <CardHeader className="text-center">
+        <CardHeader className="text-center relative pb-8">
+          {/* Botão Limpar Campos no canto superior direito */}
+          <div className="absolute top-4 right-4 z-10">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLimparCampos}
+              className="gap-2 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <AlertCircle className="h-4 w-4" />
+              Limpar Campos
+            </Button>
+          </div>
+          
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-gradient-to-br from-warning/20 to-warning/10 rounded-xl">
               <AlertTriangle className="h-12 w-12 text-warning" />
