@@ -179,6 +179,11 @@ const DecisaoJudicialFormNova = () => {
     setBuscandoProcesso(false);
   };
 
+  // Limpar formulário ao montar o componente (atualização de página)
+  useEffect(() => {
+    limparFormulario();
+  }, []);
+
   // Busca automática de processo quando número é digitado
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -586,14 +591,14 @@ ${formData.resumoDecisao}
   return (
     <div className="animate-fade-in space-y-6">
       <Card className="shadow-elevated">
-        <CardHeader className="text-center relative">
+        <CardHeader className="text-center relative pb-8">
           {/* Botão Limpar Campos no canto superior direito */}
-          <div className="absolute top-6 right-6">
+          <div className="absolute top-4 right-4 z-10">
             <Button
               variant="outline"
               size="sm"
               onClick={handleLimparCampos}
-              className="gap-2"
+              className="gap-2 shadow-sm hover:shadow-md transition-shadow"
             >
               <AlertCircle className="h-4 w-4" />
               Limpar Campos
