@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, Paperclip, Cloud, CloudOff } from "lucide-react";
+import { Building, Paperclip, Cloud, CloudOff, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -133,6 +133,36 @@ const BalcaoControladoriaForm = () => {
       }
     }
   }, [user?.id, usuarios]);
+
+  // Função para limpar todos os campos
+  const limparFormulario = () => {
+    setFormData({
+      nomeSolicitante: "",
+      numeroProcesso: "",
+      cliente: "",
+      comarca: "",
+      tipoSolicitacao: "",
+      orgao: "",
+      tribunalOrgao: "",
+      prazoRetorno: "",
+      solicitacao: ""
+    });
+    setSelectedFiles([]);
+    setClienteOutro('');
+    setShowClienteOutro(false);
+    setComarcaOutra('');
+    setShowComarcaOutra(false);
+    setVaraOutra('');
+    setShowVaraOutra(false);
+    setErrors({});
+    setValidatedFields(new Set());
+    localStorage.removeItem('balcao-controladoria-draft');
+  };
+
+  // Limpar formulário ao montar o componente (atualização de página)
+  useEffect(() => {
+    limparFormulario();
+  }, []);
 
   // Load draft on mount
   useEffect(() => {
@@ -404,26 +434,8 @@ const BalcaoControladoriaForm = () => {
         return;
       }
 
-      // Reset form
-      setFormData({
-        nomeSolicitante: "",
-        numeroProcesso: "",
-        cliente: "",
-        comarca: "",
-        tipoSolicitacao: "",
-        orgao: "",
-        tribunalOrgao: "",
-        prazoRetorno: "",
-        solicitacao: ""
-      });
-      setSelectedFiles([]);
-      setClienteOutro('');
-      setShowClienteOutro(false);
-      setComarcaOutra('');
-      setShowComarcaOutra(false);
-      setErrors({});
-      setValidatedFields(new Set());
-      localStorage.removeItem('balcao-controladoria-draft');
+      // Limpar formulário após sucesso
+      limparFormulario();
       
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -446,6 +458,16 @@ const BalcaoControladoriaForm = () => {
     }
   };
 
+  const handleLimparCampos = () => {
+    if (window.confirm('Tem certeza que deseja limpar todos os campos? Esta ação não pode ser desfeita.')) {
+      limparFormulario();
+      toast({
+        title: "Campos limpos",
+        description: "Todos os campos foram resetados.",
+      });
+    }
+  };
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
@@ -456,9 +478,21 @@ const BalcaoControladoriaForm = () => {
           </p>
         </div>
         
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Auto-salvo</span>
-          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLimparCampos}
+            className="gap-2"
+          >
+            <AlertCircle className="h-4 w-4" />
+            Limpar Campos
+          </Button>
+          
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Auto-salvo</span>
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+          </div>
         </div>
       </div>
       <Card className="shadow-elevated card-gradient hover-lift">

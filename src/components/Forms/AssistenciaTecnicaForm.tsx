@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, MessageCircle, Mail, Eye } from "lucide-react";
+import { Settings, MessageCircle, Mail, Eye, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { FormField } from "@/components/ui/form-field";
@@ -32,6 +32,24 @@ const AssistenciaTecnicaForm = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [validatedFields, setValidatedFields] = useState<Set<string>>(new Set());
   const [showPreview, setShowPreview] = useState(false);
+
+  // Função para limpar todos os campos
+  const limparFormulario = () => {
+    setFormData({
+      nomeSolicitante: "",
+      solicitacaoProblema: "",
+      nivelUrgencia: ""
+    });
+    setErrors({});
+    setValidatedFields(new Set());
+    setShowPreview(false);
+    localStorage.removeItem('assistencia-draft');
+  };
+
+  // Limpar formulário ao montar o componente (atualização de página)
+  useEffect(() => {
+    limparFormulario();
+  }, []);
 
   // Auto-save draft
   useEffect(() => {
@@ -165,6 +183,16 @@ ${formData.solicitacaoProblema}
     }
   };
 
+  const handleLimparCampos = () => {
+    if (window.confirm('Tem certeza que deseja limpar todos os campos? Esta ação não pode ser desfeita.')) {
+      limparFormulario();
+      toast({
+        title: "Campos limpos",
+        description: "Todos os campos foram resetados.",
+      });
+    }
+  };
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
@@ -175,9 +203,21 @@ ${formData.solicitacaoProblema}
           </p>
         </div>
         
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Auto-salvo</span>
-          <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLimparCampos}
+            className="gap-2"
+          >
+            <AlertCircle className="h-4 w-4" />
+            Limpar Campos
+          </Button>
+          
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Auto-salvo</span>
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+          </div>
         </div>
       </div>
 
