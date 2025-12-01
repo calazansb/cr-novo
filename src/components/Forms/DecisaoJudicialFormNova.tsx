@@ -16,6 +16,7 @@ import { DragDropUpload } from "./DragDropUpload";
 import { PdfPreview } from "./PdfPreview";
 import { useClientes } from "@/hooks/useClientes";
 import { useUsuarios } from "@/hooks/useUsuarios";
+import { useCNJSearch } from "@/hooks/useCNJSearch";
 import { openWhatsApp } from "@/lib/utils";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +53,7 @@ const DecisaoJudicialFormNova = () => {
   const { usuarios } = useUsuarios();
   const { user } = useAuth();
   const { criarDecisao } = useDecisoes();
+  const { buscarProcesso, loading: loadingCNJ } = useCNJSearch();
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [camarasDisponiveis, setCamarasDisponiveis] = useState<string[]>([]);
@@ -140,6 +142,37 @@ const DecisaoJudicialFormNova = () => {
   const [urlArquivoSharePoint, setUrlArquivoSharePoint] = useState<string>("");
   const [nomeArquivoSharePoint, setNomeArquivoSharePoint] = useState<string>("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [buscandoProcesso, setBuscandoProcesso] = useState(false);
+
+  // Busca automática de processo quando número é digitado
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      const numeroLimpo = formData.numeroProcesso.replace(/\D/g, '');
+      
+      // Só busca se tiver pelo menos 20 dígitos (padrão CNJ)
+      if (numeroLimpo.length >= 20 && !buscandoProcesso) {
+        setBuscandoProcesso(true);
+        const resultado = await buscarProcesso(formData.numeroProcesso);
+        setBuscandoProcesso(false);
+        
+        if (resultado) {
+          // Preencher campos automaticamente com dados encontrados
+          setFormData(prev => ({
+            ...prev,
+            orgao: resultado.tribunal || prev.orgao,
+            varaTribunal: resultado.orgaoJulgador || prev.varaTribunal,
+            procedimentoObjeto: resultado.assuntos || prev.procedimentoObjeto,
+            // Preencher autor com primeira parte do polo ativo
+            autor: resultado.partesPoloAtivo[0] || prev.autor,
+            // Preencher réu com primeira parte do polo passivo
+            reu: resultado.partesPoloPassivo[0] || prev.reu,
+          }));
+        }
+      }
+    }, 1000); // Debounce de 1 segundo
+
+    return () => clearTimeout(timer);
+  }, [formData.numeroProcesso]);
 
   // Helper para renderizar badge de confiança
   const renderConfidenceBadge = (fieldName: string, value: any) => {
@@ -622,8 +655,14 @@ ${formData.resumoDecisao}
               {/* Dados do Processo */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="numeroProcesso">
+                  <Label htmlFor="numeroProcesso" className="flex items-center gap-2">
                 Número do Processo (CNJ) <span className="text-destructive">*</span>
+                {buscandoProcesso && (
+                  <span className="text-xs text-primary flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 animate-spin" />
+                    Buscando dados...
+                  </span>
+                )}
                 {renderConfidenceBadge('numeroProcesso', formData.numeroProcesso)}
               </Label>
               <Input
@@ -631,6 +670,7 @@ ${formData.resumoDecisao}
                 value={formData.numeroProcesso}
                 onChange={(e) => handleInputChange('numeroProcesso', e.target.value)}
                 placeholder="0000000-00.0000.0.00.0000"
+                disabled={buscandoProcesso}
               />
             </div>
 

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,131 +21,133 @@ serve(async (req) => {
       );
     }
 
-    // Remove caracteres não numéricos
-    const numeroLimpo = numeroProcesso.replace(/\D/g, '');
+    console.log('[buscar-processo-cnj] Buscando processo:', numeroProcesso);
+
+    // Fazer busca no PJe Comunica
+    const searchUrl = 'https://comunica.pje.jus.br/consulta';
     
-    // Determina segmento (J) e o código do tribunal (TR)
-    const segmento = numeroLimpo.substring(13, 14);
-    const trCode = numeroLimpo.substring(14, 16);
-
-    // Mapas auxiliares
-    const estadoMap: Record<string, string> = {
-      '01': 'ac','02': 'al','03': 'am','04': 'ap','05': 'ba','06': 'ce','07': 'df','08': 'es','09': 'go','10': 'ma','11': 'mg','12': 'ms','13': 'mt','14': 'pa','15': 'pb','16': 'pe','17': 'pi','18': 'pr','19': 'rj','20': 'rn','21': 'ro','22': 'rr','23': 'rs','24': 'sc','25': 'se','26': 'sp','27': 'to',
-    };
-
-    function resolveEndpoint(segmento: string, tr: string): string {
-      // Tribunais superiores
-      if (segmento === '1') return 'stf';
-      if (segmento === '2') return 'stj';
-      if (segmento === '6') return 'stm';
-
-      // Justiça Federal (TRF)
-      if (segmento === '5') {
-        const reg = String(parseInt(tr, 10)); // '01' -> '1'
-        return `trf${reg}`;
-      }
-
-      // Justiça Estadual (TJ)
-      if (segmento === '8') {
-        const uf = estadoMap[tr];
-        if (uf === 'df') return 'tjdft';
-        return uf ? `tj${uf}` : 'tjsp';
-      }
-
-      // Justiça do Trabalho (TRT)
-      if (segmento === '4') {
-        const reg = String(parseInt(tr, 10));
-        return `trt${reg}`;
-      }
-
-      // Justiça Eleitoral (TRE)
-      if (segmento === '3') {
-        const uf = estadoMap[tr];
-        return uf ? `tre-${uf}` : 'tre-sp';
-      }
-
-      // Fallback: usa TJSP
-      return 'tjsp';
-    }
-
-    const tribunal = resolveEndpoint(segmento, trCode);
-    console.log('[buscar-processo-cnj] segmento:', segmento, 'tr:', trCode, 'endpoint:', tribunal);
-    
-    const apiKey = Deno.env.get('CNJ_API_KEY');
-    
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: 'API Key do CNJ não configurada' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Faz a requisição para a API do CNJ
-    const response = await fetch(`https://api-publica.datajud.cnj.jus.br/api_publica_${tribunal}/_search`, {
-      method: 'POST',
+    // Primeira requisição: obter página inicial para cookies/tokens
+    const initialResponse = await fetch(searchUrl, {
+      method: 'GET',
       headers: {
-        'Authorization': `APIKey ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: {
-          match: {
-            numeroProcesso: numeroLimpo
-          }
-        }
-      })
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      }
     });
 
-    if (!response.ok) {
-      throw new Error(`Erro na API do CNJ: ${response.status}`);
+    const cookies = initialResponse.headers.get('set-cookie') || '';
+
+    // Segunda requisição: fazer busca com o número do processo
+    const formData = new URLSearchParams();
+    formData.append('numeroProcesso', numeroProcesso);
+
+    const searchResponse = await fetch(searchUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Cookie': cookies,
+      },
+      body: formData.toString()
+    });
+
+    if (!searchResponse.ok) {
+      throw new Error(`Erro na busca PJe: ${searchResponse.status}`);
     }
 
-    const data = await response.json();
+    const html = await searchResponse.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    if (!doc) {
+      throw new Error('Não foi possível processar a resposta HTML');
+    }
+
+    // Extrair dados do HTML
+    const extractText = (selector: string): string => {
+      const element = doc.querySelector(selector);
+      return element?.textContent?.trim() || '';
+    };
+
+    const extractAllText = (selector: string): string[] => {
+      const elements = doc.querySelectorAll(selector);
+      return Array.from(elements).map(el => el.textContent?.trim() || '').filter(Boolean);
+    };
+
+    // Tentar extrair informações da página de resultados
+    const numeroEncontrado = extractText('.numero-processo, .processo-numero, [data-label="Número"]');
     
-    // Extrai os dados relevantes
-    if (data.hits && data.hits.hits && data.hits.hits.length > 0) {
-      const processo = data.hits.hits[0]._source;
-      
-      // Extrai nomes das partes (polo ativo e passivo)
-      const partesPoloAtivo = processo.poloAtivo?.map((p: any) => p.nome || '').filter(Boolean) || [];
-      const partesPoloPassivo = processo.poloPassivo?.map((p: any) => p.nome || '').filter(Boolean) || [];
-      const todasPartes = [...partesPoloAtivo, ...partesPoloPassivo];
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: {
-            numeroProcesso: processo.numeroProcesso,
-            classe: processo.classe?.nome || '',
-            assuntos: processo.assuntos?.map((a: any) => a.nome).join(', ') || '',
-            orgaoJulgador: processo.orgaoJulgador?.nome || '',
-            dataAjuizamento: processo.dataAjuizamento,
-            tribunal: processo.tribunal,
-            grau: processo.grau,
-            movimentos: processo.movimentos || [],
-            sistema: processo.sistema?.nome || '',
-            formato: processo.formato?.nome || '',
-            partesPoloAtivo,
-            partesPoloPassivo,
-            todasPartes
-          }
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } else {
+    if (!numeroEncontrado) {
+      console.log('[buscar-processo-cnj] Processo não encontrado no PJe');
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Processo não encontrado'
+          message: 'Processo não encontrado no sistema PJe'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Extrair informações disponíveis
+    const classe = extractText('.classe, [data-label="Classe"]');
+    const assunto = extractText('.assunto, [data-label="Assunto"]');
+    const orgaoJulgador = extractText('.orgao-julgador, .vara, [data-label="Órgão Julgador"], [data-label="Vara"]');
+    const dataAjuizamento = extractText('.data-ajuizamento, [data-label="Data de Ajuizamento"]');
+    const tribunal = extractText('.tribunal, [data-label="Tribunal"]');
+    
+    // Extrair partes (autor e réu)
+    const partesAtivo = extractAllText('.parte-ativo, .autor, [data-label="Parte Ativa"], [data-label="Autor"]');
+    const partesPassivo = extractAllText('.parte-passivo, .reu, [data-label="Parte Passiva"], [data-label="Réu"]');
+    const todasPartes = [...partesAtivo, ...partesPassivo];
+
+    // Extrair movimentos se disponíveis
+    const movimentosElements = doc.querySelectorAll('.movimento, .andamento, [data-movimento]');
+    const movimentos = Array.from(movimentosElements).map(el => {
+      const dataEl = (el as any).querySelector?.('.data-movimento, .data');
+      const descEl = (el as any).querySelector?.('.descricao-movimento, .texto');
+      return {
+        data: dataEl?.textContent?.trim() || '',
+        descricao: descEl?.textContent?.trim() || ''
+      };
+    });
+
+    console.log('[buscar-processo-cnj] Dados extraídos:', {
+      numeroProcesso: numeroEncontrado,
+      classe,
+      assunto,
+      orgaoJulgador,
+      partesAtivo,
+      partesPassivo
+    });
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: {
+          numeroProcesso: numeroEncontrado || numeroProcesso,
+          classe: classe || '',
+          assuntos: assunto || '',
+          orgaoJulgador: orgaoJulgador || '',
+          dataAjuizamento: dataAjuizamento || '',
+          tribunal: tribunal || '',
+          grau: '',
+          movimentos: movimentos,
+          sistema: 'PJe',
+          formato: '',
+          partesPoloAtivo: partesAtivo,
+          partesPoloPassivo: partesPassivo,
+          todasPartes
+        }
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
   } catch (error) {
-    console.error('Erro ao buscar processo:', error);
+    console.error('[buscar-processo-cnj] Erro:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ 
+        success: false,
+        error: errorMessage 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
