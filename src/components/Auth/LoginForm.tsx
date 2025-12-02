@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,15 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { LogIn, AlertCircle, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import LocationCard from './LocationCard';
+
+declare global {
+  interface Window {
+    UnicornStudio: {
+      isInitialized: boolean;
+      init?: () => void;
+    };
+  }
+}
 
 const LoginForm = () => {
   const { signIn } = useAuth();
@@ -21,6 +30,25 @@ const LoginForm = () => {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+
+  // Load Unicorn Studio script
+  useEffect(() => {
+    if (!window.UnicornStudio) {
+      window.UnicornStudio = { isInitialized: false };
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.5.2/dist/unicornStudio.umd.js";
+      script.onload = function() {
+        if (!window.UnicornStudio.isInitialized) {
+          window.UnicornStudio.init?.();
+          window.UnicornStudio.isInitialized = true;
+        }
+      };
+      (document.head || document.body).appendChild(script);
+    } else if (!window.UnicornStudio.isInitialized && window.UnicornStudio.init) {
+      window.UnicornStudio.init();
+      window.UnicornStudio.isInitialized = true;
+    }
+  }, []);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +95,11 @@ const LoginForm = () => {
     <>
       <LocationCard />
       <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <div className="login-background"></div>
+      {/* Unicorn Studio Background */}
+      <div 
+        data-us-project="WaBi9KXKEh8z0bDU21qK" 
+        className="absolute inset-0 w-full h-full z-0"
+      />
       
       {/* Logo do escritório no topo */}
       <div className="relative z-10 mb-8">

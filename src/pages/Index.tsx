@@ -1,15 +1,6 @@
 import { useState } from "react";
 import React from "react";
 import ModernSidebar from "@/components/Layout/ModernSidebar";
-
-declare global {
-  interface Window {
-    UnicornStudio: {
-      isInitialized: boolean;
-      init?: () => void;
-    };
-  }
-}
 import ModernHeader from "@/components/Layout/ModernHeader";
 import { WelcomeQuote } from "@/components/Motivational/WelcomeQuote";
 import DecisaoJudicialFormNova from "../components/Forms/DecisaoJudicialFormNova";
@@ -121,47 +112,18 @@ const Index = () => {
           </div>;
     }
   };
-  // Load Unicorn Studio script
-  React.useEffect(() => {
-    if (!window.UnicornStudio) {
-      window.UnicornStudio = { isInitialized: false };
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.5.2/dist/unicornStudio.umd.js";
-      script.onload = function() {
-        if (!window.UnicornStudio.isInitialized) {
-          window.UnicornStudio.init();
-          window.UnicornStudio.isInitialized = true;
-        }
-      };
-      (document.head || document.body).appendChild(script);
-    } else if (!window.UnicornStudio.isInitialized && window.UnicornStudio.init) {
-      window.UnicornStudio.init();
-      window.UnicornStudio.isInitialized = true;
-    }
-  }, []);
-
-  return <div className="min-h-screen relative">
-      {/* Unicorn Studio Background */}
-      <div 
-        data-us-project="WaBi9KXKEh8z0bDU21qK" 
-        className="fixed inset-0 w-full h-full z-0"
-        style={{ width: '100%', height: '100%' }}
-      />
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Animação de Boas-Vindas */}
+      <WelcomeQuote />
       
-      {/* Content Layer */}
-      <div className="relative z-10 min-h-screen">
-        {/* Animação de Boas-Vindas */}
-        <WelcomeQuote />
+      <ModernSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      
+      <div className="lg:ml-72">
+        <ModernHeader />
         
-        <ModernSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-        
-        <div className="lg:ml-72">
-          <ModernHeader />
-          
-          <main className="container mx-auto px-4 py-6">
-            {renderContent()}
-          </main>
-        </div>
+        <main className="container mx-auto px-4 py-6">
+          {renderContent()}
+        </main>
       </div>
     </div>;
 };
