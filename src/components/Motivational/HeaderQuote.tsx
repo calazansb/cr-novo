@@ -49,14 +49,16 @@ export const HeaderQuote = () => {
   if (!quote) return null;
 
   return (
-    <div className="flex items-center gap-2 animate-fade-in">
-      <Flame className="w-5 h-5 text-amber-500 dark:text-amber-400 flex-shrink-0" />
-      <div className="flex flex-col md:flex-row md:items-center gap-1">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-snug">
+    <div className="flex items-center gap-3 animate-fade-in group">
+      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+        <Flame className="w-4 h-4 text-white" />
+      </div>
+      <div className="flex flex-col min-w-0">
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-snug line-clamp-1">
           "{quote.texto}"
         </p>
-        <span className="text-xs italic text-gray-600 dark:text-gray-400 flex-shrink-0">
-          — {quote.autor}
+        <span className="text-xs text-slate-500 dark:text-slate-400">
+          {quote.autor}
         </span>
       </div>
     </div>

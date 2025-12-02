@@ -1,89 +1,117 @@
 import { useState, useEffect } from "react";
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Calendar, Clock, ChevronDown, Key } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/Auth/AuthProvider";
 import { ChangePasswordForm } from "@/components/Auth/ChangePasswordForm";
 import { HeaderQuote } from "@/components/Motivational/HeaderQuote";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
 interface ModernHeaderProps {
   className?: string;
 }
-const ModernHeader = ({
-  className
-}: ModernHeaderProps) => {
+
+const ModernHeader = ({ className }: ModernHeaderProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const {
-    user,
-    signOut
-  } = useAuth();
+  const { user, signOut } = useAuth();
   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  const userInitials = userName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   
-  return <header className={cn("sticky top-0 z-40 w-full border-b border-slate-200/20 dark:border-slate-700/30 bg-gradient-to-r from-white/80 via-slate-50/80 to-white/80 dark:from-slate-900/80 dark:via-slate-800/80 dark:to-slate-900/80 backdrop-blur-xl shadow-lg", className)}>
-      <div className="container flex h-20 items-center justify-between px-6">
-        {/* Frase Motivacional */}
-        <div className="flex-1 flex justify-start">
+  return (
+    <header className={cn(
+      "sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800",
+      className
+    )}>
+      <div className="flex h-16 items-center justify-between px-4 lg:px-6">
+        {/* Left - Motivational Quote */}
+        <div className="flex-1 max-w-2xl">
           <HeaderQuote />
         </div>
 
-        {/* Right Side - Data/Hora e Usuário mais próximos */}
-        <div className="flex items-center space-x-4 flex-shrink-0">
-          {/* Current Time - Mais próximo do usuário */}
-          <div className="hidden sm:flex flex-col items-end">
-            <div className="text-base font-bold text-foreground">
-              {currentTime.toLocaleDateString('pt-BR', {
-              weekday: 'short',
-              day: '2-digit',
-              month: 'short'
-            })}
+        {/* Right - Date/Time & User */}
+        <div className="flex items-center gap-2 lg:gap-4">
+          {/* Date & Time Pill */}
+          <div className="hidden md:flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-full px-4 py-2">
+            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {currentTime.toLocaleDateString('pt-BR', {
+                  weekday: 'short',
+                  day: '2-digit',
+                  month: 'short'
+                })}
+              </span>
             </div>
-            <div className="text-sm font-semibold text-muted-foreground">
-              {currentTime.toLocaleTimeString('pt-BR', {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
+            <div className="w-px h-4 bg-slate-300 dark:bg-slate-600" />
+            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm font-semibold tabular-nums">
+                {currentTime.toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
             </div>
           </div>
 
-          {/* User Profile */}
+          {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-3 hover:bg-blue-50 dark:hover:bg-blue-500/10 px-3 py-2 h-auto transition-all">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-blue-100 dark:ring-blue-400/30">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                <div className="hidden sm:flex flex-col items-start">
-                  <span className="text-sm font-bold text-foreground">
-                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
+              <Button 
+                variant="ghost" 
+                className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full pl-1 pr-3 py-1.5 h-auto transition-all"
+              >
+                <Avatar className="h-9 w-9 border-2 border-primary/20">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-white text-sm font-semibold">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="hidden lg:flex flex-col items-start">
+                  <span className="text-sm font-semibold text-foreground leading-tight">
+                    {userName}
                   </span>
-                  <span className="text-xs font-semibold text-muted-foreground">
+                  <span className="text-xs text-muted-foreground leading-tight truncate max-w-[150px]">
                     {user?.email}
                   </span>
                 </div>
+                <ChevronDown className="w-4 h-4 text-muted-foreground hidden lg:block" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>
+              <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                <p className="text-sm font-medium">{userName}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+              <DropdownMenuItem className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
-                Perfil
+                Meu Perfil
               </DropdownMenuItem>
-              <ChangePasswordForm trigger={<div className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm">
-                    <User className="mr-2 h-4 w-4" />
+              <ChangePasswordForm 
+                trigger={
+                  <div className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent rounded-sm">
+                    <Key className="mr-2 h-4 w-4" />
                     Alterar Senha
-                  </div>} />
+                  </div>
+                } 
+              />
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut} className="text-destructive">
+              <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
-                Sair
+                Sair do Sistema
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default ModernHeader;
