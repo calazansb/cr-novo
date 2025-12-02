@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Flame } from 'lucide-react';
+import { Quote, Sparkles } from 'lucide-react';
 import frasesData from '@/data/frases-motivacionais.json';
 
 interface Frase {
@@ -49,17 +49,26 @@ export const HeaderQuote = () => {
   if (!quote) return null;
 
   return (
-    <div className="flex items-center gap-3 animate-fade-in group">
-      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-        <Flame className="w-4 h-4 text-white" />
+    <div className="flex items-center gap-3 animate-fade-in">
+      {/* Quote Icon */}
+      <div className="relative flex-shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 flex items-center justify-center border border-primary/20">
+          <Quote className="w-5 h-5 text-primary" />
+        </div>
+        <Sparkles className="w-3 h-3 text-amber-500 absolute -top-1 -right-1" />
       </div>
-      <div className="flex flex-col min-w-0">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-200 leading-snug line-clamp-1">
+      
+      {/* Quote Text */}
+      <div className="flex flex-col min-w-0 gap-0.5">
+        <p className="text-sm text-slate-800 dark:text-slate-100 leading-snug line-clamp-1 font-medium italic">
           "{quote.texto}"
         </p>
-        <span className="text-xs text-slate-500 dark:text-slate-400">
-          {quote.autor}
-        </span>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-px bg-gradient-to-r from-primary/50 to-transparent" />
+          <span className="text-xs font-semibold text-primary/80 dark:text-primary/70 uppercase tracking-wide">
+            {quote.autor}
+          </span>
+        </div>
       </div>
     </div>
   );
