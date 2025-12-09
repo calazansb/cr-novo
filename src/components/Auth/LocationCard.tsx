@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Cloud } from 'lucide-react';
 
 const LocationCard = () => {
   const [location, setLocation] = useState<string>('Carregando...');
   const [time, setTime] = useState<string>('');
 
   useEffect(() => {
-    // Get current time
     const updateTime = () => {
       const now = new Date();
       setTime(now.toLocaleTimeString('pt-BR', { 
@@ -16,9 +15,8 @@ const LocationCard = () => {
     };
     
     updateTime();
-    const timeInterval = setInterval(updateTime, 60000); // Update every minute
+    const timeInterval = setInterval(updateTime, 1000);
 
-    // Get location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -46,33 +44,36 @@ const LocationCard = () => {
     return () => clearInterval(timeInterval);
   }, []);
 
-  return (
-    <div className="fixed top-6 right-6 z-20 w-[342px] h-[184px] rounded-2xl overflow-hidden shadow-2xl bg-card border border-border">
-      {/* Cloud decoration */}
-      <div className="absolute right-0 top-0 opacity-10">
-        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <path d="M90 60C90 44 77 31 61 31C50 31 40 37 35 46C32 45 29 44 26 44C14 44 4 54 4 66C4 78 14 88 26 88H86C100 88 111 77 111 63C111 50 101 39 88 39C89 46 90 53 90 60Z" fill="currentColor" className="text-primary"/>
-        </svg>
-      </div>
+  const formatDate = () => {
+    return new Date().toLocaleDateString('pt-BR', { 
+      weekday: 'short', 
+      day: 'numeric',
+      month: 'short'
+    }).replace('.', '');
+  };
 
-      {/* Content */}
-      <div className="relative h-full p-5 flex flex-col justify-between">
-        <div className="main-text text-5xl font-bold z-10 text-foreground">
-          {time}
+  return (
+    <div className="fixed top-6 right-6 z-20">
+      <div className="bg-card/95 backdrop-blur-sm rounded-3xl shadow-xl border border-border/50 p-6 min-w-[280px]">
+        {/* Top row: Time + Cloud */}
+        <div className="flex items-start justify-between mb-4">
+          <span className="text-5xl font-bold tracking-tight text-foreground tabular-nums">
+            {time}
+          </span>
+          <Cloud className="w-14 h-14 text-muted-foreground/40 -mt-1" strokeWidth={1.5} />
         </div>
         
-        <div className="info flex justify-between items-end">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-muted-foreground" />
-            <span className="text-muted-foreground">{location}</span>
+        {/* Bottom row: Location + Date */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-muted-foreground truncate">
+              {location}
+            </span>
           </div>
-          <div className="info-right text-muted-foreground">
-            {new Date().toLocaleDateString('pt-BR', { 
-              weekday: 'short', 
-              day: 'numeric',
-              month: 'short'
-            })}
-          </div>
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {formatDate()}
+          </span>
         </div>
       </div>
     </div>
