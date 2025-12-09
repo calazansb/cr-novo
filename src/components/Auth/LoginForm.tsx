@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { LogIn, AlertCircle, CheckCircle2, Mail } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import LocationCard from './LocationCard';
+
 declare global {
   interface Window {
     UnicornStudio: {
@@ -90,7 +92,9 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <>
+      <LocationCard />
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Unicorn Studio Background */}
       <div 
         data-us-project="WaBi9KXKEh8z0bDU21qK" 
@@ -206,6 +210,7 @@ const LoginForm = () => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 
